@@ -43,7 +43,7 @@ func dump(mode string, packet *plugins.ClientPacket) {
 			return
 		}
 		log.Println(mode)
-		attr := plugins.KeyValueStrings(packet.Packet)
+		attr := plugins.KeyValueStrings(packet)
 		for _, a := range attr {
 			log.Println(a)
 		}

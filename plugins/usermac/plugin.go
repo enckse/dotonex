@@ -6,6 +6,7 @@ import (
 	"github.com/epiphyte/goutils"
 	"github.com/epiphyte/radiucal/plugins"
 	. "layeh.com/radius/rfc2865"
+	"net"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -112,6 +113,13 @@ func mark(result, user, calling string, p *plugins.ClientPacket) {
 		nasip = nasipraw.String()
 	}
 	nasport := NASPort_Get(p.Packet)
+	cliaddr := "unknown"
+	if p.ClientAddr != nil {
+		h, _, err := net.SplitHostPort(p.ClientAddr.String())
+		if err == nil {
+			cliaddr = h
+		}
+	}
 	fileLock.Lock()
 	defer fileLock.Unlock()
 	f, t := plugins.DatedAppendFile(logs, "audit", instance)
@@ -119,7 +127,7 @@ func mark(result, user, calling string, p *plugins.ClientPacket) {
 		return
 	}
 	defer f.Close()
-	msg := fmt.Sprintf("%s (mac:%s) (nas:%s,ip:%s,port:%d)", user, calling, nas, nasip, nasport)
+	msg := fmt.Sprintf("%s (mac:%s) (nas:%s,ip:%s,port:%d,client:%s)", user, calling, nas, nasip, nasport, cliaddr)
 	if doCallback {
 		goutils.WriteDebug("perform callback", callback...)
 		args := callback[1:]

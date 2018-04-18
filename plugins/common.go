@@ -64,9 +64,12 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 }
 
 // Get attributes as Type/Value string arrays
-func KeyValueStrings(packet *radius.Packet) []string {
+func KeyValueStrings(packet *ClientPacket) []string {
 	var datum []string
-	for t, a := range packet.Attributes {
+	if packet.ClientAddr != nil {
+		datum = append(datum, fmt.Sprintf("UDPAddr: %s", packet.ClientAddr.String()))
+	}
+	for t, a := range packet.Packet.Attributes {
 		name := resolveType(t)
 		datum = append(datum, fmt.Sprintf("Type: %d (%s)", t, name))
 		for _, s := range a {
