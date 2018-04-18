@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/epiphyte/radiucal/plugins"
-	"layeh.com/radius"
 	"sync"
 )
 
@@ -31,20 +30,20 @@ func (l *logger) Setup(ctx *plugins.PluginContext) {
 	instance = ctx.Instance
 }
 
-func (l *logger) Pre(packet *radius.Packet) bool {
+func (l *logger) Pre(packet *plugins.ClientPacket) bool {
 	write(plugins.PreAuthMode, packet)
 	return true
 }
 
-func (l *logger) Auth(packet *radius.Packet) {
+func (l *logger) Auth(packet *plugins.ClientPacket) {
 	write(plugins.AuthingMode, packet)
 }
 
-func (l *logger) Account(packet *radius.Packet) {
+func (l *logger) Account(packet *plugins.ClientPacket) {
 	write(plugins.AccountingMode, packet)
 }
 
-func write(mode string, packet *radius.Packet) {
+func write(mode string, packet *plugins.ClientPacket) {
 	go func() {
 		lock.Lock()
 		defer lock.Unlock()
@@ -55,7 +54,7 @@ func write(mode string, packet *radius.Packet) {
 		if f == nil {
 			return
 		}
-		attr := plugins.KeyValueStrings(packet)
+		attr := plugins.KeyValueStrings(packet.Packet)
 		output := fmt.Sprintf("id -> %s \n", mode)
 		plugins.FormatLog(f, t, mode, output)
 		for _, a := range attr {

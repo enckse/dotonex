@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/epiphyte/goutils"
 	"github.com/epiphyte/radiucal/plugins"
-	"layeh.com/radius"
 	. "layeh.com/radius/rfc2865"
 	"path/filepath"
 	"strings"
@@ -48,7 +47,7 @@ func (l *umac) Setup(ctx *plugins.PluginContext) {
 	doCallback = len(callback) > 0
 }
 
-func (l *umac) Pre(packet *radius.Packet) bool {
+func (l *umac) Pre(packet *plugins.ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }
 
@@ -62,12 +61,12 @@ func clean(in string) string {
 	return result
 }
 
-func checkUserMac(p *radius.Packet) error {
-	username, err := UserName_LookupString(p)
+func checkUserMac(p *plugins.ClientPacket) error {
+	username, err := UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
 	}
-	calling, err := CallingStationID_LookupString(p)
+	calling, err := CallingStationID_LookupString(p.Packet)
 	if err != nil {
 		return err
 	}
@@ -102,17 +101,17 @@ func checkUserMac(p *radius.Packet) error {
 	return failure
 }
 
-func mark(result, user, calling string, p *radius.Packet) {
-	nas := clean(NASIdentifier_GetString(p))
+func mark(result, user, calling string, p *plugins.ClientPacket) {
+	nas := clean(NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
 	}
-	nasipraw := NASIPAddress_Get(p)
+	nasipraw := NASIPAddress_Get(p.Packet)
 	nasip := "noip"
 	if nasipraw != nil {
 		nasip = nasipraw.String()
 	}
-	nasport := NASPort_Get(p)
+	nasport := NASPort_Get(p.Packet)
 	fileLock.Lock()
 	defer fileLock.Unlock()
 	f, t := plugins.DatedAppendFile(logs, "audit", instance)

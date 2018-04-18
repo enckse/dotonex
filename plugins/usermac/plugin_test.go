@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 	"testing"
@@ -11,7 +12,7 @@ func TestUserMacBasics(t *testing.T) {
 	newTestSet(t, "test", "12-22-33-44-55-66", false)
 }
 
-func ErrorIfNotPre(t *testing.T, m *umac, p *radius.Packet, message string) {
+func ErrorIfNotPre(t *testing.T, m *umac, p *plugins.ClientPacket, message string) {
 	err := checkUserMac(p)
 	if err == nil {
 		if message != "" {
@@ -24,19 +25,20 @@ func ErrorIfNotPre(t *testing.T, m *umac, p *radius.Packet, message string) {
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) (*radius.Packet, *umac) {
+func newTestSet(t *testing.T, user, mac string, valid bool) (*plugins.ClientPacket, *umac) {
 	m := setupUserMac()
 	if m.Name() != "usermac" {
 		t.Error("invalid/wrong name")
 	}
 	var secret = []byte("secret")
-	p := radius.New(radius.CodeAccessRequest, secret)
+	p := plugins.NewClientPacket(nil, nil)
+	p.Packet = radius.New(radius.CodeAccessRequest, secret)
 	ErrorIfNotPre(t, m, p, "radius: attribute not found")
-	if err := rfc2865.UserName_AddString(p, user); err != nil {
+	if err := rfc2865.UserName_AddString(p.Packet, user); err != nil {
 		t.Error("unable to add user name")
 	}
 	ErrorIfNotPre(t, m, p, "radius: attribute not found")
-	if err := rfc2865.CallingStationID_AddString(p, mac); err != nil {
+	if err := rfc2865.CallingStationID_AddString(p.Packet, mac); err != nil {
 		t.Error("unable to add calling station")
 	}
 	if valid {

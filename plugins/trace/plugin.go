@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/epiphyte/radiucal/plugins"
-	"layeh.com/radius"
 	"log"
 )
 
@@ -25,26 +24,26 @@ func (t *tracer) Setup(ctx *plugins.PluginContext) {
 	modes = plugins.DisabledModes(t, ctx)
 }
 
-func (t *tracer) Pre(packet *radius.Packet) bool {
+func (t *tracer) Pre(packet *plugins.ClientPacket) bool {
 	dump(plugins.PreAuthMode, packet)
 	return true
 }
 
-func (t *tracer) Auth(packet *radius.Packet) {
+func (t *tracer) Auth(packet *plugins.ClientPacket) {
 	dump(plugins.AuthingMode, packet)
 }
 
-func (t *tracer) Account(packet *radius.Packet) {
+func (t *tracer) Account(packet *plugins.ClientPacket) {
 	dump(plugins.AccountingMode, packet)
 }
 
-func dump(mode string, packet *radius.Packet) {
+func dump(mode string, packet *plugins.ClientPacket) {
 	go func() {
 		if plugins.Disabled(mode, modes) {
 			return
 		}
 		log.Println(mode)
-		attr := plugins.KeyValueStrings(packet)
+		attr := plugins.KeyValueStrings(packet.Packet)
 		for _, a := range attr {
 			log.Println(a)
 		}

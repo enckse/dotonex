@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/epiphyte/radiucal/plugins"
 	"io/ioutil"
-	"layeh.com/radius"
 	"sync"
 	"time"
 )
@@ -52,16 +51,16 @@ func (s *stats) Setup(ctx *plugins.PluginContext) {
 	modes = plugins.DisabledModes(s, ctx)
 }
 
-func (s *stats) Pre(packet *radius.Packet) bool {
+func (s *stats) Pre(packet *plugins.ClientPacket) bool {
 	write(plugins.PreAuthMode)
 	return true
 }
 
-func (s *stats) Auth(packet *radius.Packet) {
+func (s *stats) Auth(packet *plugins.ClientPacket) {
 	write(plugins.AuthingMode)
 }
 
-func (s *stats) Account(packet *radius.Packet) {
+func (s *stats) Account(packet *plugins.ClientPacket) {
 	write(plugins.AccountingMode)
 }
 
