@@ -1,17 +1,17 @@
 package main
 
 import (
-	"testing"
+	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"github.com/epiphyte/radiucal/plugins"
+	"testing"
 )
 
 type MockModule struct {
-	acct int
-	auth int
-	pre  int
-	fail bool
+	acct   int
+	auth   int
+	pre    int
+	fail   bool
 	reload int
 }
 
@@ -100,12 +100,12 @@ func TestAuth(t *testing.T) {
 func getPacket(t *testing.T) (*context, *plugins.ClientPacket) {
 	c := &context{}
 	c.secret = []byte("secret")
-    p := radius.New(radius.CodeAccessRequest, c.secret)
-    if err := rfc2865.UserName_AddString(p, "user"); err != nil {
-        t.Error("unable to add user name")
-    }
-    if err := rfc2865.CallingStationID_AddString(p, "11-22-33-44-55-66"); err != nil {
-        t.Error("unable to add calling station")
+	p := radius.New(radius.CodeAccessRequest, c.secret)
+	if err := rfc2865.UserName_AddString(p, "user"); err != nil {
+		t.Error("unable to add user name")
+	}
+	if err := rfc2865.CallingStationID_AddString(p, "11-22-33-44-55-66"); err != nil {
+		t.Error("unable to add calling station")
 	}
 	b, err := p.Encode()
 	if err != nil {
