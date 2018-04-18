@@ -109,17 +109,17 @@ func mark(result, user, calling string, p *plugins.ClientPacket) {
 	}
 	nasipraw := NASIPAddress_Get(p.Packet)
 	nasip := "noip"
-	if nasipraw != nil {
+	if nasipraw == nil {
+		if p.ClientAddr != nil {
+			h, _, err := net.SplitHostPort(p.ClientAddr.String())
+			if err == nil {
+				nasip = h
+			}
+		}
+	} else {
 		nasip = nasipraw.String()
 	}
 	nasport := NASPort_Get(p.Packet)
-	cliaddr := "unknown"
-	if p.ClientAddr != nil {
-		h, _, err := net.SplitHostPort(p.ClientAddr.String())
-		if err == nil {
-			cliaddr = h
-		}
-	}
 	fileLock.Lock()
 	defer fileLock.Unlock()
 	f, t := plugins.DatedAppendFile(logs, "audit", instance)
@@ -127,7 +127,7 @@ func mark(result, user, calling string, p *plugins.ClientPacket) {
 		return
 	}
 	defer f.Close()
-	msg := fmt.Sprintf("%s (mac:%s) (nas:%s,ip:%s,port:%d,client:%s)", user, calling, nas, nasip, nasport, cliaddr)
+	msg := fmt.Sprintf("%s (mac:%s) (nas:%s,ip:%s,port:%d)", user, calling, nas, nasip, nasport)
 	if doCallback {
 		goutils.WriteDebug("perform callback", callback...)
 		args := callback[1:]
