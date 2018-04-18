@@ -24,6 +24,7 @@ const (
 type ClientPacket struct {
 	ClientAddr *net.UDPAddr
 	Buffer     []byte
+	Packet     *radius.Packet
 }
 
 type PluginContext struct {

@@ -29,14 +29,14 @@ type context struct {
 func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 	valid := true
 	if ctx.preauth || ctx.auth {
-		p, err := ctx.packet(packet.Buffer)
+		err := ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
 		// we let that go
 		if err == nil {
 			if ctx.preauth {
 				for _, mod := range ctx.preauths {
-					if mod.Pre(p) {
+					if mod.Pre(packet.Packet) {
 						continue
 					}
 					valid = false
@@ -45,7 +45,7 @@ func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 			}
 			if ctx.auth {
 				for _, mod := range ctx.auths {
-					mod.Auth(p)
+					mod.Auth(packet.Packet)
 				}
 			}
 		}
@@ -94,19 +94,24 @@ func (ctx *context) reload() {
 	}
 }
 
-func (ctx *context) packet(buffer []byte) (*radius.Packet, error) {
-	return radius.Parse(buffer, []byte(ctx.secret))
+func (ctx *context) packet(p *plugins.ClientPacket) error {
+	packet, err := radius.Parse(p.Buffer, []byte(ctx.secret))
+	if err != nil {
+		return err
+	}
+	p.Packet = packet
+	return nil
 }
 
 func (ctx *context) account(packet *plugins.ClientPacket) {
-	p, e := ctx.packet(packet.Buffer)
+	e := ctx.packet(packet)
 	if e != nil {
 		// unable to parse, exit early
 		return
 	}
 	if ctx.acct {
 		for _, mod := range ctx.accts {
-			mod.Account(p)
+			mod.Account(packet.Packet)
 		}
 	}
 }
