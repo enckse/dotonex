@@ -119,7 +119,7 @@ for l in $(echo "$leases" | sed "s/ /,/g"); do
     echo "| unknown $line" >> $LEASES
 done
 if [ ! -z "$unknowns" ]; then
-    echo "unknown leases: $unknowns" | smirc
+    echo "unknown leases: $unknowns" | smirc --private
 fi
 cat $LEASES_KNOWN | sort -u >> $LEASES
 

@@ -104,7 +104,7 @@ _update_files() {
 if [ $diffed -ne 0 ]; then
     echo "network configuration updated"
     if [ $IS_LOCAL -eq 0 ]; then
-        git log --pretty=oneline --abbrev-commit -n 1 | smirc
+        git log --pretty=oneline --abbrev-commit -n 1 | smirc --private
         _update_files
         cp $USERS $RADIUCAL_HOME/eap_users
         _sig
