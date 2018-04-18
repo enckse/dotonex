@@ -52,7 +52,7 @@ func TestAuth(t *testing.T) {
 	ctx.auths = append(ctx.auths, m)
 	ctx.auth = true
 	// invalid packet
-	if !ctx.authorize(nil) {
+	if !ctx.authorize(plugins.NewClientPacket(nil, nil)) {
 		t.Error("didn't authorize")
 	}
 	if m.auth != 0 {
@@ -97,7 +97,7 @@ func TestAuth(t *testing.T) {
 	}
 }
 
-func getPacket(t *testing.T) (*context, []byte) {
+func getPacket(t *testing.T) (*context, *plugins.ClientPacket) {
 	c := &context{}
 	c.secret = []byte("secret")
     p := radius.New(radius.CodeAccessRequest, c.secret)
@@ -111,7 +111,7 @@ func getPacket(t *testing.T) (*context, []byte) {
 	if err != nil {
 		t.Error("unable to encode")
 	}
-	return c, b
+	return c, plugins.NewClientPacket(b, nil)
 }
 
 func TestSecretParsing(t *testing.T) {
@@ -157,13 +157,13 @@ func TestReload(t *testing.T) {
 
 func TestAcctNoMods(t *testing.T) {
 	ctx := &context{}
-	ctx.account(nil)
+	ctx.account(plugins.NewClientPacket(nil, nil))
 }
 
 func TestAcct(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
-	ctx.account(nil)
+	ctx.account(plugins.NewClientPacket(nil, nil))
 	if m.acct != 0 {
 		t.Error("didn't account")
 	}

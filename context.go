@@ -26,10 +26,10 @@ type context struct {
 	module  bool
 }
 
-func (ctx *context) authorize(buffer []byte) bool {
+func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 	valid := true
 	if ctx.preauth || ctx.auth {
-		p, err := ctx.packet(buffer)
+		p, err := ctx.packet(packet.Buffer)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
 		// we let that go
@@ -98,8 +98,8 @@ func (ctx *context) packet(buffer []byte) (*radius.Packet, error) {
 	return radius.Parse(buffer, []byte(ctx.secret))
 }
 
-func (ctx *context) account(buffer []byte) {
-	p, e := ctx.packet(buffer)
+func (ctx *context) account(packet *plugins.ClientPacket) {
+	p, e := ctx.packet(packet.Buffer)
 	if e != nil {
 		// unable to parse, exit early
 		return

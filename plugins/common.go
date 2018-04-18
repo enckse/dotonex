@@ -6,6 +6,7 @@ import (
 	"github.com/epiphyte/goutils"
 	"layeh.com/radius"
 	. "layeh.com/radius/rfc2865"
+	"net"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -19,6 +20,11 @@ const (
 	AuthingMode    = "auth"
 	PreAuthMode    = "preauth"
 )
+
+type ClientPacket struct {
+	ClientAddr *net.UDPAddr
+	Buffer	   []byte
+}
 
 type PluginContext struct {
 	// Location of logs directory
@@ -50,6 +56,10 @@ type Authing interface {
 type Accounting interface {
 	Module
 	Account(*radius.Packet)
+}
+
+func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
+	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
 }
 
 // Get attributes as Type/Value string arrays

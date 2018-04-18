@@ -109,7 +109,8 @@ func runProxy(ctx *context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		if !ctx.authorize(buffered) {
+		packetized := plugins.NewClientPacket(buffered, cliaddr)
+		if !ctx.authorize(packetized) {
 			if !ctx.noreject {
 				p, err := radius.Parse(buffered, []byte(ctx.secret))
 				if err == nil {
@@ -138,11 +139,11 @@ func runProxy(ctx *context) {
 func account(ctx *context) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
-		n, _, err := proxy.ReadFromUDP(buffer[0:])
+		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
 		if logError("accounting udp error", err) {
 			continue
 		}
-		ctx.account(buffer[0:n])
+		ctx.account(plugins.NewClientPacket(buffer[0:n], cliaddr))
 	}
 }
 
