@@ -46,17 +46,17 @@ type Module interface {
 
 type PreAuth interface {
 	Module
-	Pre(*radius.Packet) bool
+	Pre(*ClientPacket) bool
 }
 
 type Authing interface {
 	Module
-	Auth(*radius.Packet)
+	Auth(*ClientPacket)
 }
 
 type Accounting interface {
 	Module
-	Account(*radius.Packet)
+	Account(*ClientPacket)
 }
 
 func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {

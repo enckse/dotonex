@@ -36,7 +36,7 @@ func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 		if err == nil {
 			if ctx.preauth {
 				for _, mod := range ctx.preauths {
-					if mod.Pre(packet.Packet) {
+					if mod.Pre(packet) {
 						continue
 					}
 					valid = false
@@ -45,7 +45,7 @@ func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 			}
 			if ctx.auth {
 				for _, mod := range ctx.auths {
-					mod.Auth(packet.Packet)
+					mod.Auth(packet)
 				}
 			}
 		}
@@ -111,7 +111,7 @@ func (ctx *context) account(packet *plugins.ClientPacket) {
 	}
 	if ctx.acct {
 		for _, mod := range ctx.accts {
-			mod.Account(packet.Packet)
+			mod.Account(packet)
 		}
 	}
 }

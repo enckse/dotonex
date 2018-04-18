@@ -26,16 +26,16 @@ func (m *MockModule) Reload() {
 func (m *MockModule) Setup(c *plugins.PluginContext) {
 }
 
-func (m *MockModule) Pre(p *radius.Packet) bool {
+func (m *MockModule) Pre(p *plugins.ClientPacket) bool {
 	m.pre++
 	return !m.fail
 }
 
-func (m *MockModule) Auth(p *radius.Packet) {
+func (m *MockModule) Auth(p *plugins.ClientPacket) {
 	m.auth++
 }
 
-func (m *MockModule) Account(p *radius.Packet) {
+func (m *MockModule) Account(p *plugins.ClientPacket) {
 	m.acct++
 }
 
@@ -105,7 +105,7 @@ func getPacket(t *testing.T) (*context, *plugins.ClientPacket) {
 		t.Error("unable to add user name")
 	}
 	if err := rfc2865.CallingStationID_AddString(p, "11-22-33-44-55-66"); err != nil {
-		t.Error("unable to add calling station")
+		t.Error("unable to add calling statiron")
 	}
 	b, err := p.Encode()
 	if err != nil {
