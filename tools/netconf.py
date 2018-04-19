@@ -143,6 +143,7 @@ def _process(output):
         raise Exception("missing required config settings...")
     meta.all_vlans = vlans.keys()
     store = Store()
+    admins = {}
     for f_name in _get_by_indicator(USER_INDICATOR):
         print("composing..." + f_name)
         for obj in _load_objs(f_name, users.__config__.Assignment):
@@ -182,8 +183,24 @@ def _process(output):
             user_all = []
             for l in [obj.macs, obj.owns, bypassed]:
                 user_all += list(l)
+            user_set = sorted(set(user_all))
             store.add_audit(fqdn, sorted(set(user_all)))
+            if obj.administrator:
+                # we need to replace this into the store
+                admins[fqdn] = [macs, password, user_set]
     meta.verify()
+    if len(admins) > 0:
+        for named in admins:
+            admin = admins[named]
+            a = named.split(".")[1]
+            for v in vlans:
+                fqdn = "{}.{}".format(v, a)
+                # we already have a specified account for the admin in the vlan
+                if fqdn == named:
+                    continue
+                store.add_user(fqdn, admin[0], admin[1])
+                store.add_audit(fqdn, admin[2])
+
     # audit outputs
     with open(output + "audit.csv", 'w') as f:
         csv_writer = csv.writer(f, lineterminator=os.linesep)

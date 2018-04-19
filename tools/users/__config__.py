@@ -63,6 +63,7 @@ class Assignment(object):
         self.inherits = None
         self.owns = []
         self._bypass = None
+        self.administrator = False
         self.mab_only = False
 
     def _compare_date(self, value, regex, today):

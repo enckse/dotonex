@@ -1,3 +1,10 @@
+"dev.admin" PEAP
+
+"dev.admin" MSCHAPV2 hash:e08bb5212dd623b9a1cd4d25bcc8b89r [2]
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:10
+
 "dev.attr" PEAP
 
 "dev.attr" MSCHAPV2 hash:e08bb5212dd623b9a1cd4d25bcc8b898 [2]
@@ -53,6 +60,13 @@ radius_accept_attr=81:s:11
 radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:10
+
+"prod.admin" PEAP
+
+"prod.admin" MSCHAPV2 hash:e08bb5212dd623b9a1cd4d25bcc8b89r [2]
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:11
 
 "112233445567" MD5 "112233445567"
 radius_accept_attr=64:d:13
