@@ -190,10 +190,11 @@ def _process(output):
                 admins[fqdn] = [macs, password, user_set]
     meta.verify()
     if len(admins) > 0:
+        v_names = store.get_vlan_names()
         for named in admins:
             admin = admins[named]
             a = named.split(".")[1]
-            for v in vlans:
+            for v in v_names:
                 fqdn = "{}.{}".format(v, a)
                 # we already have a specified account for the admin in the vlan
                 if fqdn == named:
@@ -306,6 +307,10 @@ class Store(object):
     def _get_vlan(self, name):
         """Get vlans."""
         return self._vlans[name]
+
+    def get_vlan_names(self):
+        """Return vlan names (used, not all)."""
+        return self._vlans.keys()
 
 
 def main():
