@@ -185,22 +185,24 @@ def _process(output):
                 user_all += list(l)
             user_set = sorted(set(user_all))
             store.add_audit(fqdn, sorted(set(user_all)))
-            if obj.administrator:
+            if obj.management is not None:
+                admin_mac = [obj.management]
                 # we need to replace this into the store
-                admins[fqdn] = [macs, password, user_set]
+                admins[fqdn] = [admin_mac, password]
     meta.verify()
     if len(admins) > 0:
         v_names = store.get_vlan_names()
         for named in admins:
             admin = admins[named]
             a = named.split(".")[1]
+            m = admin[0]
             for v in v_names:
                 fqdn = "{}.{}".format(v, a)
                 # we already have a specified account for the admin in the vlan
                 if fqdn == named:
                     continue
-                store.add_user(fqdn, admin[0], admin[1])
-                store.add_audit(fqdn, admin[2])
+                store.add_user(fqdn, m, admin[1])
+                store.add_audit(fqdn, m)
 
     # audit outputs
     with open(output + "audit.csv", 'w') as f:
