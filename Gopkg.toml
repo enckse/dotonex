@@ -6,5 +6,5 @@ ignored = ["github.com/epiphyte/radiucal/plugins"]
   name = "layeh.com/radius"
 
 [[constraint]]
-  branch = "master"
+  version = "v1.0.0"
   name = "github.com/epiphyte/goutils"
