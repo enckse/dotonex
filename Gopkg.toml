@@ -1,3 +1,4 @@
+# plugins are local to what we do
 ignored = ["github.com/epiphyte/radiucal/plugins"]
 
 [[constraint]]
