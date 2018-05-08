@@ -41,6 +41,7 @@ clean:
 	rm -rf $(BIN)
 	mkdir -p $(BIN)
 	mkdir -p $(VENDOR_LOCAL)
+	rm -f $(VENDOR_LOCAL)/plugins
 	ln -s $(PWD)/$(PLUGIN) $(VENDOR_LOCAL)/plugins
 
 tools:
