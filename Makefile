@@ -10,13 +10,9 @@ VERSION=
 ifeq ($(VERSION),)
 	VERSION=master
 endif
-export GOPATH := $(PWD)/vendor
 .PHONY: tools plugins
 
 all: clean plugins radiucal integrate tools format
-
-deps:
-	git submodule update --init --recursive
 
 plugins: $(PLUGINS)
 

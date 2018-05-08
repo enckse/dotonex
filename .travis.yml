@@ -3,14 +3,22 @@ language: go
 go:
   - "1.10.x"
 
+env:
+    - DEP_VERSION="0.4.1"
+
 before_install:
-    - sudo apt-get -qq update
-    - sudo apt-get install -y python3 python3-setuptools
-    - sudo easy_install3 pip
-    - sudo pip install pycodestyle pep257
+  # Download the binary to bin folder in $GOPATH
+  - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
+  # Make the binary executable
+  - chmod +x $GOPATH/bin/dep
+  - sudo apt-get -qq update
+  - sudo apt-get install -y python3 python3-setuptools
+  - sudo easy_install3 pip
+  - sudo pip install pycodestyle pep257
 
 
 script:
+    - dep ensure
     - make
 
 notifications:
