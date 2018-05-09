@@ -193,10 +193,9 @@ func main() {
 	secret := parseSecrets(secrets)
 	ctx := &context{debug: debug, secret: []byte(secret), noreject: conf.GetTrue("noreject")}
 	mods := conf.GetArrayOrEmpty("plugins")
-	pCtx := &plugins.PluginContext{}
+	pCtx := plugins.NewPluginContext(conf)
 	pCtx.Logs = filepath.Join(lib, "log")
 	pCtx.Lib = lib
-	pCtx.Config = conf
 	pCtx.Instance = *instance
 	pPath := filepath.Join(lib, "plugins")
 	for _, p := range mods {

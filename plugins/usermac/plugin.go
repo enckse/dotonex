@@ -40,11 +40,11 @@ func (l *umac) Reload() {
 }
 
 func (l *umac) Setup(ctx *plugins.PluginContext) {
-	canCache = ctx.Config.GetTrue("cache")
+	canCache = ctx.Cache
 	logs = ctx.Logs
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
-	callback = ctx.Config.GetArrayOrEmpty("usermac_callback")
+	callback = ctx.Section.GetArrayOrEmpty("callback")
 	doCallback = len(callback) > 0
 }
 

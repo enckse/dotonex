@@ -32,10 +32,14 @@ type PluginContext struct {
 	Logs string
 	// Location of the general lib directory
 	Lib string
+	// Plugin section (subsection of config)
+	Section *goutils.Config
 	// Backing config
-	Config *goutils.Config
+	config *goutils.Config
 	// Instance name
 	Instance string
+	// Enable caching
+	Cache bool
 }
 
 type Module interface {
@@ -57,6 +61,24 @@ type Authing interface {
 type Accounting interface {
 	Module
 	Account(*ClientPacket)
+}
+
+func NewPluginContext(config *goutils.Config) *PluginContext {
+	p := &PluginContext{}
+	p.Cache = config.GetTrue("cache")
+	p.config = config
+	return p
+}
+
+func (p *PluginContext) clone(moduleName string) *PluginContext {
+	n := &PluginContext{}
+	n.Logs = p.Logs
+	n.Lib = p.Lib
+	n.Instance = p.Instance
+	n.Cache = p.Cache
+	n.config = p.config
+	n.Section = p.config.GetSection(fmt.Sprintf("[%s]", moduleName))
+	return n
 }
 
 func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
@@ -147,9 +169,9 @@ func Disabled(mode string, modes []string) bool {
 
 func DisabledModes(m Module, ctx *PluginContext) []string {
 	name := m.Name()
-	accounting := ctx.Config.GetTrue(fmt.Sprintf("%s_disable_accounting", name))
-	authing := ctx.Config.GetTrue(fmt.Sprintf("%s_disable_auth", name))
-	preauth := ctx.Config.GetTrue(fmt.Sprintf("%s_disable_preauth", name))
+	accounting := ctx.config.GetTrue(fmt.Sprintf("%s_disable_accounting", name))
+	authing := ctx.config.GetTrue(fmt.Sprintf("%s_disable_auth", name))
+	preauth := ctx.config.GetTrue(fmt.Sprintf("%s_disable_preauth", name))
 	var modes []string
 	if accounting {
 		modes = append(modes, AccountingMode)
@@ -195,7 +217,7 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("unable to load plugin %s", path))
 	}
-	mod.Setup(ctx)
+	mod.Setup(ctx.clone(mod.Name()))
 	return mod, nil
 	switch t := mod.(type) {
 	default:
