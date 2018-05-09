@@ -58,7 +58,7 @@ for i in $(seq 1 10); do
 done
 files=""
 for d in $(echo "$dates"); do
-	f="/var/lib/radiucal/log/radiucal.audit.$d"
+	f="/var/lib/radiucal/log/radiucal.proxy.audit.$d"
 	if [ -e $f ]; then
 		files="$files $f"
 	fi
