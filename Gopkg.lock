@@ -2,10 +2,10 @@
 
 
 [[projects]]
-  branch = "master"
   name = "github.com/epiphyte/goutils"
   packages = ["."]
   revision = "dc3c0c5b3020dd9a02dafc2bd728a09acd2e60c0"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -14,7 +14,7 @@
     ".",
     "rfc2865"
   ]
-  revision = "8bc72f43fc7c1e5e9633adaca9531ee7231c542f"
+  revision = "a9b6875f19f13a95761ec3fd9d329a4580bef40a"
 
 [solve-meta]
   analyzer-name = "dep"

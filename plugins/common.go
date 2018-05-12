@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"github.com/epiphyte/goutils"
 	"layeh.com/radius"
+	"layeh.com/radius/debug"
 	. "layeh.com/radius/rfc2865"
 	"net"
 	"os"
 	"path/filepath"
 	"plugin"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -231,91 +233,10 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	}
 }
 
-// rfc2865 only, get string names for types
 func resolveType(t radius.Type) string {
-	switch t {
-	case UserName_Type:
-		return "User-Name"
-	case UserPassword_Type:
-		return "User-Password"
-	case CHAPPassword_Type:
-		return "CHAP-Password"
-	case NASIPAddress_Type:
-		return "NAS-IP-Address"
-	case NASPort_Type:
-		return "NAS-Port"
-	case ServiceType_Type:
-		return "Service-Type"
-	case FramedProtocol_Type:
-		return "Framed-Protocol"
-	case FramedIPAddress_Type:
-		return "Framed-IP-Address"
-	case FramedIPNetmask_Type:
-		return "Framed-IP-Netmask"
-	case FramedRouting_Type:
-		return "Framed-Routing"
-	case FilterID_Type:
-		return "Filter-ID"
-	case FramedMTU_Type:
-		return "Framed-MTU"
-	case FramedCompression_Type:
-		return "Framed-Compression"
-	case LoginIPHost_Type:
-		return "Login-IP-Host"
-	case LoginService_Type:
-		return "Login-Service"
-	case LoginTCPPort_Type:
-		return "Login-TCP-Port"
-	case ReplyMessage_Type:
-		return "Reply-Message"
-	case CallbackNumber_Type:
-		return "Callback-Number"
-	case CallbackID_Type:
-		return "Callback-ID"
-	case FramedRoute_Type:
-		return "Framed-Route"
-	case FramedIPXNetwork_Type:
-		return "Framed-IPX-Network"
-	case State_Type:
-		return "State"
-	case Class_Type:
-		return "Class"
-	case VendorSpecific_Type:
-		return "Vendor-Specific"
-	case SessionTimeout_Type:
-		return "Session-Timeout"
-	case IdleTimeout_Type:
-		return "Idle-Timeout"
-	case TerminationAction_Type:
-		return "Termination-Action"
-	case CalledStationID_Type:
-		return "Called-Station-ID"
-	case CallingStationID_Type:
-		return "Calling-Station-ID"
-	case NASIdentifier_Type:
-		return "NAS-Identifier"
-	case ProxyState_Type:
-		return "Proxy-State"
-	case LoginLATService_Type:
-		return "Login-LAT-Service"
-	case LoginLATNode_Type:
-		return "Login-LAT-Node"
-	case LoginLATGroup_Type:
-		return "Login-LAT-Group"
-	case FramedAppleTalkLink_Type:
-		return "Framed-Apple-Talk-Link"
-	case FramedAppleTalkNetwork_Type:
-		return "Framed-Apple-Talk-Network"
-	case FramedAppleTalkZone_Type:
-		return "Framed-Apple-Talk-Zone"
-	case CHAPChallenge_Type:
-		return "CHAP-Challenge"
-	case NASPortType_Type:
-		return "NAS-Port-Type"
-	case PortLimit_Type:
-		return "Port-Limit"
-	case LoginLATPort_Type:
-		return "Login-LAT-Port"
+	attr := debug.IncludedDictionary.AttributeByOID(strconv.Itoa(int(t)))
+	if attr == nil {
+		return "Unknown"
 	}
-	return "Unknown"
+	return attr.Name
 }
