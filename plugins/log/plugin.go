@@ -54,12 +54,7 @@ func write(mode string, packet *plugins.ClientPacket) {
 		if f == nil {
 			return
 		}
-		attr := plugins.KeyValueStrings(packet)
-		output := fmt.Sprintf("id -> %s \n", mode)
-		plugins.FormatLog(f, t, mode, output)
-		for _, a := range attr {
-			output = output + fmt.Sprintf("%s\n", a)
-			plugins.FormatLog(f, t, mode, output)
-		}
+		f.Write([]byte(fmt.Sprintf("id -> %s (%s)\n", mode, t)))
+		plugins.DumpPacket(packet, f)
 	}()
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/epiphyte/radiucal/plugins"
+	"io"
 	"log"
 )
 
@@ -37,15 +38,22 @@ func (t *tracer) Account(packet *plugins.ClientPacket) {
 	dump(plugins.AccountingMode, packet)
 }
 
+type logTrace struct {
+	io.Writer
+}
+
+func (t *logTrace) Write(b []byte) (int, error) {
+	log.Println(string(b))
+	return 0, nil
+}
+
 func dump(mode string, packet *plugins.ClientPacket) {
 	go func() {
 		if plugins.Disabled(mode, modes) {
 			return
 		}
+		tracer := &logTrace{}
 		log.Println(mode)
-		attr := plugins.KeyValueStrings(packet)
-		for _, a := range attr {
-			log.Println(a)
-		}
+		plugins.DumpPacket(packet, tracer)
 	}()
 }

@@ -4,17 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/epiphyte/goutils"
+	"io"
 	"layeh.com/radius"
 	"layeh.com/radius/debug"
-	. "layeh.com/radius/rfc2865"
 	"net"
 	"os"
 	"path/filepath"
 	"plugin"
-	"strconv"
 	"strings"
 	"time"
-	"unicode"
 )
 
 const (
@@ -87,60 +85,13 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
 }
 
-// Get attributes as Type/Value string arrays
-func KeyValueStrings(packet *ClientPacket) []string {
-	var datum []string
+func DumpPacket(packet *ClientPacket, w io.Writer) {
 	if packet.ClientAddr != nil {
-		datum = append(datum, fmt.Sprintf("UDPAddr: %s", packet.ClientAddr.String()))
+		io.WriteString(w, fmt.Sprintf("UDPAddr: %s", packet.ClientAddr.String()))
 	}
-	for t, a := range packet.Packet.Attributes {
-		name := resolveType(t)
-		datum = append(datum, fmt.Sprintf("Type: %d (%s)", t, name))
-		for _, s := range a {
-			unknown := true
-			val := ""
-			if t == NASIPAddress_Type {
-				ip, err := radius.IPAddr(s)
-				if err == nil {
-					unknown = false
-					val = fmt.Sprintf("(ip) %s", ip.String())
-				}
-			}
-
-			if unknown {
-				i, err := radius.Integer(s)
-				if err == nil {
-					unknown = false
-					val = fmt.Sprintf("(int) %d", i)
-				}
-			}
-
-			if unknown {
-				d, err := radius.Date(s)
-				if err == nil {
-					unknown = false
-					val = fmt.Sprintf("(time) %s", d.Format(time.RFC3339))
-				}
-			}
-
-			if unknown {
-				val = string(s)
-				unknown = false
-				for _, c := range val {
-					if !unicode.IsPrint(c) {
-						unknown = true
-						break
-					}
-				}
-			}
-
-			if unknown {
-				val = fmt.Sprintf("(hex) %x", s)
-			}
-			datum = append(datum, fmt.Sprintf("Value: %s", val))
-		}
-	}
-	return datum
+	conf := &debug.Config{}
+	conf.Dictionary = debug.IncludedDictionary
+	debug.Dump(w, conf, packet.Packet)
 }
 
 func DatedAppendFile(path, name, instance string) (*os.File, time.Time) {
@@ -231,12 +182,4 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	case Authing:
 		return t.(Authing), nil
 	}
-}
-
-func resolveType(t radius.Type) string {
-	attr := debug.IncludedDictionary.AttributeByOID(strconv.Itoa(int(t)))
-	if attr == nil {
-		return "Unknown"
-	}
-	return attr.Name
 }
