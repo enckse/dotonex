@@ -87,7 +87,7 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 
 func DumpPacket(packet *ClientPacket, w io.Writer) {
 	if packet.ClientAddr != nil {
-		io.WriteString(w, fmt.Sprintf("UDPAddr: %s", packet.ClientAddr.String()))
+		io.WriteString(w, fmt.Sprintf("UDPAddr: %s\n", packet.ClientAddr.String()))
 	}
 	conf := &debug.Config{}
 	conf.Dictionary = debug.IncludedDictionary
