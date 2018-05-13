@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/epiphyte/radiucal/plugins"
 	"io/ioutil"
 	"sync"
 	"time"
+
+	"github.com/epiphyte/radiucal/plugins"
 )
 
 type modedata struct {

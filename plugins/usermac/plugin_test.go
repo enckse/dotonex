@@ -1,10 +1,11 @@
 package main
 
 import (
+	"testing"
+
 	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"testing"
 )
 
 func TestUserMacBasics(t *testing.T) {

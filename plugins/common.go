@@ -3,16 +3,17 @@ package plugins
 import (
 	"errors"
 	"fmt"
-	"github.com/epiphyte/goutils"
 	"io"
-	"layeh.com/radius"
-	"layeh.com/radius/debug"
 	"net"
 	"os"
 	"path/filepath"
 	"plugin"
 	"strings"
 	"time"
+
+	"github.com/epiphyte/goutils"
+	"layeh.com/radius"
+	"layeh.com/radius/debug"
 )
 
 const (

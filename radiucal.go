@@ -5,14 +5,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/epiphyte/goutils"
-	"github.com/epiphyte/radiucal/plugins"
-	"layeh.com/radius"
 	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"sync"
+
+	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/radiucal/plugins"
+	"layeh.com/radius"
 )
 
 var vers = "master"

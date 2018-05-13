@@ -4,10 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"layeh.com/radius"
-	"layeh.com/radius/rfc2865"
 	"net"
 	"time"
+
+	"layeh.com/radius"
+	"layeh.com/radius/rfc2865"
 )
 
 func newPacket(user, mac string) []byte {

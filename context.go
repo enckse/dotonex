@@ -4,11 +4,12 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/epiphyte/goutils"
 	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
-	"os"
-	"strings"
 )
 
 type context struct {

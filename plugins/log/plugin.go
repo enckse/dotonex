@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/epiphyte/radiucal/plugins"
 	"sync"
+
+	"github.com/epiphyte/radiucal/plugins"
 )
 
 var (

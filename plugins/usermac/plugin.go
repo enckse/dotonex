@@ -3,13 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/epiphyte/goutils"
-	"github.com/epiphyte/radiucal/plugins"
-	. "layeh.com/radius/rfc2865"
 	"net"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/radiucal/plugins"
+	. "layeh.com/radius/rfc2865"
 )
 
 type umac struct {

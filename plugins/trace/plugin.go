@@ -2,9 +2,10 @@ package main
 
 import (
 	"bytes"
-	"github.com/epiphyte/radiucal/plugins"
 	"io"
 	"log"
+
+	"github.com/epiphyte/radiucal/plugins"
 )
 
 type tracer struct {
