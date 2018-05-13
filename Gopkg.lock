@@ -12,13 +12,15 @@
   name = "layeh.com/radius"
   packages = [
     ".",
+    "debug",
+    "dictionary",
     "rfc2865"
   ]
-  revision = "a9b6875f19f13a95761ec3fd9d329a4580bef40a"
+  revision = "f379030c657d6528b806d56a7be05cb308760f40"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fb353554afa4e953cbae10bef1ba7d7dd65a0f7af32aaa8e83e0497ae9c10169"
+  inputs-digest = "b16ec8185eb1ed2215721aa89f0327014a6a28d0cbb2f7aa573d09ef96c3127d"
   solver-name = "gps-cdcl"
   solver-version = 1
