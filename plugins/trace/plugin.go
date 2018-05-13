@@ -45,8 +45,7 @@ type logTrace struct {
 }
 
 func (t *logTrace) Write(b []byte) (int, error) {
-	t.data.Write(b)
-	return 0, nil
+	return t.data.Write(b)
 }
 
 func (t *logTrace) dump() {
