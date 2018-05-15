@@ -56,6 +56,7 @@ func write(mode string, packet *plugins.ClientPacket) {
 			return
 		}
 		f.Write([]byte(fmt.Sprintf("id -> %s (%s)\n", mode, t)))
-		plugins.DumpPacket(packet, f)
+		dump := plugins.NewRequestDump(packet, mode, t)
+		dump.DumpPacket(f)
 	}()
 }

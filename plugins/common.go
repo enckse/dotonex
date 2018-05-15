@@ -86,13 +86,24 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
 }
 
-func DumpPacket(packet *ClientPacket, w io.Writer) {
-	if packet.ClientAddr != nil {
-		io.WriteString(w, fmt.Sprintf("UDPAddr: %s\n", packet.ClientAddr.String()))
+type requestDump struct {
+	data  *ClientPacket
+	mode  string
+	stamp time.Time
+}
+
+func NewRequestDump(packet *ClientPacket, mode string, timestamp time.Time) *requestDump {
+	return &requestDump{data: packet, mode: mode, stamp: timestamp}
+}
+
+func (packet *requestDump) DumpPacket(w io.Writer) {
+	io.WriteString(w, fmt.Sprintf(fmt.Sprintf("Mode = %s (%s)\n", packet.mode, packet.stamp)))
+	if packet.data.ClientAddr != nil {
+		io.WriteString(w, fmt.Sprintf("UDPAddr = %s\n", packet.data.ClientAddr.String()))
 	}
 	conf := &debug.Config{}
 	conf.Dictionary = debug.IncludedDictionary
-	debug.Dump(w, conf, packet.Packet)
+	debug.Dump(w, conf, packet.data.Packet)
 }
 
 func DatedAppendFile(path, name, instance string) (*os.File, time.Time) {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"log"
+	"time"
 
 	"github.com/epiphyte/radiucal/plugins"
 )
@@ -59,8 +60,8 @@ func dump(mode string, packet *plugins.ClientPacket) {
 			return
 		}
 		tracer := &logTrace{}
-		log.Println(mode)
-		plugins.DumpPacket(packet, tracer)
+		dump := plugins.NewRequestDump(packet, mode, time.Now())
+		dump.DumpPacket(tracer)
 		tracer.dump()
 	}()
 }
