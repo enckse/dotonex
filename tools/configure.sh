@@ -5,7 +5,7 @@ source /etc/environment
 IS_LOCAL=0
 VERS="master"
 echo "radiucal tools/utils: $VERS"
-if [ -e "/usr/share/radiucal/radiucal-utils" ]; then
+if [ ! -e "/usr/share/radiucal/radiucal-tools" ]; then
     IS_LOCAL=1
 fi
 echo "updating network configuration"
