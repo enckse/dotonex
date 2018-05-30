@@ -1,5 +1,7 @@
-SRC=$(shell find . -type f | grep "\.py$$" | grep -v "\_\_init\_\_.py")
+SRC := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
+
 .PHONY: tests
+
 all: tests analyze
 
 tests:
