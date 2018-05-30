@@ -1,25 +1,26 @@
-BIN=bin/
-TST=tests/
-PLUGIN=plugins/
-HARNESS=$(TST)harness.go
-MAIN=radiucal.go context.go
-SRC=$(MAIN) $(shell find $(PLUGIN) -type f | grep "\.go$$") $(HARNESS)
-PLUGINS=$(shell ls $(PLUGIN) | grep -v "common.go")
-VENDOR_LOCAL=$(PWD)/vendor/github.com/epiphyte/radiucal
+BIN          := bin/
+TST          := tests/
+PLUGIN       := plugins/
+HARNESS      := $(TST)harness.go
+MAIN         := radiucal.go context.go
+SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/")
+PLUGINS      := log stats trace usermac
+VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
+VERSION      := master
+FLAGS        := -ldflags '-s -w -X main.vers=$(VERSION)'
+PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
+GO_TESTS     := go test -v
 
-VERSION=
-ifeq ($(VERSION),)
-	VERSION=master
-endif
 .PHONY: tools plugins
+
 all: clean plugins radiucal integrate tools format
 
 plugins: $(PLUGINS)
 
 $(PLUGINS):
 	@echo $@
-	go build --buildmode=plugin -o $(BIN)$@.rd $(PLUGIN)$@/plugin.go
-	cd $(PLUGIN)$@ && go test -v
+	go build $(PLUGIN_FLAGS) -o $(BIN)$@.rd $(PLUGIN)$@/plugin.go
+	cd $(PLUGIN)$@ && $(GO_TESTS)
 
 integrate:
 	mkdir -p $(TST)plugins/
@@ -30,8 +31,8 @@ integrate:
 	./tests/run.sh
 
 radiucal:
-	go test -v
-	go build -o $(BIN)radiucal -ldflags '-X main.vers=$(VERSION)' $(MAIN)
+	$(GO_TESTS)
+	go build -o $(BIN)radiucal $(FLAGS) $(MAIN)
 
 format:
 	@echo $(SRC)
