@@ -14,7 +14,7 @@ PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 
 .PHONY: tools plugins
 
-all: clean plugins radiucal integrate tools format
+all: clean plugins radiucal scripts integrate tools format
 
 plugins: $(PLUGINS)
 
@@ -50,3 +50,6 @@ tools:
 	pycodestyle $(PY)
 	pep257 $(PY)
 	cd tools/tests && ./check.sh
+
+scripts:
+	m4 -DVERSION='"$(VERSION)"' tools/configure.sh.in > $(BIN)configure
