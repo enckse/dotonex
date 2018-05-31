@@ -6,10 +6,11 @@ MAIN         := radiucal.go context.go
 SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/")
 PLUGINS      := log stats trace usermac
 VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
-VERSION      := master
+VERSION      := $(shell git describe --long | sed "s/\([^-]*-g\)/r\1/;s/-/./g")
 FLAGS        := -ldflags '-s -w -X main.vers=$(VERSION)'
 PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
 GO_TESTS     := go test -v
+PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 
 .PHONY: tools plugins
 
@@ -46,4 +47,6 @@ clean:
 	ln -s $(PWD)/$(PLUGIN) $(VENDOR_LOCAL)/plugins
 
 tools:
-	cd tools && make -C .
+	pycodestyle $(PY)
+	pep257 $(PY)
+	cd tools/tests && ./check.sh
