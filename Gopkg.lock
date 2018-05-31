@@ -16,7 +16,7 @@
     "dictionary",
     "rfc2865"
   ]
-  revision = "cf30a5bebad6eff430fb5c766ddab5bdc1a90881"
+  revision = "505941eec7a1478cee7528d056963577ca4e9cc3"
 
 [solve-meta]
   analyzer-name = "dep"
