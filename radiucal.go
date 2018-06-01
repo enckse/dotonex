@@ -41,29 +41,29 @@ func logError(message string, err error) bool {
 func newConnection(srv, cli *net.UDPAddr) *connection {
 	conn := new(connection)
 	conn.client = cli
-	srvudp, err := net.DialUDP("udp", nil, srv)
+	serverUdp, err := net.DialUDP("udp", nil, srv)
 	if logError("dial udp", err) {
 		return nil
 	}
-	conn.server = srvudp
+	conn.server = serverUdp
 	return conn
 }
 
 func setup(hostport string, port int) error {
-	saddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", port))
+	proxyAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
 	}
-	pudp, err := net.ListenUDP("udp", saddr)
+	proxyUdp, err := net.ListenUDP("udp", proxyAddr)
 	if err != nil {
 		return err
 	}
-	proxy = pudp
-	srvaddr, err := net.ResolveUDPAddr("udp", hostport)
+	proxy = proxyUdp
+	serverAddr, err := net.ResolveUDPAddr("udp", hostport)
 	if err != nil {
 		return err
 	}
-	serverAddress = srvaddr
+	serverAddress = serverAddr
 	return nil
 }
 
@@ -94,16 +94,16 @@ func runProxy(ctx *context) {
 		if logError("read from udp", err) {
 			continue
 		}
-		saddr := cliaddr.String()
+		addr := cliaddr.String()
 		clientLock.Lock()
-		conn, found := clients[saddr]
+		conn, found := clients[addr]
 		if !found {
 			conn = newConnection(serverAddress, cliaddr)
 			if conn == nil {
 				clientLock.Unlock()
 				continue
 			}
-			clients[saddr] = conn
+			clients[addr] = conn
 			clientLock.Unlock()
 			go runConnection(conn)
 		} else {
