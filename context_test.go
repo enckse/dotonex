@@ -14,6 +14,8 @@ type MockModule struct {
 	pre    int
 	fail   bool
 	reload int
+	// AuthType
+	preAuth int
 }
 
 func (m *MockModule) Name() string {
@@ -32,8 +34,13 @@ func (m *MockModule) Pre(p *plugins.ClientPacket) bool {
 	return !m.fail
 }
 
-func (m *MockModule) Auth(p *plugins.ClientPacket) {
+func (m *MockModule) Auth(t plugins.AuthType, p *plugins.ClientPacket) {
 	m.auth++
+	switch t {
+	case plugins.AuthRequest:
+		m.preAuth++
+		break
+	}
 }
 
 func (m *MockModule) Account(p *plugins.ClientPacket) {
@@ -95,6 +102,9 @@ func TestAuth(t *testing.T) {
 	}
 	if m.pre != 3 {
 		t.Error("didn't preauth")
+	}
+	if m.preAuth != 3 {
+		t.Error("not enough preauth types")
 	}
 }
 

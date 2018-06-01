@@ -53,30 +53,31 @@ func (s *stats) Setup(ctx *plugins.PluginContext) {
 }
 
 func (s *stats) Pre(packet *plugins.ClientPacket) bool {
-	write(plugins.PreAuthMode)
+	write(plugins.PreAuthMode, plugins.NotAuth)
 	return true
 }
 
-func (s *stats) Auth(packet *plugins.ClientPacket) {
-	write(plugins.AuthingMode)
+func (s *stats) Auth(t plugins.AuthType, packet *plugins.ClientPacket) {
+	write(plugins.AuthingMode, t)
 }
 
 func (s *stats) Account(packet *plugins.ClientPacket) {
-	write(plugins.AccountingMode)
+	write(plugins.AccountingMode, plugins.NotAuth)
 }
 
-func write(mode string) {
+func write(mode string, objType plugins.AuthType) {
 	go func() {
 		lock.Lock()
 		defer lock.Unlock()
 		if plugins.Disabled(mode, modes) {
 			return
 		}
-		f, t := plugins.NewFilePath(dir, fmt.Sprintf("stats.%s", mode), instance)
-		if _, ok := info[mode]; !ok {
-			info[mode] = &modedata{first: t, count: 0, name: mode}
+		key := fmt.Sprintf("%s.%d", mode, int(objType))
+		f, t := plugins.NewFilePath(dir, fmt.Sprintf("stats.%s", key), instance)
+		if _, ok := info[key]; !ok {
+			info[key] = &modedata{first: t, count: 0, name: key}
 		}
-		m, _ := info[mode]
+		m, _ := info[key]
 		m.last = t
 		m.count++
 		ioutil.WriteFile(f, []byte(m.String()), 0644)

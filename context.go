@@ -46,7 +46,7 @@ func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 			}
 			if ctx.auth {
 				for _, mod := range ctx.auths {
-					mod.Auth(packet)
+					mod.Auth(plugins.AuthRequest, packet)
 				}
 			}
 		}

@@ -32,19 +32,19 @@ func (l *logger) Setup(ctx *plugins.PluginContext) {
 }
 
 func (l *logger) Pre(packet *plugins.ClientPacket) bool {
-	write(plugins.PreAuthMode, packet)
+	write(plugins.PreAuthMode, plugins.NotAuth, packet)
 	return true
 }
 
-func (l *logger) Auth(packet *plugins.ClientPacket) {
-	write(plugins.AuthingMode, packet)
+func (l *logger) Auth(t plugins.AuthType, packet *plugins.ClientPacket) {
+	write(plugins.AuthingMode, t, packet)
 }
 
 func (l *logger) Account(packet *plugins.ClientPacket) {
-	write(plugins.AccountingMode, packet)
+	write(plugins.AccountingMode, plugins.NotAuth, packet)
 }
 
-func write(mode string, packet *plugins.ClientPacket) {
+func write(mode string, objType plugins.AuthType, packet *plugins.ClientPacket) {
 	go func() {
 		lock.Lock()
 		defer lock.Unlock()
@@ -55,7 +55,7 @@ func write(mode string, packet *plugins.ClientPacket) {
 		if f == nil {
 			return
 		}
-		f.Write([]byte(fmt.Sprintf("id -> %s (%s)\n", mode, t)))
+		f.Write([]byte(fmt.Sprintf("id -> %s %d (%s)\n", mode, int(objType), t)))
 		dump := plugins.NewRequestDump(packet, mode, t)
 		dump.DumpPacket(f)
 	}()

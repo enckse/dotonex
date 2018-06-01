@@ -22,6 +22,13 @@ const (
 	PreAuthMode    = "preauth"
 )
 
+type AuthType int
+
+const (
+	NotAuth     AuthType = iota
+	AuthRequest AuthType = iota
+)
+
 type ClientPacket struct {
 	ClientAddr *net.UDPAddr
 	Buffer     []byte
@@ -56,7 +63,7 @@ type PreAuth interface {
 
 type Authing interface {
 	Module
-	Auth(*ClientPacket)
+	Auth(AuthType, *ClientPacket)
 }
 
 type Accounting interface {
