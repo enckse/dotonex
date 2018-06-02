@@ -21,7 +21,7 @@ func (t *tracer) Reload() {
 }
 
 func (t *tracer) Name() string {
-	return "tracer"
+	return "debugger"
 }
 
 func (t *tracer) Setup(ctx *plugins.PluginContext) {

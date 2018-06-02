@@ -41,7 +41,7 @@ radiucal is a go proxy that receives UDP packets and routes them along (namely t
 
 the proxy:
 * provides a modularized/plugin approach to handle preauth, auth, and accounting actions
-* can support user+mac filtering, logging, trace output, and simple stat output via plugins
+* can support user+mac filtering, logging, debug output, and simple stat output via plugins
 * provides a cut-in for more plugins
 * overrides the concept of "radius_clients" as all will have to have a single shared secret
 

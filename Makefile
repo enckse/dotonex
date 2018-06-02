@@ -4,7 +4,7 @@ PLUGIN       := plugins/
 HARNESS      := $(TST)harness.go
 MAIN         := radiucal.go context.go
 SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/")
-PLUGINS      := log stats trace usermac
+PLUGINS      := log stats debug usermac
 VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
 VERSION      := $(shell git describe --long | sed "s/\([^-]*-g\)/r\1/;s/-/./g")
 FLAGS        := -ldflags '-s -w -X main.vers=$(VERSION)'
