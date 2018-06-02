@@ -18,15 +18,15 @@ import (
 
 const (
 	AccountingMode = "accounting"
-	AuthingMode    = "auth"
+	TracingMode    = "trace"
 	PreAuthMode    = "preauth"
 )
 
-type AuthType int
+type TraceType int
 
 const (
-	NotAuth     AuthType = iota
-	AuthRequest AuthType = iota
+	None         TraceType = iota
+	TraceRequest TraceType = iota
 )
 
 type ClientPacket struct {
@@ -61,9 +61,9 @@ type PreAuth interface {
 	Pre(*ClientPacket) bool
 }
 
-type Authing interface {
+type Tracing interface {
 	Module
-	Auth(AuthType, *ClientPacket)
+	Trace(TraceType, *ClientPacket)
 }
 
 type Accounting interface {
@@ -142,14 +142,14 @@ func Disabled(mode string, modes []string) bool {
 func DisabledModes(m Module, ctx *PluginContext) []string {
 	name := m.Name()
 	accounting := ctx.config.GetTrue(fmt.Sprintf("%s_disable_accounting", name))
-	authing := ctx.config.GetTrue(fmt.Sprintf("%s_disable_auth", name))
+	tracing := ctx.config.GetTrue(fmt.Sprintf("%s_disable_trace", name))
 	preauth := ctx.config.GetTrue(fmt.Sprintf("%s_disable_preauth", name))
 	var modes []string
 	if accounting {
 		modes = append(modes, AccountingMode)
 	}
-	if authing {
-		modes = append(modes, AuthingMode)
+	if tracing {
+		modes = append(modes, TracingMode)
 	}
 	if preauth {
 		modes = append(modes, PreAuthMode)
@@ -198,7 +198,7 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 		return t.(Accounting), nil
 	case PreAuth:
 		return t.(PreAuth), nil
-	case Authing:
-		return t.(Authing), nil
+	case Tracing:
+		return t.(Tracing), nil
 	}
 }

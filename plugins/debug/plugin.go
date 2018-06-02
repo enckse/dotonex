@@ -29,16 +29,16 @@ func (t *tracer) Setup(ctx *plugins.PluginContext) {
 }
 
 func (t *tracer) Pre(packet *plugins.ClientPacket) bool {
-	dump(plugins.PreAuthMode, plugins.NotAuth, packet)
+	dump(plugins.PreAuthMode, plugins.None, packet)
 	return true
 }
 
-func (t *tracer) Auth(objType plugins.AuthType, packet *plugins.ClientPacket) {
-	dump(plugins.AuthingMode, objType, packet)
+func (t *tracer) Trace(objType plugins.TraceType, packet *plugins.ClientPacket) {
+	dump(plugins.TracingMode, objType, packet)
 }
 
 func (t *tracer) Account(packet *plugins.ClientPacket) {
-	dump(plugins.AccountingMode, plugins.NotAuth, packet)
+	dump(plugins.AccountingMode, plugins.None, packet)
 }
 
 type logTrace struct {
@@ -54,14 +54,14 @@ func (t *logTrace) dump() {
 	log.Println(t.data.String())
 }
 
-func dump(mode string, objType plugins.AuthType, packet *plugins.ClientPacket) {
+func dump(mode string, objType plugins.TraceType, packet *plugins.ClientPacket) {
 	go func() {
 		if plugins.Disabled(mode, modes) {
 			return
 		}
 		tracer := &logTrace{}
 		dump := plugins.NewRequestDump(packet, mode, time.Now())
-		log.Println("authtype: ", objType)
+		log.Println("tracetype: ", objType)
 		dump.DumpPacket(tracer)
 		tracer.dump()
 	}()

@@ -17,19 +17,19 @@ type context struct {
 	secret   []byte
 	preauths []plugins.PreAuth
 	accts    []plugins.Accounting
-	auths    []plugins.Authing
+	traces   []plugins.Tracing
 	modules  []plugins.Module
 	noreject bool
 	// shortcuts
 	preauth bool
 	acct    bool
-	auth    bool
+	trace   bool
 	module  bool
 }
 
 func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 	valid := true
-	if ctx.preauth || ctx.auth {
+	if ctx.preauth || ctx.trace {
 		err := ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
@@ -44,9 +44,9 @@ func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 					goutils.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
 				}
 			}
-			if ctx.auth {
-				for _, mod := range ctx.auths {
-					mod.Auth(plugins.AuthRequest, packet)
+			if ctx.trace {
+				for _, mod := range ctx.traces {
+					mod.Trace(plugins.TraceRequest, packet)
 				}
 			}
 		}

@@ -10,11 +10,11 @@ import (
 
 type MockModule struct {
 	acct   int
-	auth   int
+	trace  int
 	pre    int
 	fail   bool
 	reload int
-	// AuthType
+	// TraceType
 	preAuth int
 }
 
@@ -34,10 +34,10 @@ func (m *MockModule) Pre(p *plugins.ClientPacket) bool {
 	return !m.fail
 }
 
-func (m *MockModule) Auth(t plugins.AuthType, p *plugins.ClientPacket) {
-	m.auth++
+func (m *MockModule) Trace(t plugins.TraceType, p *plugins.ClientPacket) {
+	m.trace++
 	switch t {
-	case plugins.AuthRequest:
+	case plugins.TraceRequest:
 		m.preAuth++
 		break
 	}
@@ -57,19 +57,19 @@ func TestAuthNoMods(t *testing.T) {
 func TestAuth(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
-	ctx.auths = append(ctx.auths, m)
-	ctx.auth = true
+	ctx.traces = append(ctx.traces, m)
+	ctx.trace = true
 	// invalid packet
 	if !ctx.authorize(plugins.NewClientPacket(nil, nil)) {
 		t.Error("didn't authorize")
 	}
-	if m.auth != 0 {
+	if m.trace != 0 {
 		t.Error("did auth")
 	}
 	if !ctx.authorize(p) {
 		t.Error("didn't authorize")
 	}
-	if m.auth != 1 {
+	if m.trace != 1 {
 		t.Error("didn't auth")
 	}
 	ctx.preauth = true
@@ -77,7 +77,7 @@ func TestAuth(t *testing.T) {
 	if !ctx.authorize(p) {
 		t.Error("didn't authorize")
 	}
-	if m.auth != 2 {
+	if m.trace != 2 {
 		t.Error("didn't auth again")
 	}
 	if m.pre != 1 {
@@ -87,17 +87,17 @@ func TestAuth(t *testing.T) {
 	if ctx.authorize(p) {
 		t.Error("did authorize")
 	}
-	if m.auth != 3 {
+	if m.trace != 3 {
 		t.Error("didn't auth again")
 	}
 	if m.pre != 2 {
 		t.Error("didn't preauth")
 	}
-	ctx.auth = false
+	ctx.trace = false
 	if ctx.authorize(p) {
 		t.Error("did authorize")
 	}
-	if m.auth != 3 {
+	if m.trace != 3 {
 		t.Error("didn't auth again")
 	}
 	if m.pre != 3 {

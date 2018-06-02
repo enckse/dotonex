@@ -211,9 +211,9 @@ func main() {
 			ctx.acct = true
 			ctx.accts = append(ctx.accts, i)
 		}
-		if i, ok := obj.(plugins.Authing); ok {
-			ctx.auth = true
-			ctx.auths = append(ctx.auths, i)
+		if i, ok := obj.(plugins.Tracing); ok {
+			ctx.trace = true
+			ctx.traces = append(ctx.traces, i)
 		}
 		if i, ok := obj.(plugins.PreAuth); ok {
 			ctx.preauth = true

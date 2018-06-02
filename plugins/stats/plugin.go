@@ -53,19 +53,19 @@ func (s *stats) Setup(ctx *plugins.PluginContext) {
 }
 
 func (s *stats) Pre(packet *plugins.ClientPacket) bool {
-	write(plugins.PreAuthMode, plugins.NotAuth)
+	write(plugins.PreAuthMode, plugins.None)
 	return true
 }
 
-func (s *stats) Auth(t plugins.AuthType, packet *plugins.ClientPacket) {
-	write(plugins.AuthingMode, t)
+func (s *stats) Trace(t plugins.TraceType, packet *plugins.ClientPacket) {
+	write(plugins.TracingMode, t)
 }
 
 func (s *stats) Account(packet *plugins.ClientPacket) {
-	write(plugins.AccountingMode, plugins.NotAuth)
+	write(plugins.AccountingMode, plugins.None)
 }
 
-func write(mode string, objType plugins.AuthType) {
+func write(mode string, objType plugins.TraceType) {
 	go func() {
 		lock.Lock()
 		defer lock.Unlock()
