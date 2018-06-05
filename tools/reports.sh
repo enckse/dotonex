@@ -118,9 +118,6 @@ for l in $(echo "$leases" | sed "s/ /,/g"); do
     unknowns="$unknowns $mac ($ip)"
     echo "| unknown $line" >> $LEASES
 done
-if [ ! -z "$unknowns" ]; then
-    echo "unknown leases: $unknowns" | smirc
-fi
 cat $LEASES_KNOWN | sort -u >> $LEASES
 
 _post
