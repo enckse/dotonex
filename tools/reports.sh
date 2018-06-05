@@ -110,6 +110,22 @@ for l in $(echo "$leases" | sed "s/ /,/g"); do
             continue
         fi
     fi
+    if [ ! -z "$LEASE_MACVLAN" ]; then
+        macvlan=$(echo $l | cut -d "," -f 5)
+        if [ ! -z "$macvlan" ]; then
+            matched=0
+            for m in $(echo "$LEASE_MACVLAN"); do
+                if echo $macvlan | grep -q "$m"; then
+                    echo "| macvlan $line" >> $LEASES_KNOWN
+                    matched=1
+                    break
+                fi
+            done
+            if [ $matched -eq 1 ]; then
+                continue
+            fi
+        fi
+    fi
     cat $AUDITS | grep -q "$mac"
     if [ $? -eq 0 ]; then
         echo "| dhcp $line" >> $LEASES_KNOWN
