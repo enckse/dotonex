@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"bufio"
@@ -13,19 +13,39 @@ import (
 	"layeh.com/radius"
 )
 
-type context struct {
-	debug    bool
-	secret   []byte
+type Context struct {
+	Debug    bool
+	Secret   []byte
 	preauths []plugins.PreAuth
 	accts    []plugins.Accounting
 	traces   []plugins.Tracing
 	modules  []plugins.Module
-	noreject bool
+	NoReject bool
 	// shortcuts
 	preauth bool
 	acct    bool
 	trace   bool
 	module  bool
+}
+
+func (ctx *Context) AddTrace(t plugins.Tracing) {
+	ctx.trace = true
+	ctx.traces = append(ctx.traces, t)
+}
+
+func (ctx *Context) AddPreAuth(p plugins.PreAuth) {
+	ctx.preauth = true
+	ctx.preauths = append(ctx.preauths, p)
+}
+
+func (ctx *Context) AddModule(m plugins.Module) {
+	ctx.module = true
+	ctx.modules = append(ctx.modules, m)
+}
+
+func (ctx *Context) AddAccounting(a plugins.Accounting) {
+	ctx.acct = true
+	ctx.accts = append(ctx.accts, a)
 }
 
 type writeBack func([]byte)
@@ -36,18 +56,18 @@ const (
 	preMode authingMode = 0
 )
 
-type packetAuthorize func(*context, []byte, *net.UDPAddr) (*plugins.ClientPacket, bool)
+type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*plugins.ClientPacket, bool)
 
-func preauthorize(ctx *context, b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, bool) {
+func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, bool) {
 	return ctx.doAuthing(b, addr, preMode)
 }
 
-func (ctx *context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*plugins.ClientPacket, bool) {
+func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*plugins.ClientPacket, bool) {
 	p := plugins.NewClientPacket(b, addr)
 	return p, ctx.authorize(p, mode)
 }
 
-func (ctx *context) authorize(packet *plugins.ClientPacket, mode authingMode) bool {
+func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) bool {
 	if packet == nil {
 		return true
 	}
@@ -86,9 +106,9 @@ func (ctx *context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 	return valid
 }
 
-func parseSecrets(secretFile string) string {
+func ParseSecrets(secretFile string) string {
 	s, err := parseSecretFile(secretFile)
-	if logError("unable to read secrets", err) {
+	if LogError("unable to read secrets", err) {
 		panic("unable to read secrets")
 	}
 	return s
@@ -117,7 +137,7 @@ func parseSecretFile(secretFile string) (string, error) {
 	return "", errors.New("no secret found")
 }
 
-func (ctx *context) reload() {
+func (ctx *Context) Reload() {
 	if ctx.module {
 		goutils.WriteInfo("reloading")
 		for _, m := range ctx.modules {
@@ -127,13 +147,13 @@ func (ctx *context) reload() {
 	}
 }
 
-func (ctx *context) packet(p *plugins.ClientPacket) {
-	packet, err := radius.Parse(p.Buffer, ctx.secret)
+func (ctx *Context) packet(p *plugins.ClientPacket) {
+	packet, err := radius.Parse(p.Buffer, ctx.Secret)
 	p.Error = err
 	p.Packet = packet
 }
 
-func (ctx *context) account(packet *plugins.ClientPacket) {
+func (ctx *Context) Account(packet *plugins.ClientPacket) {
 	ctx.packet(packet)
 	if packet.Error != nil {
 		// unable to parse, exit early
@@ -146,10 +166,10 @@ func (ctx *context) account(packet *plugins.ClientPacket) {
 	}
 }
 
-func handleAuth(fxn packetAuthorize, ctx *context, b []byte, addr *net.UDPAddr, write writeBack) bool {
+func HandleAuth(fxn packetAuthorize, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
 	packet, authed := fxn(ctx, b, addr)
 	if !authed {
-		if !ctx.noreject && write != nil {
+		if !ctx.NoReject && write != nil {
 			if packet.Error == nil {
 				p := packet.Packet
 				p = p.Response(radius.CodeAccessReject)
@@ -158,12 +178,12 @@ func handleAuth(fxn packetAuthorize, ctx *context, b []byte, addr *net.UDPAddr, 
 					goutils.WriteDebug("rejecting client")
 					write(rej)
 				} else {
-					if ctx.debug {
+					if ctx.Debug {
 						goutils.WriteError("unable to encode rejection", err)
 					}
 				}
 			} else {
-				if ctx.debug && packet.Error != nil {
+				if ctx.Debug && packet.Error != nil {
 					goutils.WriteError("unable to parse packets", packet.Error)
 				}
 			}

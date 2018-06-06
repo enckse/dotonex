@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 )
@@ -30,19 +31,11 @@ type connection struct {
 	server *net.UDPConn
 }
 
-func logError(message string, err error) bool {
-	if err == nil {
-		return false
-	}
-	goutils.WriteError(message, err)
-	return true
-}
-
 func newConnection(srv, cli *net.UDPAddr) *connection {
 	conn := new(connection)
 	conn.client = cli
 	serverUdp, err := net.DialUDP("udp", nil, srv)
-	if logError("dial udp", err) {
+	if core.LogError("dial udp", err) {
 		return nil
 	}
 	conn.server = serverUdp
@@ -71,27 +64,27 @@ func runConnection(conn *connection) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, err := conn.server.Read(buffer[0:])
-		if logError("unable to read", err) {
+		if core.LogError("unable to read", err) {
 			continue
 		}
 		_, err = proxy.WriteToUDP(buffer[0:n], conn.client)
-		logError("relaying", err)
+		core.LogError("relaying", err)
 	}
 }
 
-func runProxy(ctx *context) {
-	if ctx.debug {
+func runProxy(ctx *core.Context) {
+	if ctx.Debug {
 		goutils.WriteInfo("=============WARNING==================")
 		goutils.WriteInfo("debugging is enabled!")
 		goutils.WriteInfo("dumps from debugging may contain secrets")
 		goutils.WriteInfo("do NOT share debugging dumps")
 		goutils.WriteInfo("=============WARNING==================")
-		goutils.WriteDebug("secret", string(ctx.secret))
+		goutils.WriteDebug("secret", string(ctx.Secret))
 	}
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
-		if logError("read from udp", err) {
+		if core.LogError("read from udp", err) {
 			continue
 		}
 		addr := cliaddr.String()
@@ -110,7 +103,7 @@ func runProxy(ctx *context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		preauthed := handleAuth(preauthorize, ctx, buffered, cliaddr, func(b []byte) {
+		preauthed := core.HandleAuth(core.PreAuthorize, ctx, buffered, cliaddr, func(b []byte) {
 			proxy.WriteToUDP(b, conn.client)
 		})
 		if !preauthed {
@@ -118,18 +111,18 @@ func runProxy(ctx *context) {
 			continue
 		}
 		_, err = conn.server.Write(buffer[0:n])
-		logError("server write", err)
+		core.LogError("server write", err)
 	}
 }
 
-func account(ctx *context) {
+func account(ctx *core.Context) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
-		if logError("accounting udp error", err) {
+		if core.LogError("accounting udp error", err) {
 			continue
 		}
-		ctx.account(plugins.NewClientPacket(buffer[0:n], cliaddr))
+		ctx.Account(plugins.NewClientPacket(buffer[0:n], cliaddr))
 	}
 }
 
@@ -170,14 +163,14 @@ func main() {
 	}
 	addr := fmt.Sprintf("%s:%d", host, to)
 	err = setup(addr, bind)
-	if logError("proxy setup", err) {
+	if core.LogError("proxy setup", err) {
 		panic("unable to proceed")
 	}
 
 	lib := conf.GetStringOrDefault("dir", "/var/lib/radiucal/")
 	secrets := filepath.Join(lib, "secrets")
-	secret := parseSecrets(secrets)
-	ctx := &context{debug: debug, secret: []byte(secret), noreject: conf.GetTrue("noreject")}
+	secret := core.ParseSecrets(secrets)
+	ctx := &core.Context{Debug: debug, Secret: []byte(secret), NoReject: conf.GetTrue("noreject")}
 	mods := conf.GetArrayOrEmpty("plugins")
 	pCtx := plugins.NewPluginContext(conf)
 	pCtx.Logs = filepath.Join(lib, "log")
@@ -193,19 +186,15 @@ func main() {
 			panic("unable to load plugin")
 		}
 		if i, ok := obj.(plugins.Accounting); ok {
-			ctx.acct = true
-			ctx.accts = append(ctx.accts, i)
+			ctx.AddAccounting(i)
 		}
 		if i, ok := obj.(plugins.Tracing); ok {
-			ctx.trace = true
-			ctx.traces = append(ctx.traces, i)
+			ctx.AddTrace(i)
 		}
 		if i, ok := obj.(plugins.PreAuth); ok {
-			ctx.preauth = true
-			ctx.preauths = append(ctx.preauths, i)
+			ctx.AddPreAuth(i)
 		}
-		ctx.modules = append(ctx.modules, obj)
-		ctx.module = true
+		ctx.AddModule(obj)
 	}
 
 	c := make(chan os.Signal, 1)
@@ -215,7 +204,7 @@ func main() {
 			clientLock.Lock()
 			clients = make(map[string]*connection)
 			clientLock.Unlock()
-			ctx.reload()
+			ctx.Reload()
 		}
 	}()
 

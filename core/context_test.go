@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"testing"
@@ -48,7 +48,7 @@ func (m *MockModule) Account(p *plugins.ClientPacket) {
 }
 
 func TestPreAuthNoMods(t *testing.T) {
-	ctx := &context{}
+	ctx := &Context{}
 	if !ctx.authorize(nil, preMode) {
 		t.Error("should have passed, nothing to do")
 	}
@@ -57,8 +57,7 @@ func TestPreAuthNoMods(t *testing.T) {
 func TestPreAuth(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
-	ctx.traces = append(ctx.traces, m)
-	ctx.trace = true
+	ctx.AddTrace(m)
 	// invalid packet
 	if !ctx.authorize(plugins.NewClientPacket(nil, nil), preMode) {
 		t.Error("didn't authorize")
@@ -72,8 +71,7 @@ func TestPreAuth(t *testing.T) {
 	if m.trace != 1 {
 		t.Error("didn't auth")
 	}
-	ctx.preauth = true
-	ctx.preauths = append(ctx.preauths, m)
+	ctx.AddPreAuth(m)
 	if !ctx.authorize(p, preMode) {
 		t.Error("didn't authorize")
 	}
@@ -108,10 +106,10 @@ func TestPreAuth(t *testing.T) {
 	}
 }
 
-func getPacket(t *testing.T) (*context, *plugins.ClientPacket) {
-	c := &context{}
-	c.secret = []byte("secret")
-	p := radius.New(radius.CodeAccessRequest, c.secret)
+func getPacket(t *testing.T) (*Context, *plugins.ClientPacket) {
+	c := &Context{}
+	c.Secret = []byte("secret")
+	p := radius.New(radius.CodeAccessRequest, c.Secret)
 	if err := rfc2865.UserName_AddString(p, "user"); err != nil {
 		t.Error("unable to add user name")
 	}
@@ -126,7 +124,7 @@ func getPacket(t *testing.T) (*context, *plugins.ClientPacket) {
 }
 
 func TestSecretParsing(t *testing.T) {
-	dir := "./tests/"
+	dir := "../tests/"
 	_, err := parseSecretFile(dir + "nofile")
 	if err.Error() != "no secrets file" {
 		t.Error("file does not exist")
@@ -156,35 +154,33 @@ func TestSecretParsing(t *testing.T) {
 func TestReload(t *testing.T) {
 	ctx, _ := getPacket(t)
 	m := &MockModule{}
-	ctx.reload()
-	ctx.modules = append(ctx.modules, m)
-	ctx.modules = append(ctx.modules, m)
-	ctx.module = true
-	ctx.reload()
+	ctx.Reload()
+	ctx.AddModule(m)
+	ctx.AddModule(m)
+	ctx.Reload()
 	if m.reload != 2 {
 		t.Error("should have reloaded each module once")
 	}
 }
 
 func TestAcctNoMods(t *testing.T) {
-	ctx := &context{}
-	ctx.account(plugins.NewClientPacket(nil, nil))
+	ctx := &Context{}
+	ctx.Account(plugins.NewClientPacket(nil, nil))
 }
 
 func TestAcct(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
-	ctx.account(plugins.NewClientPacket(nil, nil))
+	ctx.Account(plugins.NewClientPacket(nil, nil))
 	if m.acct != 0 {
 		t.Error("didn't account")
 	}
-	ctx.acct = true
-	ctx.accts = append(ctx.accts, m)
-	ctx.account(p)
+	ctx.AddAccounting(m)
+	ctx.Account(p)
 	if m.acct != 1 {
 		t.Error("didn't account")
 	}
-	ctx.account(p)
+	ctx.Account(p)
 	if m.acct != 2 {
 		t.Error("didn't account")
 	}

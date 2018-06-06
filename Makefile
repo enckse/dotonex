@@ -2,7 +2,7 @@ BIN          := bin/
 TST          := tests/
 PLUGIN       := plugins/
 HARNESS      := $(TST)harness.go
-MAIN         := radiucal.go context.go
+MAIN         := radiucal.go 
 SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/")
 PLUGINS      := log stats debug usermac
 VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
@@ -13,7 +13,7 @@ GO_TESTS     := go test -v
 PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 TEST_CONFS   := normal norjct
 
-.PHONY: tools plugins
+.PHONY: tools plugins core
 
 all: clean plugins radiucal scripts integrate tools format
 
@@ -36,7 +36,10 @@ $(TEST_CONFS):
 	rm -f $(TST)log/*
 	./tests/run.sh $@
 
-radiucal:
+core:
+	cd core && $(GO_TESTS)
+
+radiucal: core
 	$(GO_TESTS)
 	go build -o $(BIN)radiucal $(FLAGS) $(MAIN)
 
@@ -48,8 +51,9 @@ clean:
 	rm -rf $(BIN)
 	mkdir -p $(BIN)
 	mkdir -p $(VENDOR_LOCAL)
-	rm -f $(VENDOR_LOCAL)/plugins
+	rm -f $(VENDOR_LOCAL)/{plugins,core}
 	ln -s $(PWD)/$(PLUGIN) $(VENDOR_LOCAL)/plugins
+	ln -s $(PWD)/core $(VENDOR_LOCAL)/core
 
 tools:
 	pycodestyle $(PY)
