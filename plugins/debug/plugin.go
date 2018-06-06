@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"time"
@@ -59,10 +60,14 @@ func dump(mode string, objType plugins.TraceType, packet *plugins.ClientPacket) 
 		if plugins.Disabled(mode, modes) {
 			return
 		}
-		tracer := &logTrace{}
-		dump := plugins.NewRequestDump(packet, mode, time.Now())
-		log.Println("tracetype: ", objType)
-		dump.DumpPacket(tracer)
-		tracer.dump()
+		t := &logTrace{}
+		write(t, mode, objType, packet, time.Now())
+		t.dump()
 	}()
+}
+
+func write(tracing io.Writer, mode string, objType plugins.TraceType, packet *plugins.ClientPacket, t time.Time) {
+	dump := plugins.NewRequestDump(packet, mode, t)
+	tracing.Write([]byte(fmt.Sprintf("tracetype: %d\n", objType)))
+	dump.DumpPacket(tracing)
 }
