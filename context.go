@@ -28,6 +28,8 @@ type context struct {
 	module  bool
 }
 
+type writeBack func([]byte)
+
 type authingMode int
 
 const (
@@ -142,4 +144,29 @@ func (ctx *context) account(packet *plugins.ClientPacket) {
 			mod.Account(packet)
 		}
 	}
+}
+
+func handleAuth(fxn packetAuthorize, ctx *context, b []byte, addr *net.UDPAddr, write writeBack) bool {
+	packet, authed := fxn(ctx, b, addr)
+	if !authed {
+		if !ctx.noreject && write != nil {
+			if packet.Error == nil {
+				p := packet.Packet
+				p = p.Response(radius.CodeAccessReject)
+				rej, err := p.Encode()
+				if err == nil {
+					write(rej)
+				} else {
+					if ctx.debug {
+						goutils.WriteError("unable to encode rejection", err)
+					}
+				}
+			} else {
+				if ctx.debug && packet.Error != nil {
+					goutils.WriteError("unable to parse packets", packet.Error)
+				}
+			}
+		}
+	}
+	return authed
 }

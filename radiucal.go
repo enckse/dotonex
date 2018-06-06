@@ -25,8 +25,6 @@ var (
 	clientLock    *sync.Mutex            = new(sync.Mutex)
 )
 
-type writeBack func([]byte)
-
 type connection struct {
 	client *net.UDPAddr
 	server *net.UDPConn
@@ -121,31 +119,6 @@ func runProxy(ctx *context) {
 		_, err = conn.server.Write(buffer[0:n])
 		logError("server write", err)
 	}
-}
-
-func handleAuth(fxn packetAuthorize, ctx *context, b []byte, addr *net.UDPAddr, write writeBack) bool {
-	packet, authed := fxn(ctx, b, addr)
-	if !authed {
-		if !ctx.noreject && write != nil {
-			if packet.Error == nil {
-				p := packet.Packet
-				p = p.Response(radius.CodeAccessReject)
-				rej, err := p.Encode()
-				if err == nil {
-					write(rej)
-				} else {
-					if ctx.debug {
-						goutils.WriteError("unable to encode rejection", err)
-					}
-				}
-			} else {
-				if ctx.debug && packet.Error != nil {
-					goutils.WriteError("unable to parse packets", packet.Error)
-				}
-			}
-		}
-	}
-	return authed
 }
 
 func account(ctx *context) {
