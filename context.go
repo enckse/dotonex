@@ -34,7 +34,9 @@ const (
 	preMode authingMode = 0
 )
 
-func (ctx *context) preauthorize(b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, bool) {
+type packetAuthorize func(*context, []byte, *net.UDPAddr) (*plugins.ClientPacket, bool)
+
+func preauthorize(ctx *context, b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, bool) {
 	return ctx.doAuthing(b, addr, preMode)
 }
 
