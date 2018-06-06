@@ -6,8 +6,12 @@ _run() {
     bin/radiucal --config tests/test.$CONF.conf > $OUT 2>&1
 }
 
+_acct() {
+    bin/radiucal --instance acct --config tests/test.acct.conf > $OUT.acct 2>&1
+}
+
 _run &
-bin/radiucal --instance acct --config tests/test.acct.conf &
+_acct &
 sleep 1
 echo "starting harness..."
 bin/harness --endpoint=true &
