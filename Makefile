@@ -11,6 +11,7 @@ FLAGS        := -ldflags '-s -w -X main.vers=$(VERSION)' -buildmode=pie
 PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
 GO_TESTS     := go test -v
 PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
+TEST_CONFS   := normal norjct
 
 .PHONY: tools plugins
 
@@ -23,13 +24,17 @@ $(PLUGINS):
 	go build $(PLUGIN_FLAGS) -o $(BIN)$@.rd $(PLUGIN)$@/plugin.go
 	cd $(PLUGIN)$@ && $(GO_TESTS)
 
-integrate:
+integrate: harness $(TEST_CONFS)
+
+harness:
 	mkdir -p $(TST)plugins/
-	mkdir -p $(TST)log/
-	rm -f $(TST)log/*
 	cp $(BIN)*.rd $(TST)plugins/
 	go build -o $(BIN)harness $(HARNESS)
-	./tests/run.sh
+
+$(TEST_CONFS):
+	mkdir -p $(TST)log/
+	rm -f $(TST)log/*
+	./tests/run.sh $@
 
 radiucal:
 	$(GO_TESTS)
