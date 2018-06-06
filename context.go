@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 
@@ -27,15 +28,42 @@ type context struct {
 	module  bool
 }
 
-func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
+type authingMode int
+
+const (
+	preMode authingMode = 0
+)
+
+func (ctx *context) preauthorize(b []byte, addr *net.UDPAddr) bool {
+	return ctx.doAuthing(b, addr, preMode)
+}
+
+func (ctx *context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) bool {
+	p := plugins.NewClientPacket(b, addr)
+	return ctx.authorize(p, mode)
+}
+
+func (ctx *context) authorize(packet *plugins.ClientPacket, mode authingMode) bool {
+	if packet == nil {
+		return true
+	}
 	valid := true
-	if ctx.preauth || ctx.trace {
+	traceMode := plugins.None
+	preauthing := false
+	switch mode {
+	case preMode:
+		preauthing = true
+		traceMode = plugins.TraceRequest
+		break
+	}
+	tracing := ctx.trace && traceMode != plugins.None
+	if preauthing || tracing {
 		err := ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
 		// we let that go
 		if err == nil {
-			if ctx.preauth {
+			if preauthing {
 				for _, mod := range ctx.preauths {
 					if mod.Pre(packet) {
 						continue
@@ -44,9 +72,9 @@ func (ctx *context) authorize(packet *plugins.ClientPacket) bool {
 					goutils.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
 				}
 			}
-			if ctx.trace {
+			if tracing {
 				for _, mod := range ctx.traces {
-					mod.Trace(plugins.TraceRequest, packet)
+					mod.Trace(traceMode, packet)
 				}
 			}
 		}

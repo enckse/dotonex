@@ -47,26 +47,26 @@ func (m *MockModule) Account(p *plugins.ClientPacket) {
 	m.acct++
 }
 
-func TestAuthNoMods(t *testing.T) {
+func TestPreAuthNoMods(t *testing.T) {
 	ctx := &context{}
-	if !ctx.authorize(nil) {
+	if !ctx.authorize(nil, preMode) {
 		t.Error("should have passed, nothing to do")
 	}
 }
 
-func TestAuth(t *testing.T) {
+func TestPreAuth(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
 	ctx.traces = append(ctx.traces, m)
 	ctx.trace = true
 	// invalid packet
-	if !ctx.authorize(plugins.NewClientPacket(nil, nil)) {
+	if !ctx.authorize(plugins.NewClientPacket(nil, nil), preMode) {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 0 {
 		t.Error("did auth")
 	}
-	if !ctx.authorize(p) {
+	if !ctx.authorize(p, preMode) {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 1 {
@@ -74,7 +74,7 @@ func TestAuth(t *testing.T) {
 	}
 	ctx.preauth = true
 	ctx.preauths = append(ctx.preauths, m)
-	if !ctx.authorize(p) {
+	if !ctx.authorize(p, preMode) {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 2 {
@@ -84,7 +84,7 @@ func TestAuth(t *testing.T) {
 		t.Error("didn't preauth")
 	}
 	m.fail = true
-	if ctx.authorize(p) {
+	if ctx.authorize(p, preMode) {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
@@ -94,7 +94,7 @@ func TestAuth(t *testing.T) {
 		t.Error("didn't preauth")
 	}
 	ctx.trace = false
-	if ctx.authorize(p) {
+	if ctx.authorize(p, preMode) {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {

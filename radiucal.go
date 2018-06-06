@@ -110,8 +110,7 @@ func runProxy(ctx *context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		packetized := plugins.NewClientPacket(buffered, cliaddr)
-		if !ctx.authorize(packetized) {
+		if !ctx.preauthorize(buffered, cliaddr) {
 			if !ctx.noreject {
 				p, err := radius.Parse(buffered, []byte(ctx.secret))
 				if err == nil {
