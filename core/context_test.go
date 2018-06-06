@@ -108,8 +108,8 @@ func TestPreAuth(t *testing.T) {
 
 func getPacket(t *testing.T) (*Context, *plugins.ClientPacket) {
 	c := &Context{}
-	c.Secret = []byte("secret")
-	p := radius.New(radius.CodeAccessRequest, c.Secret)
+	c.secret = []byte("secret")
+	p := radius.New(radius.CodeAccessRequest, c.secret)
 	if err := rfc2865.UserName_AddString(p, "user"); err != nil {
 		t.Error("unable to add user name")
 	}

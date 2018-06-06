@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/epiphyte/goutils"
@@ -15,12 +16,12 @@ import (
 
 type Context struct {
 	Debug    bool
-	Secret   []byte
+	secret   []byte
 	preauths []plugins.PreAuth
 	accts    []plugins.Accounting
 	traces   []plugins.Tracing
 	modules  []plugins.Module
-	NoReject bool
+	noReject bool
 	// shortcuts
 	preauth bool
 	acct    bool
@@ -106,12 +107,18 @@ func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 	return valid
 }
 
-func ParseSecrets(secretFile string) string {
+func (ctx *Context) FromConfig(libPath string, c *goutils.Config) {
+	ctx.noReject = c.GetTrue("noreject")
+	secrets := filepath.Join(libPath, "secrets")
+	ctx.parseSecrets(secrets)
+}
+
+func (ctx *Context) parseSecrets(secretFile string) {
 	s, err := parseSecretFile(secretFile)
 	if LogError("unable to read secrets", err) {
 		panic("unable to read secrets")
 	}
-	return s
+	ctx.secret = []byte(s)
 }
 
 func parseSecretFile(secretFile string) (string, error) {
@@ -137,6 +144,12 @@ func parseSecretFile(secretFile string) (string, error) {
 	return "", errors.New("no secret found")
 }
 
+func (ctx *Context) DebugDump() {
+	if ctx.Debug {
+		goutils.WriteDebug("secret", string(ctx.secret))
+	}
+}
+
 func (ctx *Context) Reload() {
 	if ctx.module {
 		goutils.WriteInfo("reloading")
@@ -148,7 +161,7 @@ func (ctx *Context) Reload() {
 }
 
 func (ctx *Context) packet(p *plugins.ClientPacket) {
-	packet, err := radius.Parse(p.Buffer, ctx.Secret)
+	packet, err := radius.Parse(p.Buffer, ctx.secret)
 	p.Error = err
 	p.Packet = packet
 }
@@ -169,7 +182,7 @@ func (ctx *Context) Account(packet *plugins.ClientPacket) {
 func HandleAuth(fxn packetAuthorize, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
 	packet, authed := fxn(ctx, b, addr)
 	if !authed {
-		if !ctx.NoReject && write != nil {
+		if !ctx.noReject && write != nil {
 			if packet.Error == nil {
 				p := packet.Packet
 				p = p.Response(radius.CodeAccessReject)
