@@ -1,5 +1,10 @@
 #!/bin/bash
-bin/radiucal --config tests/test.conf &
+OUT=bin/stdout
+_run() {
+    bin/radiucal --config tests/test.conf > $OUT 2>&1
+}
+
+_run &
 bin/radiucal --instance acct --config tests/test.acct.conf &
 sleep 1
 bin/harness --endpoint=true &
@@ -33,3 +38,13 @@ else
     echo "invalid count"
     exit 1
 fi
+_checks() {
+    cnt=$(cat $OUT | grep "$1" | wc -l)
+    if [ $cnt -ne 2 ]; then
+        echo "invalid stdout log: $1 ($cnt)"
+        exit 1
+    fi
+}
+_checks "rejecting client"
+_checks "client failed preauth"
+echo "stdout checks passed"

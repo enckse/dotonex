@@ -155,6 +155,7 @@ func handleAuth(fxn packetAuthorize, ctx *context, b []byte, addr *net.UDPAddr, 
 				p = p.Response(radius.CodeAccessReject)
 				rej, err := p.Encode()
 				if err == nil {
+					goutils.WriteDebug("rejecting client")
 					write(rej)
 				} else {
 					if ctx.debug {

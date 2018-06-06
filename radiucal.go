@@ -114,6 +114,7 @@ func runProxy(ctx *context) {
 			proxy.WriteToUDP(b, conn.client)
 		})
 		if !preauthed {
+			goutils.WriteDebug("client failed preauth")
 			continue
 		}
 		_, err = conn.server.Write(buffer[0:n])
