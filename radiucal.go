@@ -110,10 +110,11 @@ func runProxy(ctx *context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		if !ctx.preauthorize(buffered, cliaddr) {
+		packet, preauthed := ctx.preauthorize(buffered, cliaddr)
+		if !preauthed {
 			if !ctx.noreject {
-				p, err := radius.Parse(buffered, ctx.secret)
-				if err == nil {
+				if packet.Error == nil {
+					p := packet.Packet
 					p = p.Response(radius.CodeAccessReject)
 					rej, err := p.Encode()
 					if err == nil {
@@ -124,8 +125,8 @@ func runProxy(ctx *context) {
 						}
 					}
 				} else {
-					if ctx.debug {
-						goutils.WriteError("unable to parse packets", err)
+					if ctx.debug && packet.Error != nil {
+						goutils.WriteError("unable to parse packets", packet.Error)
 					}
 				}
 			}

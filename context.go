@@ -34,13 +34,13 @@ const (
 	preMode authingMode = 0
 )
 
-func (ctx *context) preauthorize(b []byte, addr *net.UDPAddr) bool {
+func (ctx *context) preauthorize(b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, bool) {
 	return ctx.doAuthing(b, addr, preMode)
 }
 
-func (ctx *context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) bool {
+func (ctx *context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*plugins.ClientPacket, bool) {
 	p := plugins.NewClientPacket(b, addr)
-	return ctx.authorize(p, mode)
+	return p, ctx.authorize(p, mode)
 }
 
 func (ctx *context) authorize(packet *plugins.ClientPacket, mode authingMode) bool {
@@ -58,11 +58,11 @@ func (ctx *context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 	}
 	tracing := ctx.trace && traceMode != plugins.NoTrace
 	if preauthing || tracing {
-		err := ctx.packet(packet)
+		ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
 		// we let that go
-		if err == nil {
+		if packet.Error == nil {
 			if preauthing {
 				for _, mod := range ctx.preauths {
 					if mod.Pre(packet) {
@@ -123,18 +123,15 @@ func (ctx *context) reload() {
 	}
 }
 
-func (ctx *context) packet(p *plugins.ClientPacket) error {
+func (ctx *context) packet(p *plugins.ClientPacket) {
 	packet, err := radius.Parse(p.Buffer, ctx.secret)
-	if err != nil {
-		return err
-	}
+	p.Error = err
 	p.Packet = packet
-	return nil
 }
 
 func (ctx *context) account(packet *plugins.ClientPacket) {
-	e := ctx.packet(packet)
-	if e != nil {
+	ctx.packet(packet)
+	if packet.Error != nil {
 		// unable to parse, exit early
 		return
 	}

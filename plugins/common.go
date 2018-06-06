@@ -33,6 +33,7 @@ type ClientPacket struct {
 	ClientAddr *net.UDPAddr
 	Buffer     []byte
 	Packet     *radius.Packet
+	Error      error
 }
 
 type PluginContext struct {
