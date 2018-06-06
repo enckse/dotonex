@@ -124,7 +124,7 @@ func (ctx *context) reload() {
 }
 
 func (ctx *context) packet(p *plugins.ClientPacket) error {
-	packet, err := radius.Parse(p.Buffer, []byte(ctx.secret))
+	packet, err := radius.Parse(p.Buffer, ctx.secret)
 	if err != nil {
 		return err
 	}

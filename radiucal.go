@@ -112,7 +112,7 @@ func runProxy(ctx *context) {
 		buffered := []byte(buffer[0:n])
 		if !ctx.preauthorize(buffered, cliaddr) {
 			if !ctx.noreject {
-				p, err := radius.Parse(buffered, []byte(ctx.secret))
+				p, err := radius.Parse(buffered, ctx.secret)
 				if err == nil {
 					p = p.Response(radius.CodeAccessReject)
 					rej, err := p.Encode()
