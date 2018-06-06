@@ -53,7 +53,7 @@ func (s *stats) Setup(ctx *plugins.PluginContext) {
 }
 
 func (s *stats) Pre(packet *plugins.ClientPacket) bool {
-	write(plugins.PreAuthMode, plugins.None)
+	write(plugins.PreAuthMode, plugins.NoTrace)
 	return true
 }
 
@@ -62,7 +62,7 @@ func (s *stats) Trace(t plugins.TraceType, packet *plugins.ClientPacket) {
 }
 
 func (s *stats) Account(packet *plugins.ClientPacket) {
-	write(plugins.AccountingMode, plugins.None)
+	write(plugins.AccountingMode, plugins.NoTrace)
 }
 
 func write(mode string, objType plugins.TraceType) {

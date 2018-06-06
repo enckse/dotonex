@@ -25,7 +25,7 @@ const (
 type TraceType int
 
 const (
-	None         TraceType = iota
+	NoTrace      TraceType = iota
 	TraceRequest TraceType = iota
 )
 

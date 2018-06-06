@@ -48,7 +48,7 @@ func (ctx *context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 		return true
 	}
 	valid := true
-	traceMode := plugins.None
+	traceMode := plugins.NoTrace
 	preauthing := false
 	switch mode {
 	case preMode:
@@ -56,7 +56,7 @@ func (ctx *context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 		traceMode = plugins.TraceRequest
 		break
 	}
-	tracing := ctx.trace && traceMode != plugins.None
+	tracing := ctx.trace && traceMode != plugins.NoTrace
 	if preauthing || tracing {
 		err := ctx.packet(packet)
 		// we may not be able to always read a packet during conversation

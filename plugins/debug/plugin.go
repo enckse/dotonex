@@ -29,7 +29,7 @@ func (t *tracer) Setup(ctx *plugins.PluginContext) {
 }
 
 func (t *tracer) Pre(packet *plugins.ClientPacket) bool {
-	dump(plugins.PreAuthMode, plugins.None, packet)
+	dump(plugins.PreAuthMode, plugins.NoTrace, packet)
 	return true
 }
 
@@ -38,7 +38,7 @@ func (t *tracer) Trace(objType plugins.TraceType, packet *plugins.ClientPacket) 
 }
 
 func (t *tracer) Account(packet *plugins.ClientPacket) {
-	dump(plugins.AccountingMode, plugins.None, packet)
+	dump(plugins.AccountingMode, plugins.NoTrace, packet)
 }
 
 type logTrace struct {
