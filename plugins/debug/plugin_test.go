@@ -1,11 +1,11 @@
 package main
 
 import (
+	"log"
 	"net"
+	"strings"
 	"testing"
 	"time"
-	"log"
-	"strings"
 
 	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
@@ -40,11 +40,11 @@ func testDebug(t *testing.T, hostAddr string) {
 	expect.Write([]byte("tracetype: 1\n"))
 	expect.Write([]byte("Mode = testmode (2009-11-10 23:00:00 +0000 UTC)\n"))
 	if len(hostAddr) > 0 {
-		expect.Write([]byte("UDPAddr = "+hostAddr+"\n"))
+		expect.Write([]byte("UDPAddr = " + hostAddr + "\n"))
 	}
 	expect.Write([]byte(`Access-Request Id 100
   User-Name = "test"`))
-    expected := strings.TrimSpace(expect.data.String())
+	expected := strings.TrimSpace(expect.data.String())
 	actual := strings.TrimSpace(b.data.String())
 	if actual != expected {
 		log.Println(actual)
