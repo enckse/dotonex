@@ -2,6 +2,7 @@ package core
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"net"
@@ -160,10 +161,33 @@ func (ctx *Context) Reload() {
 	}
 }
 
+func (ctx *Context) checkSecret(p *radius.Packet) error {
+	valid := true
+	var inSecret []byte
+	if p == nil {
+		valid = false
+	} else {
+		inSecret = p.Secret
+	}
+	if valid && inSecret == nil {
+		valid = false
+	}
+	if valid && bytes.Compare(ctx.secret, inSecret) != 0 {
+		valid = false
+	}
+	if valid {
+		return nil
+	}
+	return errors.New("invalid secret")
+}
+
 func (ctx *Context) packet(p *plugins.ClientPacket) {
 	packet, err := radius.Parse(p.Buffer, ctx.secret)
 	p.Error = err
 	p.Packet = packet
+	if err != nil {
+		p.Error = ctx.checkSecret(packet)
+	}
 }
 
 func (ctx *Context) Account(packet *plugins.ClientPacket) {
