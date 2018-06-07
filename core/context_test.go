@@ -61,6 +61,10 @@ func TestSecrets(t *testing.T) {
 	if ctx.authorize(p, preMode) {
 		t.Error("different secrets")
 	}
+	ctx, p = getPacket(t)
+	if !ctx.authorize(p, preMode) {
+		t.Error("same secrets")
+	}
 }
 
 func TestPreAuth(t *testing.T) {
