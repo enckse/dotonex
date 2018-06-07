@@ -12,8 +12,10 @@ PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
 GO_TESTS     := go test -v
 PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 TEST_CONFS   := normal norjct
+DIRS         := plugins server core tools
+COMPONENTS   := server core
 
-.PHONY: tools plugins server
+.PHONY: $(DIRS)
 
 vendored = ln -s $(PWD)/$1 $(VENDOR_LOCAL)/$1
 
@@ -38,10 +40,12 @@ $(TEST_CONFS):
 	rm -f $(TST)log/*
 	./tests/run.sh $@
 
-server:
-	cd server && $(GO_TESTS)
+components: $(COMPONENTS)
 
-radiucal: server
+$(COMPONENTS):
+	cd $@ && $(GO_TESTS)
+
+radiucal: components
 	$(GO_TESTS)
 	go build -o $(BIN)radiucal $(FLAGS) $(MAIN)
 
