@@ -22,6 +22,7 @@ type Context struct {
 	accts    []plugins.Accounting
 	traces   []plugins.Tracing
 	modules  []plugins.Module
+	secrets  map[string][]byte
 	noReject bool
 	// shortcuts
 	preauth bool
@@ -92,7 +93,7 @@ func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 		// we let that go
 		if packet.Error == nil {
 			if receiving {
-				err := ctx.checkSecret(packet.Packet)
+				err := ctx.checkSecret(packet)
 				if err != nil {
 					goutils.WriteError("invalid radius secret", err)
 					valid = false
@@ -170,19 +171,46 @@ func (ctx *Context) Reload() {
 	}
 }
 
-func (ctx *Context) checkSecret(p *radius.Packet) error {
+func (ctx *Context) checkSecret(p *plugins.ClientPacket) error {
 	valid := true
 	var inSecret []byte
-	if p == nil {
+	if p == nil || p.Packet == nil {
 		valid = false
 	} else {
-		inSecret = p.Secret
+		inSecret = p.Packet.Secret
 	}
 	if valid && inSecret == nil {
 		valid = false
 	}
-	if valid && !bytes.Equal(ctx.secret, inSecret) {
-		valid = false
+	if valid {
+		if len(ctx.secrets) > 0 {
+			if p.ClientAddr == nil {
+				valid = false
+			} else {
+				ip := p.ClientAddr.String()
+				h, _, err := net.SplitHostPort(ip)
+				if err == nil {
+					ip = h
+					good := false
+					goutils.WriteInfo(ip)
+					for k, v := range ctx.secrets {
+						if strings.HasPrefix(ip, k) {
+							if bytes.Equal(v, inSecret) {
+								good = true
+								break
+							}
+						}
+					}
+					valid = good
+				} else {
+					valid = false
+				}
+			}
+		} else {
+			if !bytes.Equal(ctx.secret, inSecret) {
+				valid = false
+			}
+		}
 	}
 	if valid {
 		return nil

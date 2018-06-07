@@ -1,6 +1,7 @@
 package core
 
 import (
+	"net"
 	"testing"
 
 	"github.com/epiphyte/radiucal/plugins"
@@ -64,6 +65,25 @@ func TestSecrets(t *testing.T) {
 	ctx, p = getPacket(t)
 	if !ctx.authorize(p, preMode) {
 		t.Error("same secrets")
+	}
+	ctx.secrets = make(map[string][]byte)
+	ctx.secrets["10."] = []byte("invalid")
+	ctx.secrets["10.100."] = p.Packet.Secret
+	ctx.secrets["10.10.1."] = []byte("invalid")
+	if ctx.authorize(p, preMode) {
+		t.Error("no addr but secrets")
+	}
+	addr, err := net.ResolveUDPAddr("udp", "10.10.1.100:1234")
+	if err != nil {
+		t.Error("invalid udp test addr")
+	}
+	p.ClientAddr = addr
+	if ctx.authorize(p, preMode) {
+		t.Error("no matching secrets")
+	}
+	ctx.secrets["10.10.1.10"] = p.Packet.Secret
+	if !ctx.authorize(p, preMode) {
+		t.Error("matching secrets")
 	}
 }
 
