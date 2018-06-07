@@ -181,7 +181,7 @@ func (ctx *Context) checkSecret(p *radius.Packet) error {
 	if valid && inSecret == nil {
 		valid = false
 	}
-	if valid && bytes.Compare(ctx.secret, inSecret) != 0 {
+	if valid && !bytes.Equal(ctx.secret, inSecret) {
 		valid = false
 	}
 	if valid {
