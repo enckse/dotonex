@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/plugins"
 	. "layeh.com/radius/rfc2865"
 )
@@ -49,7 +50,7 @@ func (l *umac) Setup(ctx *plugins.PluginContext) {
 	doCallback = len(callback) > 0
 }
 
-func (l *umac) Pre(packet *plugins.ClientPacket) bool {
+func (l *umac) Pre(packet *core.ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }
 
@@ -63,7 +64,7 @@ func clean(in string) string {
 	return result
 }
 
-func checkUserMac(p *plugins.ClientPacket) error {
+func checkUserMac(p *core.ClientPacket) error {
 	username, err := UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
@@ -103,7 +104,7 @@ func checkUserMac(p *plugins.ClientPacket) error {
 	return failure
 }
 
-func mark(result, user, calling string, p *plugins.ClientPacket) {
+func mark(result, user, calling string, p *core.ClientPacket) {
 	nas := clean(NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"

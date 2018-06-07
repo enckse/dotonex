@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -12,7 +11,7 @@ import (
 	"time"
 
 	"github.com/epiphyte/goutils"
-	"layeh.com/radius"
+	"github.com/epiphyte/radiucal/core"
 	"layeh.com/radius/debug"
 )
 
@@ -28,13 +27,6 @@ const (
 	NoTrace      TraceType = iota
 	TraceRequest TraceType = iota
 )
-
-type ClientPacket struct {
-	ClientAddr *net.UDPAddr
-	Buffer     []byte
-	Packet     *radius.Packet
-	Error      error
-}
 
 type PluginContext struct {
 	// Location of logs directory
@@ -59,17 +51,17 @@ type Module interface {
 
 type PreAuth interface {
 	Module
-	Pre(*ClientPacket) bool
+	Pre(*core.ClientPacket) bool
 }
 
 type Tracing interface {
 	Module
-	Trace(TraceType, *ClientPacket)
+	Trace(TraceType, *core.ClientPacket)
 }
 
 type Accounting interface {
 	Module
-	Account(*ClientPacket)
+	Account(*core.ClientPacket)
 }
 
 func NewPluginContext(config *goutils.Config) *PluginContext {
@@ -90,17 +82,13 @@ func (p *PluginContext) clone(moduleName string) *PluginContext {
 	return n
 }
 
-func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
-	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
-}
-
 type requestDump struct {
-	data  *ClientPacket
+	data  *core.ClientPacket
 	mode  string
 	stamp time.Time
 }
 
-func NewRequestDump(packet *ClientPacket, mode string, timestamp time.Time) *requestDump {
+func NewRequestDump(packet *core.ClientPacket, mode string, timestamp time.Time) *requestDump {
 	return &requestDump{data: packet, mode: mode, stamp: timestamp}
 }
 

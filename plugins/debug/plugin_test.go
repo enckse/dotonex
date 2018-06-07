@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
@@ -26,7 +27,7 @@ func testDebug(t *testing.T, hostAddr string) {
 		}
 		addr = taddr
 	}
-	p := plugins.NewClientPacket(nil, addr)
+	p := core.NewClientPacket(nil, addr)
 	var secret = []byte("secret")
 	p.Packet = radius.New(radius.CodeAccessRequest, secret)
 	p.Packet.Identifier = 100

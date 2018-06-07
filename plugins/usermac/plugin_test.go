@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/epiphyte/radiucal/plugins"
+	"github.com/epiphyte/radiucal/core"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 )
@@ -13,7 +13,7 @@ func TestUserMacBasics(t *testing.T) {
 	newTestSet(t, "test", "12-22-33-44-55-66", false)
 }
 
-func ErrorIfNotPre(t *testing.T, m *umac, p *plugins.ClientPacket, message string) {
+func ErrorIfNotPre(t *testing.T, m *umac, p *core.ClientPacket, message string) {
 	err := checkUserMac(p)
 	if err == nil {
 		if message != "" {
@@ -26,13 +26,13 @@ func ErrorIfNotPre(t *testing.T, m *umac, p *plugins.ClientPacket, message strin
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) (*plugins.ClientPacket, *umac) {
+func newTestSet(t *testing.T, user, mac string, valid bool) (*core.ClientPacket, *umac) {
 	m := setupUserMac()
 	if m.Name() != "usermac" {
 		t.Error("invalid/wrong name")
 	}
 	var secret = []byte("secret")
-	p := plugins.NewClientPacket(nil, nil)
+	p := core.NewClientPacket(nil, nil)
 	p.Packet = radius.New(radius.CodeAccessRequest, secret)
 	ErrorIfNotPre(t, m, p, "radius: attribute not found")
 	if err := rfc2865.UserName_AddString(p.Packet, user); err != nil {

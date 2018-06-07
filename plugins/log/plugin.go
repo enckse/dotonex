@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/plugins"
 )
 
@@ -31,20 +32,20 @@ func (l *logger) Setup(ctx *plugins.PluginContext) {
 	instance = ctx.Instance
 }
 
-func (l *logger) Pre(packet *plugins.ClientPacket) bool {
+func (l *logger) Pre(packet *core.ClientPacket) bool {
 	write(plugins.PreAuthMode, plugins.NoTrace, packet)
 	return true
 }
 
-func (l *logger) Trace(t plugins.TraceType, packet *plugins.ClientPacket) {
+func (l *logger) Trace(t plugins.TraceType, packet *core.ClientPacket) {
 	write(plugins.TracingMode, t, packet)
 }
 
-func (l *logger) Account(packet *plugins.ClientPacket) {
+func (l *logger) Account(packet *core.ClientPacket) {
 	write(plugins.AccountingMode, plugins.NoTrace, packet)
 }
 
-func write(mode string, objType plugins.TraceType, packet *plugins.ClientPacket) {
+func write(mode string, objType plugins.TraceType, packet *core.ClientPacket) {
 	go func() {
 		lock.Lock()
 		defer lock.Unlock()

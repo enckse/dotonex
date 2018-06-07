@@ -13,7 +13,7 @@ GO_TESTS     := go test -v
 PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 TEST_CONFS   := normal norjct
 
-.PHONY: tools plugins core
+.PHONY: tools plugins server
 
 all: clean plugins radiucal scripts integrate tools format
 
@@ -36,10 +36,10 @@ $(TEST_CONFS):
 	rm -f $(TST)log/*
 	./tests/run.sh $@
 
-core:
-	cd core && $(GO_TESTS)
+server:
+	cd server && $(GO_TESTS)
 
-radiucal: core
+radiucal: server
 	$(GO_TESTS)
 	go build -o $(BIN)radiucal $(FLAGS) $(MAIN)
 
@@ -53,6 +53,7 @@ clean:
 	rm -rf $(VENDOR_LOCAL)
 	mkdir -p $(VENDOR_LOCAL)
 	ln -s $(PWD)/$(PLUGIN) $(VENDOR_LOCAL)/plugins
+	ln -s $(PWD)/server $(VENDOR_LOCAL)/server
 	ln -s $(PWD)/core $(VENDOR_LOCAL)/core
 
 tools:

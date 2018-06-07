@@ -1,4 +1,4 @@
-package core
+package server
 
 import (
 	"bufio"
@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 )
@@ -31,7 +32,7 @@ type authingMode int
 
 type ReasonCode int
 
-type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*plugins.ClientPacket, ReasonCode)
+type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, ReasonCode)
 
 type Context struct {
 	Debug    bool
@@ -69,16 +70,16 @@ func (ctx *Context) AddAccounting(a plugins.Accounting) {
 	ctx.accts = append(ctx.accts, a)
 }
 
-func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, ReasonCode) {
+func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*core.ClientPacket, ReasonCode) {
 	return ctx.doAuthing(b, addr, preMode)
 }
 
-func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*plugins.ClientPacket, ReasonCode) {
-	p := plugins.NewClientPacket(b, addr)
+func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*core.ClientPacket, ReasonCode) {
+	p := core.NewClientPacket(b, addr)
 	return p, ctx.authorize(p, mode)
 }
 
-func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) ReasonCode {
+func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) ReasonCode {
 	if packet == nil {
 		return successCode
 	}
@@ -231,7 +232,7 @@ func (ctx *Context) Reload() {
 	}
 }
 
-func (ctx *Context) checkSecret(p *plugins.ClientPacket) error {
+func (ctx *Context) checkSecret(p *core.ClientPacket) error {
 	var inSecret []byte
 	if p == nil || p.Packet == nil {
 		return errors.New("no packet information")
@@ -272,7 +273,7 @@ func (ctx *Context) checkSecret(p *plugins.ClientPacket) error {
 	return nil
 }
 
-func (ctx *Context) packet(p *plugins.ClientPacket) {
+func (ctx *Context) packet(p *core.ClientPacket) {
 	if p.Error == nil && p.Packet == nil {
 		packet, err := radius.Parse(p.Buffer, ctx.secret)
 		p.Error = err
@@ -280,7 +281,7 @@ func (ctx *Context) packet(p *plugins.ClientPacket) {
 	}
 }
 
-func (ctx *Context) Account(packet *plugins.ClientPacket) {
+func (ctx *Context) Account(packet *core.ClientPacket) {
 	ctx.packet(packet)
 	if packet.Error != nil {
 		// unable to parse, exit early

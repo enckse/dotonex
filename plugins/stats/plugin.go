@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/plugins"
 )
 
@@ -52,16 +53,16 @@ func (s *stats) Setup(ctx *plugins.PluginContext) {
 	modes = plugins.DisabledModes(s, ctx)
 }
 
-func (s *stats) Pre(packet *plugins.ClientPacket) bool {
+func (s *stats) Pre(packet *core.ClientPacket) bool {
 	write(plugins.PreAuthMode, plugins.NoTrace)
 	return true
 }
 
-func (s *stats) Trace(t plugins.TraceType, packet *plugins.ClientPacket) {
+func (s *stats) Trace(t plugins.TraceType, packet *core.ClientPacket) {
 	write(plugins.TracingMode, t)
 }
 
-func (s *stats) Account(packet *plugins.ClientPacket) {
+func (s *stats) Account(packet *core.ClientPacket) {
 	write(plugins.AccountingMode, plugins.NoTrace)
 }
 

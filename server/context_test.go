@@ -5,6 +5,7 @@ import (
 	"net"
 	"testing"
 
+	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
@@ -31,12 +32,12 @@ func (m *MockModule) Reload() {
 func (m *MockModule) Setup(c *plugins.PluginContext) {
 }
 
-func (m *MockModule) Pre(p *plugins.ClientPacket) bool {
+func (m *MockModule) Pre(p *core.ClientPacket) bool {
 	m.pre++
 	return !m.fail
 }
 
-func (m *MockModule) Trace(t plugins.TraceType, p *plugins.ClientPacket) {
+func (m *MockModule) Trace(t plugins.TraceType, p *core.ClientPacket) {
 	m.trace++
 	switch t {
 	case plugins.TraceRequest:
@@ -45,7 +46,7 @@ func (m *MockModule) Trace(t plugins.TraceType, p *plugins.ClientPacket) {
 	}
 }
 
-func (m *MockModule) Account(p *plugins.ClientPacket) {
+func (m *MockModule) Account(p *core.ClientPacket) {
 	m.acct++
 }
 
@@ -101,7 +102,7 @@ func TestPreAuth(t *testing.T) {
 	m := &MockModule{}
 	ctx.AddTrace(m)
 	// invalid packet
-	if ctx.authorize(plugins.NewClientPacket(nil, nil), preMode) != successCode {
+	if ctx.authorize(core.NewClientPacket(nil, nil), preMode) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 0 {
@@ -148,7 +149,7 @@ func TestPreAuth(t *testing.T) {
 	}
 }
 
-func getPacket(t *testing.T) (*Context, *plugins.ClientPacket) {
+func getPacket(t *testing.T) (*Context, *core.ClientPacket) {
 	c := &Context{}
 	c.secret = []byte("secret")
 	p := radius.New(radius.CodeAccessRequest, c.secret)
@@ -162,7 +163,7 @@ func getPacket(t *testing.T) (*Context, *plugins.ClientPacket) {
 	if err != nil {
 		t.Error("unable to encode")
 	}
-	return c, plugins.NewClientPacket(b, nil)
+	return c, core.NewClientPacket(b, nil)
 }
 
 func checkOneSecret(dir, filename, ip, secret string, t *testing.T) {
@@ -249,13 +250,13 @@ func TestReload(t *testing.T) {
 
 func TestAcctNoMods(t *testing.T) {
 	ctx := &Context{}
-	ctx.Account(plugins.NewClientPacket(nil, nil))
+	ctx.Account(core.NewClientPacket(nil, nil))
 }
 
 func TestAcct(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
-	ctx.Account(plugins.NewClientPacket(nil, nil))
+	ctx.Account(core.NewClientPacket(nil, nil))
 	if m.acct != 0 {
 		t.Error("didn't account")
 	}
