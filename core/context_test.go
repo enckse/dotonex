@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"net"
 	"testing"
 
@@ -85,6 +86,14 @@ func TestSecrets(t *testing.T) {
 	if !ctx.authorize(p, preMode) {
 		t.Error("matching secrets")
 	}
+	ctx.secrets["10.10.1.10"] = []byte("failure")
+	if ctx.authorize(p, preMode) {
+		t.Error("no matching secrets, yet again")
+	}
+	ctx.secrets["0.0.0.0"] = p.Packet.Secret
+	if !ctx.authorize(p, preMode) {
+		t.Error("matching secrets")
+	}
 }
 
 func TestPreAuth(t *testing.T) {
@@ -156,6 +165,48 @@ func getPacket(t *testing.T) (*Context, *plugins.ClientPacket) {
 	return c, plugins.NewClientPacket(b, nil)
 }
 
+func checkOneSecret(dir, filename, ip, secret string, t *testing.T) {
+	s, err := parseSecretMappings(dir + filename)
+	if len(s) != 1 || err != nil || !bytes.Equal(s[ip], []byte(secret)) {
+		t.Error("invalid secret: " + filename)
+	}
+}
+
+func TestSecretMappings(t *testing.T) {
+	dir := "../tests/"
+	_, err := parseSecretMappings(dir + "nofile")
+	if err.Error() != "no secrets file" {
+		t.Error("file does not exist")
+	}
+	s, err := parseSecretMappings(dir + "emptysecrets")
+	if len(s) != 0 || err != nil {
+		t.Error("file is empty")
+	}
+	checkOneSecret(dir, "nosecrets", "192.168.1.1", "nosecret", t)
+	checkOneSecret(dir, "onesecret", "127.0.0.1", "mysecretkey", t)
+	s, err = parseSecretMappings(dir + "noopsecret")
+	if len(s) != 0 || err != nil {
+		t.Error("file is empty")
+	}
+	s, err = parseSecretMappings(dir + "multisecret")
+	if err != nil {
+		t.Error("invalid mappings, error")
+	}
+	if len(s) != 4 {
+		t.Error("invalid multimapping")
+	}
+	expected := make(map[string]string)
+	expected["192.168.1.1"] = "a"
+	expected["172.168.1.1"] = "b"
+	expected["127.0.0.1"] = "test"
+	expected["10.10.10.10"] = "xyz"
+	for k, v := range expected {
+		if !bytes.Equal(s[k], []byte(v)) {
+			t.Error("mismatch mapping:" + k)
+		}
+	}
+}
+
 func TestSecretParsing(t *testing.T) {
 	dir := "../tests/"
 	_, err := parseSecretFile(dir + "nofile")
@@ -163,11 +214,11 @@ func TestSecretParsing(t *testing.T) {
 		t.Error("file does not exist")
 	}
 	_, err = parseSecretFile(dir + "emptysecrets")
-	if err.Error() != "no secret found" {
+	if err.Error() != "no secrets found" {
 		t.Error("file is empty")
 	}
 	_, err = parseSecretFile(dir + "nosecrets")
-	if err.Error() != "no secret found" {
+	if err.Error() != "no secrets found" {
 		t.Error("file is empty")
 	}
 	s, _ := parseSecretFile(dir + "onesecret")
@@ -179,7 +230,7 @@ func TestSecretParsing(t *testing.T) {
 		t.Error("wrong parsed key")
 	}
 	_, err = parseSecretFile(dir + "noopsecret")
-	if err.Error() != "no secret found" {
+	if err.Error() != "no secrets found" {
 		t.Error("empty key")
 	}
 }

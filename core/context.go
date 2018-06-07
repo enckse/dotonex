@@ -15,6 +15,18 @@ import (
 	"layeh.com/radius"
 )
 
+const (
+	preMode  authingMode = 0
+	localKey             = "127.0.0.1"
+	allKey               = "0.0.0.0"
+)
+
+type writeBack func([]byte)
+
+type authingMode int
+
+type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*plugins.ClientPacket, bool)
+
 type Context struct {
 	Debug    bool
 	secret   []byte
@@ -50,16 +62,6 @@ func (ctx *Context) AddAccounting(a plugins.Accounting) {
 	ctx.acct = true
 	ctx.accts = append(ctx.accts, a)
 }
-
-type writeBack func([]byte)
-
-type authingMode int
-
-const (
-	preMode authingMode = 0
-)
-
-type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*plugins.ClientPacket, bool)
 
 func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, bool) {
 	return ctx.doAuthing(b, addr, preMode)
@@ -122,6 +124,29 @@ func (ctx *Context) FromConfig(libPath string, c *goutils.Config) {
 	ctx.noReject = c.GetTrue("noreject")
 	secrets := filepath.Join(libPath, "secrets")
 	ctx.parseSecrets(secrets)
+	ctx.secrets = make(map[string][]byte)
+	secrets = filepath.Join(libPath, "clients")
+	if goutils.PathExists(secrets) {
+		mappings, err := parseSecretMappings(secrets)
+		if err != nil {
+			panic("invalid client secret mappings")
+		}
+		for k, v := range mappings {
+			ctx.secrets[k] = []byte(v)
+		}
+	}
+}
+
+func parseSecretMappings(filename string) (map[string][]byte, error) {
+	mappings, err := parseSecretFromFile(filename, true)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string][]byte)
+	for k, v := range mappings {
+		m[k] = []byte(v)
+	}
+	return m, nil
 }
 
 func (ctx *Context) parseSecrets(secretFile string) {
@@ -133,31 +158,58 @@ func (ctx *Context) parseSecrets(secretFile string) {
 }
 
 func parseSecretFile(secretFile string) (string, error) {
+	s, err := parseSecretFromFile(secretFile, false)
+	if err != nil {
+		return "", err
+	} else {
+		return s[localKey], nil
+	}
+}
+
+func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
 	if goutils.PathNotExists(secretFile) {
-		return "", errors.New("no secrets file")
+		return nil, errors.New("no secrets file")
 	}
 	f, err := os.Open(secretFile)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
+	lines := make(map[string]string)
 	for scanner.Scan() {
 		l := scanner.Text()
-		if strings.HasPrefix(l, "127.0.0.1") {
+		if strings.HasPrefix(l, "#") {
+			continue
+		}
+		if mapping || strings.HasPrefix(l, localKey) {
 			parts := strings.Split(l, " ")
 			secret := strings.TrimSpace(strings.Join(parts[1:], " "))
 			if len(secret) > 0 {
-				return strings.TrimSpace(strings.Join(parts[1:], " ")), nil
+				if mapping {
+					lines[parts[0]] = secret
+				} else {
+					lines[localKey] = secret
+					break
+				}
 			}
 		}
 	}
-	return "", errors.New("no secret found")
+	if len(lines) == 0 && !mapping {
+		return nil, errors.New("no secrets found")
+	}
+	return lines, nil
 }
 
 func (ctx *Context) DebugDump() {
 	if ctx.Debug {
 		goutils.WriteDebug("secret", string(ctx.secret))
+		if len(ctx.secrets) > 0 {
+			goutils.WriteDebug("client mappings")
+			for k, v := range ctx.secrets {
+				goutils.WriteDebug(k, string(v))
+			}
+		}
 	}
 }
 
@@ -194,7 +246,7 @@ func (ctx *Context) checkSecret(p *plugins.ClientPacket) error {
 		good := false
 		goutils.WriteInfo(ip)
 		for k, v := range ctx.secrets {
-			if strings.HasPrefix(ip, k) {
+			if strings.HasPrefix(ip, k) || k == allKey {
 				if bytes.Equal(v, inSecret) {
 					good = true
 					break

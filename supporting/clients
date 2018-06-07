@@ -1,0 +1,9 @@
+# client key mappings
+# match directly to an ip
+#10.10.10.10 123
+# match to a subset of ips
+#10.10.xyz
+# even less restrictive
+#10 abc
+#to match all clients using a specific key
+#0.0.0.0 xyz
