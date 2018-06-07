@@ -160,7 +160,7 @@ func parseSecretMappings(filename string) (map[string][]byte, error) {
 
 func (ctx *Context) parseSecrets(secretFile string) {
 	s, err := parseSecretFile(secretFile)
-	if LogError("unable to read secrets", err) {
+	if core.LogError("unable to read secrets", err) {
 		panic("unable to read secrets")
 	}
 	ctx.secret = []byte(s)

@@ -14,6 +14,7 @@ import (
 	"github.com/epiphyte/goutils"
 	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/plugins"
+	"github.com/epiphyte/radiucal/server"
 	"layeh.com/radius"
 )
 
@@ -72,7 +73,7 @@ func runConnection(conn *connection) {
 	}
 }
 
-func runProxy(ctx *core.Context) {
+func runProxy(ctx *server.Context) {
 	if ctx.Debug {
 		goutils.WriteInfo("=============WARNING==================")
 		goutils.WriteInfo("debugging is enabled!")
@@ -103,7 +104,7 @@ func runProxy(ctx *core.Context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		preauthed := core.HandleAuth(core.PreAuthorize, ctx, buffered, cliaddr, func(b []byte) {
+		preauthed := server.HandleAuth(server.PreAuthorize, ctx, buffered, cliaddr, func(b []byte) {
 			proxy.WriteToUDP(b, conn.client)
 		})
 		if !preauthed {
@@ -115,14 +116,14 @@ func runProxy(ctx *core.Context) {
 	}
 }
 
-func account(ctx *core.Context) {
+func account(ctx *server.Context) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
 		if core.LogError("accounting udp error", err) {
 			continue
 		}
-		ctx.Account(plugins.NewClientPacket(buffer[0:n], cliaddr))
+		ctx.Account(core.NewClientPacket(buffer[0:n], cliaddr))
 	}
 }
 
@@ -168,7 +169,7 @@ func main() {
 	}
 
 	lib := conf.GetStringOrDefault("dir", "/var/lib/radiucal/")
-	ctx := &core.Context{Debug: debug}
+	ctx := &server.Context{Debug: debug}
 	ctx.FromConfig(lib, conf)
 	mods := conf.GetArrayOrEmpty("plugins")
 	pCtx := plugins.NewPluginContext(conf)
