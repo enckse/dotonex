@@ -172,50 +172,44 @@ func (ctx *Context) Reload() {
 }
 
 func (ctx *Context) checkSecret(p *plugins.ClientPacket) error {
-	valid := true
 	var inSecret []byte
 	if p == nil || p.Packet == nil {
-		valid = false
+		return errors.New("no packet information")
 	} else {
 		inSecret = p.Packet.Secret
 	}
-	if valid && inSecret == nil {
-		valid = false
+	if inSecret == nil {
+		return errors.New("no secret input")
 	}
-	if valid {
-		if len(ctx.secrets) > 0 {
-			if p.ClientAddr == nil {
-				valid = false
-			} else {
-				ip := p.ClientAddr.String()
-				h, _, err := net.SplitHostPort(ip)
-				if err == nil {
-					ip = h
-					good := false
-					goutils.WriteInfo(ip)
-					for k, v := range ctx.secrets {
-						if strings.HasPrefix(ip, k) {
-							if bytes.Equal(v, inSecret) {
-								good = true
-								break
-							}
-						}
-					}
-					valid = good
-				} else {
-					valid = false
+	if len(ctx.secrets) > 0 {
+		if p.ClientAddr == nil {
+			return errors.New("no client addr")
+		}
+		ip := p.ClientAddr.String()
+		h, _, err := net.SplitHostPort(ip)
+		if err != nil {
+			return err
+		}
+		ip = h
+		good := false
+		goutils.WriteInfo(ip)
+		for k, v := range ctx.secrets {
+			if strings.HasPrefix(ip, k) {
+				if bytes.Equal(v, inSecret) {
+					good = true
+					break
 				}
 			}
-		} else {
-			if !bytes.Equal(ctx.secret, inSecret) {
-				valid = false
-			}
+		}
+		if !good {
+			return errors.New("matches no secrets")
+		}
+	} else {
+		if !bytes.Equal(ctx.secret, inSecret) {
+			return errors.New("does not match shared secret")
 		}
 	}
-	if valid {
-		return nil
-	}
-	return errors.New("invalid secret")
+	return nil
 }
 
 func (ctx *Context) packet(p *plugins.ClientPacket) {
