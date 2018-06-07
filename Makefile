@@ -15,6 +15,8 @@ TEST_CONFS   := normal norjct
 
 .PHONY: tools plugins server
 
+vendored = ln -s $(PWD)/$1 $(VENDOR_LOCAL)/$1
+
 all: clean plugins radiucal scripts integrate tools format
 
 plugins: $(PLUGINS)
@@ -52,9 +54,9 @@ clean:
 	mkdir -p $(BIN)
 	rm -rf $(VENDOR_LOCAL)
 	mkdir -p $(VENDOR_LOCAL)
-	ln -s $(PWD)/$(PLUGIN) $(VENDOR_LOCAL)/plugins
-	ln -s $(PWD)/server $(VENDOR_LOCAL)/server
-	ln -s $(PWD)/core $(VENDOR_LOCAL)/core
+	$(call vendored,plugins)
+	$(call vendored,core)
+	$(call vendored,server)
 
 tools:
 	pycodestyle $(PY)
