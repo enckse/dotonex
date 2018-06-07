@@ -54,6 +54,15 @@ func TestPreAuthNoMods(t *testing.T) {
 	}
 }
 
+func TestSecrets(t *testing.T) {
+	ctx, p := getPacket(t)
+	ctx.packet(p)
+	p.Packet.Secret = []byte("test")
+	if ctx.authorize(p, preMode) {
+		t.Error("different secrets")
+	}
+}
+
 func TestPreAuth(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}

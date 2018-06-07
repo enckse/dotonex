@@ -76,19 +76,28 @@ func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 	valid := true
 	traceMode := plugins.NoTrace
 	preauthing := false
+	receiving := false
 	switch mode {
 	case preMode:
-		preauthing = true
+		receiving = true
+		preauthing = ctx.preauth
 		traceMode = plugins.TraceRequest
 		break
 	}
 	tracing := ctx.trace && traceMode != plugins.NoTrace
-	if preauthing || tracing {
+	if preauthing || tracing || receiving {
 		ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
 		// we let that go
 		if packet.Error == nil {
+			if receiving {
+				err := ctx.checkSecret(packet.Packet)
+				if err != nil {
+					goutils.WriteError("invalid radius secret", err)
+					valid = false
+				}
+			}
 			if preauthing {
 				for _, mod := range ctx.preauths {
 					if mod.Pre(packet) {
@@ -182,11 +191,10 @@ func (ctx *Context) checkSecret(p *radius.Packet) error {
 }
 
 func (ctx *Context) packet(p *plugins.ClientPacket) {
-	packet, err := radius.Parse(p.Buffer, ctx.secret)
-	p.Error = err
-	p.Packet = packet
-	if err != nil {
-		p.Error = ctx.checkSecret(packet)
+	if p.Error == nil && p.Packet == nil {
+		packet, err := radius.Parse(p.Buffer, ctx.secret)
+		p.Error = err
+		p.Packet = packet
 	}
 }
 
