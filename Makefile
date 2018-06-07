@@ -12,16 +12,14 @@ PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
 GO_TESTS     := go test -v
 PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 TEST_CONFS   := normal norjct
-DIRS         := plugins server core tools
-COMPONENTS   := server core
+COMPONENTS   := core plugins server
 
-.PHONY: $(DIRS)
+.PHONY: $(COMPONENTS) tools
 
-vendored = ln -s $(PWD)/$1 $(VENDOR_LOCAL)/$1
+all: clean modules radiucal scripts integrate tools format
 
-all: clean plugins radiucal scripts integrate tools format
-
-plugins: $(PLUGINS)
+modules: $(PLUGINS)
+components: $(COMPONENTS)
 
 $(PLUGINS):
 	@echo $@
@@ -40,9 +38,10 @@ $(TEST_CONFS):
 	rm -f $(TST)log/*
 	./tests/run.sh $@
 
-components: $(COMPONENTS)
 
 $(COMPONENTS):
+	rm -f $(VENDOR_LOCAL)/$@
+	ln -s $(PWD)/$@ $(VENDOR_LOCAL)/$@
 	cd $@ && $(GO_TESTS)
 
 radiucal: components
@@ -53,14 +52,13 @@ format:
 	@echo $(SRC)
 	exit $(shell echo $(SRC) | grep "\.go$$" | goimports -l $(SRC) | wc -l)
 
-clean:
+setup:
 	rm -rf $(BIN)
 	mkdir -p $(BIN)
 	rm -rf $(VENDOR_LOCAL)
 	mkdir -p $(VENDOR_LOCAL)
-	$(call vendored,plugins)
-	$(call vendored,core)
-	$(call vendored,server)
+
+clean: setup $(COMPONENTS)
 
 tools:
 	pycodestyle $(PY)
