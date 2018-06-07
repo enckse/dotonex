@@ -19,13 +19,19 @@ const (
 	preMode  authingMode = 0
 	localKey             = "127.0.0.1"
 	allKey               = "0.0.0.0"
+	// failure of auth reasons
+	successCode   ReasonCode = 0
+	badSecretCode ReasonCode = 1
+	preAuthCode   ReasonCode = 2
 )
 
 type writeBack func([]byte)
 
 type authingMode int
 
-type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*plugins.ClientPacket, bool)
+type ReasonCode int
+
+type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*plugins.ClientPacket, ReasonCode)
 
 type Context struct {
 	Debug    bool
@@ -63,20 +69,20 @@ func (ctx *Context) AddAccounting(a plugins.Accounting) {
 	ctx.accts = append(ctx.accts, a)
 }
 
-func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, bool) {
+func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*plugins.ClientPacket, ReasonCode) {
 	return ctx.doAuthing(b, addr, preMode)
 }
 
-func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*plugins.ClientPacket, bool) {
+func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*plugins.ClientPacket, ReasonCode) {
 	p := plugins.NewClientPacket(b, addr)
 	return p, ctx.authorize(p, mode)
 }
 
-func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) bool {
+func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) ReasonCode {
 	if packet == nil {
-		return true
+		return successCode
 	}
-	valid := true
+	valid := successCode
 	traceMode := plugins.NoTrace
 	preauthing := false
 	receiving := false
@@ -98,7 +104,7 @@ func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 				err := ctx.checkSecret(packet)
 				if err != nil {
 					goutils.WriteError("invalid radius secret", err)
-					valid = false
+					valid = badSecretCode
 				}
 			}
 			if preauthing {
@@ -106,7 +112,9 @@ func (ctx *Context) authorize(packet *plugins.ClientPacket, mode authingMode) bo
 					if mod.Pre(packet) {
 						continue
 					}
-					valid = false
+					if valid == successCode {
+						valid = preAuthCode
+					}
 					goutils.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
 				}
 			}
@@ -286,9 +294,10 @@ func (ctx *Context) Account(packet *plugins.ClientPacket) {
 }
 
 func HandleAuth(fxn packetAuthorize, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
-	packet, authed := fxn(ctx, b, addr)
+	packet, authCode := fxn(ctx, b, addr)
+	authed := authCode == successCode
 	if !authed {
-		if !ctx.noReject && write != nil {
+		if !ctx.noReject && write != nil && authCode != badSecretCode {
 			if packet.Error == nil {
 				p := packet.Packet
 				p = p.Response(radius.CodeAccessReject)

@@ -51,7 +51,7 @@ func (m *MockModule) Account(p *plugins.ClientPacket) {
 
 func TestPreAuthNoMods(t *testing.T) {
 	ctx := &Context{}
-	if !ctx.authorize(nil, preMode) {
+	if ctx.authorize(nil, preMode) != successCode {
 		t.Error("should have passed, nothing to do")
 	}
 }
@@ -60,18 +60,18 @@ func TestSecrets(t *testing.T) {
 	ctx, p := getPacket(t)
 	ctx.packet(p)
 	p.Packet.Secret = []byte("test")
-	if ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != badSecretCode {
 		t.Error("different secrets")
 	}
 	ctx, p = getPacket(t)
-	if !ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != successCode {
 		t.Error("same secrets")
 	}
 	ctx.secrets = make(map[string][]byte)
 	ctx.secrets["10."] = []byte("invalid")
 	ctx.secrets["10.100."] = p.Packet.Secret
 	ctx.secrets["10.10.1."] = []byte("invalid")
-	if ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != badSecretCode {
 		t.Error("no addr but secrets")
 	}
 	addr, err := net.ResolveUDPAddr("udp", "10.10.1.100:1234")
@@ -79,19 +79,19 @@ func TestSecrets(t *testing.T) {
 		t.Error("invalid udp test addr")
 	}
 	p.ClientAddr = addr
-	if ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != badSecretCode {
 		t.Error("no matching secrets")
 	}
 	ctx.secrets["10.10.1.10"] = p.Packet.Secret
-	if !ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != successCode {
 		t.Error("matching secrets")
 	}
 	ctx.secrets["10.10.1.10"] = []byte("failure")
-	if ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != badSecretCode {
 		t.Error("no matching secrets, yet again")
 	}
 	ctx.secrets["0.0.0.0"] = p.Packet.Secret
-	if !ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != successCode {
 		t.Error("matching secrets")
 	}
 }
@@ -101,20 +101,20 @@ func TestPreAuth(t *testing.T) {
 	m := &MockModule{}
 	ctx.AddTrace(m)
 	// invalid packet
-	if !ctx.authorize(plugins.NewClientPacket(nil, nil), preMode) {
+	if ctx.authorize(plugins.NewClientPacket(nil, nil), preMode) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 0 {
 		t.Error("did auth")
 	}
-	if !ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 1 {
 		t.Error("didn't auth")
 	}
 	ctx.AddPreAuth(m)
-	if !ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 2 {
@@ -124,7 +124,7 @@ func TestPreAuth(t *testing.T) {
 		t.Error("didn't preauth")
 	}
 	m.fail = true
-	if ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != preAuthCode {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
@@ -134,7 +134,7 @@ func TestPreAuth(t *testing.T) {
 		t.Error("didn't preauth")
 	}
 	ctx.trace = false
-	if ctx.authorize(p, preMode) {
+	if ctx.authorize(p, preMode) != preAuthCode {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
