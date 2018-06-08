@@ -16,8 +16,6 @@ if [ -z "$RPT_TOKEN" ]; then
 fi
 
 _post() {
-    local d
-    d=$(date +%Y-%m-%d)
     for f in $(ls $BIN | grep "\.md"); do
         content=$(cat $BIN/$f | python -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read()))")
         name=$(echo "$f" | cut -d "." -f 1)
