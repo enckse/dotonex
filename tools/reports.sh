@@ -16,7 +16,11 @@ if [ -z "$RPT_TOKEN" ]; then
 fi
 
 _post() {
+    local d
+    d=$(date +%Y-%m-%d)
     for f in $(ls $BIN | grep "\.md"); do
+        echo "" >> $f
+        echo "generated on: $d" >> $f
         content=$(cat $BIN/$f | python -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read()))")
         name=$(echo "$f" | cut -d "." -f 1)
         curl -s -k -X POST -d "name=$name&content=$content" "$RPT_HOST/reports/upload?session=$RPT_TOKEN"
