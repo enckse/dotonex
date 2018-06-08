@@ -10,7 +10,6 @@ import (
 
 	"github.com/epiphyte/goutils"
 	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/plugins"
 	. "layeh.com/radius/rfc2865"
 )
 
@@ -41,7 +40,7 @@ func (l *umac) Reload() {
 	cache = make(map[string]bool)
 }
 
-func (l *umac) Setup(ctx *plugins.PluginContext) {
+func (l *umac) Setup(ctx *core.PluginContext) {
 	canCache = ctx.Cache
 	logs = ctx.Logs
 	instance = ctx.Instance
@@ -124,7 +123,7 @@ func mark(result, user, calling string, p *core.ClientPacket) {
 	nasport := NASPort_Get(p.Packet)
 	fileLock.Lock()
 	defer fileLock.Unlock()
-	f, t := plugins.DatedAppendFile(logs, "audit", instance)
+	f, t := core.DatedAppendFile(logs, "audit", instance)
 	if f == nil {
 		return
 	}
@@ -136,5 +135,5 @@ func mark(result, user, calling string, p *core.ClientPacket) {
 		args = append(args, fmt.Sprintf("%s -> %s", result, msg))
 		goutils.RunCommand(callback[0], args...)
 	}
-	plugins.FormatLog(f, t, result, msg)
+	core.FormatLog(f, t, result, msg)
 }

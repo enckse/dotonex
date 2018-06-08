@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/plugins"
 )
 
 type modedata struct {
@@ -47,34 +46,34 @@ func (s *stats) Reload() {
 	info = make(map[string]*modedata)
 }
 
-func (s *stats) Setup(ctx *plugins.PluginContext) {
+func (s *stats) Setup(ctx *core.PluginContext) {
 	dir = ctx.Logs
 	instance = ctx.Instance
-	modes = plugins.DisabledModes(s, ctx)
+	modes = core.DisabledModes(s, ctx)
 }
 
 func (s *stats) Pre(packet *core.ClientPacket) bool {
-	write(plugins.PreAuthMode, plugins.NoTrace)
+	write(core.PreAuthMode, core.NoTrace)
 	return true
 }
 
-func (s *stats) Trace(t plugins.TraceType, packet *core.ClientPacket) {
-	write(plugins.TracingMode, t)
+func (s *stats) Trace(t core.TraceType, packet *core.ClientPacket) {
+	write(core.TracingMode, t)
 }
 
 func (s *stats) Account(packet *core.ClientPacket) {
-	write(plugins.AccountingMode, plugins.NoTrace)
+	write(core.AccountingMode, core.NoTrace)
 }
 
-func write(mode string, objType plugins.TraceType) {
+func write(mode string, objType core.TraceType) {
 	go func() {
 		lock.Lock()
 		defer lock.Unlock()
-		if plugins.Disabled(mode, modes) {
+		if core.Disabled(mode, modes) {
 			return
 		}
 		key := fmt.Sprintf("%s.%d", mode, int(objType))
-		f, t := plugins.NewFilePath(dir, fmt.Sprintf("stats.%s", key), instance)
+		f, t := core.NewFilePath(dir, fmt.Sprintf("stats.%s", key), instance)
 		if _, ok := info[key]; !ok {
 			info[key] = &modedata{first: t, count: 0, name: key}
 		}

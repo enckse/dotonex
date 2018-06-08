@@ -12,7 +12,6 @@ import (
 
 	"github.com/epiphyte/goutils"
 	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 )
 
@@ -37,10 +36,10 @@ type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, R
 type Context struct {
 	Debug    bool
 	secret   []byte
-	preauths []plugins.PreAuth
-	accts    []plugins.Accounting
-	traces   []plugins.Tracing
-	modules  []plugins.Module
+	preauths []core.PreAuth
+	accts    []core.Accounting
+	traces   []core.Tracing
+	modules  []core.Module
 	secrets  map[string][]byte
 	noReject bool
 	// shortcuts
@@ -50,22 +49,22 @@ type Context struct {
 	module  bool
 }
 
-func (ctx *Context) AddTrace(t plugins.Tracing) {
+func (ctx *Context) AddTrace(t core.Tracing) {
 	ctx.trace = true
 	ctx.traces = append(ctx.traces, t)
 }
 
-func (ctx *Context) AddPreAuth(p plugins.PreAuth) {
+func (ctx *Context) AddPreAuth(p core.PreAuth) {
 	ctx.preauth = true
 	ctx.preauths = append(ctx.preauths, p)
 }
 
-func (ctx *Context) AddModule(m plugins.Module) {
+func (ctx *Context) AddModule(m core.Module) {
 	ctx.module = true
 	ctx.modules = append(ctx.modules, m)
 }
 
-func (ctx *Context) AddAccounting(a plugins.Accounting) {
+func (ctx *Context) AddAccounting(a core.Accounting) {
 	ctx.acct = true
 	ctx.accts = append(ctx.accts, a)
 }
@@ -84,17 +83,17 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 		return successCode
 	}
 	valid := successCode
-	traceMode := plugins.NoTrace
+	traceMode := core.NoTrace
 	preauthing := false
 	receiving := false
 	switch mode {
 	case preMode:
 		receiving = true
 		preauthing = ctx.preauth
-		traceMode = plugins.TraceRequest
+		traceMode = core.TraceRequest
 		break
 	}
-	tracing := ctx.trace && traceMode != plugins.NoTrace
+	tracing := ctx.trace && traceMode != core.NoTrace
 	if preauthing || tracing || receiving {
 		ctx.packet(packet)
 		// we may not be able to always read a packet during conversation

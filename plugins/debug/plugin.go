@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/plugins"
 )
 
 type tracer struct {
@@ -26,21 +25,21 @@ func (t *tracer) Name() string {
 	return "debugger"
 }
 
-func (t *tracer) Setup(ctx *plugins.PluginContext) {
-	modes = plugins.DisabledModes(t, ctx)
+func (t *tracer) Setup(ctx *core.PluginContext) {
+	modes = core.DisabledModes(t, ctx)
 }
 
 func (t *tracer) Pre(packet *core.ClientPacket) bool {
-	dump(plugins.PreAuthMode, plugins.NoTrace, packet)
+	dump(core.PreAuthMode, core.NoTrace, packet)
 	return true
 }
 
-func (t *tracer) Trace(objType plugins.TraceType, packet *core.ClientPacket) {
-	dump(plugins.TracingMode, objType, packet)
+func (t *tracer) Trace(objType core.TraceType, packet *core.ClientPacket) {
+	dump(core.TracingMode, objType, packet)
 }
 
 func (t *tracer) Account(packet *core.ClientPacket) {
-	dump(plugins.AccountingMode, plugins.NoTrace, packet)
+	dump(core.AccountingMode, core.NoTrace, packet)
 }
 
 type logTrace struct {
@@ -56,9 +55,9 @@ func (t *logTrace) dump() {
 	log.Println(t.data.String())
 }
 
-func dump(mode string, objType plugins.TraceType, packet *core.ClientPacket) {
+func dump(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	go func() {
-		if plugins.Disabled(mode, modes) {
+		if core.Disabled(mode, modes) {
 			return
 		}
 		t := &logTrace{}
@@ -67,8 +66,8 @@ func dump(mode string, objType plugins.TraceType, packet *core.ClientPacket) {
 	}()
 }
 
-func write(tracing io.Writer, mode string, objType plugins.TraceType, packet *core.ClientPacket, t time.Time) {
-	dump := plugins.NewRequestDump(packet, mode, t)
+func write(tracing io.Writer, mode string, objType core.TraceType, packet *core.ClientPacket, t time.Time) {
+	dump := core.NewRequestDump(packet, mode, t)
 	tracing.Write([]byte(fmt.Sprintf("tracetype: %d\n", objType)))
 	dump.DumpPacket(tracing)
 }

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 )
@@ -29,7 +28,7 @@ func (m *MockModule) Reload() {
 	m.reload++
 }
 
-func (m *MockModule) Setup(c *plugins.PluginContext) {
+func (m *MockModule) Setup(c *core.PluginContext) {
 }
 
 func (m *MockModule) Pre(p *core.ClientPacket) bool {
@@ -37,10 +36,10 @@ func (m *MockModule) Pre(p *core.ClientPacket) bool {
 	return !m.fail
 }
 
-func (m *MockModule) Trace(t plugins.TraceType, p *core.ClientPacket) {
+func (m *MockModule) Trace(t core.TraceType, p *core.ClientPacket) {
 	m.trace++
 	switch t {
-	case plugins.TraceRequest:
+	case core.TraceRequest:
 		m.preAuth++
 		break
 	}

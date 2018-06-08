@@ -1,4 +1,4 @@
-package plugins
+package core
 
 import (
 	"errors"
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/epiphyte/goutils"
-	"github.com/epiphyte/radiucal/core"
 	"layeh.com/radius/debug"
 )
 
@@ -51,17 +50,17 @@ type Module interface {
 
 type PreAuth interface {
 	Module
-	Pre(*core.ClientPacket) bool
+	Pre(*ClientPacket) bool
 }
 
 type Tracing interface {
 	Module
-	Trace(TraceType, *core.ClientPacket)
+	Trace(TraceType, *ClientPacket)
 }
 
 type Accounting interface {
 	Module
-	Account(*core.ClientPacket)
+	Account(*ClientPacket)
 }
 
 func NewPluginContext(config *goutils.Config) *PluginContext {
@@ -83,12 +82,12 @@ func (p *PluginContext) clone(moduleName string) *PluginContext {
 }
 
 type requestDump struct {
-	data  *core.ClientPacket
+	data  *ClientPacket
 	mode  string
 	stamp time.Time
 }
 
-func NewRequestDump(packet *core.ClientPacket, mode string, timestamp time.Time) *requestDump {
+func NewRequestDump(packet *ClientPacket, mode string, timestamp time.Time) *requestDump {
 	return &requestDump{data: packet, mode: mode, stamp: timestamp}
 }
 

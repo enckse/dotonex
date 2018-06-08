@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/plugins"
 )
 
 var (
@@ -26,38 +25,38 @@ func (l *logger) Name() string {
 func (l *logger) Reload() {
 }
 
-func (l *logger) Setup(ctx *plugins.PluginContext) {
+func (l *logger) Setup(ctx *core.PluginContext) {
 	logs = ctx.Logs
-	modes = plugins.DisabledModes(l, ctx)
+	modes = core.DisabledModes(l, ctx)
 	instance = ctx.Instance
 }
 
 func (l *logger) Pre(packet *core.ClientPacket) bool {
-	write(plugins.PreAuthMode, plugins.NoTrace, packet)
+	write(core.PreAuthMode, core.NoTrace, packet)
 	return true
 }
 
-func (l *logger) Trace(t plugins.TraceType, packet *core.ClientPacket) {
-	write(plugins.TracingMode, t, packet)
+func (l *logger) Trace(t core.TraceType, packet *core.ClientPacket) {
+	write(core.TracingMode, t, packet)
 }
 
 func (l *logger) Account(packet *core.ClientPacket) {
-	write(plugins.AccountingMode, plugins.NoTrace, packet)
+	write(core.AccountingMode, core.NoTrace, packet)
 }
 
-func write(mode string, objType plugins.TraceType, packet *core.ClientPacket) {
+func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	go func() {
 		lock.Lock()
 		defer lock.Unlock()
-		if plugins.Disabled(mode, modes) {
+		if core.Disabled(mode, modes) {
 			return
 		}
-		f, t := plugins.DatedAppendFile(logs, mode, instance)
+		f, t := core.DatedAppendFile(logs, mode, instance)
 		if f == nil {
 			return
 		}
 		f.Write([]byte(fmt.Sprintf("id -> %s %d (%s)\n", mode, int(objType), t)))
-		dump := plugins.NewRequestDump(packet, mode, t)
+		dump := core.NewRequestDump(packet, mode, t)
 		dump.DumpPacket(f)
 	}()
 }

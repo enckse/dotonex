@@ -12,7 +12,7 @@ PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
 GO_TESTS     := go test -v
 PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 TEST_CONFS   := normal norjct
-COMPONENTS   := core plugins server
+COMPONENTS   := core server
 
 .PHONY: $(COMPONENTS) tools
 

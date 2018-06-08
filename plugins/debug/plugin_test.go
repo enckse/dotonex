@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/plugins"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 )
@@ -36,7 +35,7 @@ func testDebug(t *testing.T, hostAddr string) {
 	}
 	b := &logTrace{}
 	tm := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
-	write(b, "testmode", plugins.TraceRequest, p, tm)
+	write(b, "testmode", core.TraceRequest, p, tm)
 	expect := &logTrace{}
 	expect.Write([]byte("tracetype: 1\n"))
 	expect.Write([]byte("Mode = testmode (2009-11-10 23:00:00 +0000 UTC)\n"))

@@ -13,7 +13,6 @@ import (
 
 	"github.com/epiphyte/goutils"
 	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/plugins"
 	"github.com/epiphyte/radiucal/server"
 	"layeh.com/radius"
 )
@@ -172,7 +171,7 @@ func main() {
 	ctx := &server.Context{Debug: debug}
 	ctx.FromConfig(lib, conf)
 	mods := conf.GetArrayOrEmpty("plugins")
-	pCtx := plugins.NewPluginContext(conf)
+	pCtx := core.NewPluginContext(conf)
 	pCtx.Logs = filepath.Join(lib, "log")
 	pCtx.Lib = lib
 	pCtx.Instance = *instance
@@ -180,18 +179,18 @@ func main() {
 	for _, p := range mods {
 		oPath := filepath.Join(pPath, fmt.Sprintf("%s.rd", p))
 		goutils.WriteInfo("loading plugin", p, oPath)
-		obj, err := plugins.LoadPlugin(oPath, pCtx)
+		obj, err := core.LoadPlugin(oPath, pCtx)
 		if err != nil {
 			goutils.WriteError(fmt.Sprintf("unable to load plugin: %s", p), err)
 			panic("unable to load plugin")
 		}
-		if i, ok := obj.(plugins.Accounting); ok {
+		if i, ok := obj.(core.Accounting); ok {
 			ctx.AddAccounting(i)
 		}
-		if i, ok := obj.(plugins.Tracing); ok {
+		if i, ok := obj.(core.Tracing); ok {
 			ctx.AddTrace(i)
 		}
-		if i, ok := obj.(plugins.PreAuth); ok {
+		if i, ok := obj.(core.PreAuth); ok {
 			ctx.AddPreAuth(i)
 		}
 		ctx.AddModule(obj)
