@@ -44,8 +44,10 @@ $(COMPONENTS):
 	ln -s $(PWD)/$@ $(VENDOR_LOCAL)/$@
 	cd $@ && $(GO_TESTS)
 
-radiucal: components
+radiucal: components radiucalbin
 	$(GO_TESTS)
+
+radiucalbin:
 	go build -o $(BIN)radiucal $(FLAGS) $(MAIN)
 
 format:
