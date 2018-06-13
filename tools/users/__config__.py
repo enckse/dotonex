@@ -146,7 +146,7 @@ class Assignment(object):
         for mac_group in [self.macs, knowns]:
             if mac_group is not None and len(mac_group) > 0:
                 has_mac = True
-        if not has_mac:
+        if not self.disabled and not has_mac:
             return self.report("no macs listed")
         for mac in self.macs:
             if not is_mac(mac):
