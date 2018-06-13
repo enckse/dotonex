@@ -51,7 +51,6 @@ import users.common as common
 u_obj = __config__.Assignment()
 u_obj.password = '{}'
 u_obj.vlan = None
-u_obj.group = None
 u_obj.macs = None
 """.format(password)
     with open(os.path.join("users/", "user_" + named + ".py"), 'w') as f:
