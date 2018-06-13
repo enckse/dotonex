@@ -110,7 +110,7 @@ if [ $diffed -ne 0 ]; then
         cp $USERS $RADIUCAL_HOME/eap_users
         _sig
         # run local reports
-        if [ -e "./reports" ]; then
+        if [ -e "./local-reports" ]; then
             ./local-reports $IS_LOCAL
         fi
         ./reports 0
