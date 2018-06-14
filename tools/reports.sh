@@ -28,13 +28,6 @@ if [ ! -z "$1" ]; then
     DAILY=$1
 fi
 
-# VLAN->User membership
-MEMBERSHIP=${BIN}membership.md
-echo "| vlan | user |
-| ---  | --- |" > $MEMBERSHIP
-
-cat $AUDITS | sed "s/,/ /g" | awk '{print "| " $2, "|", $1 " |"}' | sort -u >> $MEMBERSHIP
-
 # User.VLAN macs assigned
 ASSIGNED=${BIN}assigned.md
 echo "| user | vlan | mac |
