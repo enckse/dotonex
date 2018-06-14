@@ -30,10 +30,10 @@ fi
 
 # User.VLAN macs assigned
 ASSIGNED=${BIN}assigned.md
-echo "| user | vlan | mac |
+echo "| vlan | user | mac |
 | --- | --- | --- |" > $ASSIGNED
 
-cat $AUDITS | sed "s/,/ | /g;s/^/| /g;s/$/ |/g" | sort -u >> $ASSIGNED
+cat $AUDITS | sed "s/,/ /g" | awk '{print "| " $2 " | " $1 " | " $3 " |"}' | sort -u >> $ASSIGNED
 
 if [ $DAILY -ne 1 ]; then
     _post
