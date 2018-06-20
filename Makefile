@@ -13,10 +13,11 @@ GO_TESTS     := go test -v
 PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 TEST_CONFS   := normal norjct
 COMPONENTS   := core server
+TOOLDIR      := tools/
 
 .PHONY: $(COMPONENTS) tools
 
-all: clean modules radiucal scripts integrate tools format
+all: clean modules radiucal tooling integrate tools format
 
 modules: $(PLUGINS)
 components: $(COMPONENTS)
@@ -62,10 +63,19 @@ setup:
 
 clean: setup $(COMPONENTS)
 
-tools:
+tools: analyze netconf
+
+analyze:
 	pycodestyle $(PY)
 	pep257 $(PY)
-	cd tools/tests && ./check.sh
+
+netconf:
+	cd $(TOOLDIR)tests && ./check.sh
+
+tooling: bootstrap scripts
+
+bootstrapper:
+	go build -o $(BIN)/radiucal-bootstrap $(FLAGS) $(TOOLDIR)tooling.go
 
 scripts:
-	m4 -DVERSION='"$(VERSION)"' tools/configure.sh.in > $(BIN)configure
+	m4 -DVERSION='"$(VERSION)"' $(TOOLDIR)configure.sh.in > $(BIN)configure

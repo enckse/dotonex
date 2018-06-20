@@ -19,6 +19,8 @@ const (
 	resourceDir = "/usr/share/radiucal/"
 )
 
+var vers = "master"
+
 func utf16le(s string) []byte {
 	codes := utf16.Encode([]rune(s))
 	b := make([]byte, len(codes)*2)
@@ -118,9 +120,14 @@ func bootstrap() {
 func main() {
 	cmd := flag.String("command", "", "command to execute")
 	flag.Parse()
+	if *cmd == "version" {
+		fmt.Println(vers)
+		return
+	}
 	errored := false
 	for _, check := range []string{userDir, resourceDir} {
 		if goutils.PathNotExists(check) {
+			errored = true
 			fmt.Println(fmt.Sprintf("missing required file/directory: %s", check))
 		}
 	}
