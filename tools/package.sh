@@ -29,8 +29,12 @@ _gen() {
         if [[ "$d" != "$f" ]]; then
             dst="$d/"
         fi
+        srv="false"
+        if echo "$f" | grep -q "reports\.sh"; then
+            srv="true"
+        fi
         name="${fname}Script"
-        echo "    ${name} = &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\"}"
+        echo "    ${name} = &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\", server:$srv}"
         allvars="$name $allvars"
     done
     echo "    files = []*embedded{"

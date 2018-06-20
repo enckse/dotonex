@@ -84,6 +84,7 @@ type embedded struct {
 	name    string
 	exec    bool
 	dest    string
+	server  bool
 }
 
 func (e embedded) write() {
@@ -99,14 +100,18 @@ func (e embedded) write() {
 	ioutil.WriteFile(dest, []byte(e.content), mode)
 }
 
-func bootstrap() {
+func bootstrap(client bool) {
 	for _, f := range files {
+		if client && f.server {
+			continue
+		}
 		f.write()
 	}
 }
 
 func main() {
 	cmd := flag.String("command", "", "command to execute")
+	client := flag.Bool("client", true, "indicate client or server (true is client)")
 	flag.Parse()
 	if *cmd == "version" {
 		fmt.Println(vers)
@@ -129,7 +134,7 @@ func main() {
 	case "useradd":
 		useradd()
 	case "bootstrap":
-		bootstrap()
+		bootstrap(*client)
 	default:
 		fmt.Println("unknown command")
 	}
