@@ -75,4 +75,4 @@ netconf:
 
 bootstrapper:
 	cd $(TOOLDIR) && ./package.sh > $(GENERATED)
-	go build -o $(BIN)radiucal-bootstrap $(FLAGS) $(TOOLDIR)$(GENERATED) $(TOOLDIR)tooling.go
+	go build -o $(BIN)radiucal-admin $(FLAGS) $(TOOLDIR)$(GENERATED) $(TOOLDIR)tooling.go
