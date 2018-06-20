@@ -14,6 +14,11 @@ import (
 	"golang.org/x/crypto/md4"
 )
 
+const (
+	userDir     = "users/"
+	resourceDir = "/usr/share/radiucal/"
+)
+
 func utf16le(s string) []byte {
 	codes := utf16.Encode([]rune(s))
 	b := make([]byte, len(codes)*2)
@@ -40,11 +45,6 @@ func password() {
 	p, h := getPass()
 	fmt.Println(fmt.Sprintf("\npassword:\n%s\n\nmd4:\n%s\n", p, h))
 }
-
-const (
-	userDir     = "users/"
-	resourceDir = "/usr/share/radiucal/"
-)
 
 func useradd() {
 	scanner := bufio.NewScanner(os.Stdin)
