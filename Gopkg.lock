@@ -9,6 +9,12 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["md4"]
+  revision = "7f39a6fea4fe9364fb61e1def6a268a51b4f3a06"
+
+[[projects]]
+  branch = "master"
   name = "layeh.com/radius"
   packages = [
     ".",
@@ -21,6 +27,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a46ff57cf7b0b49d7a6d1b8a95c17a415f4885d2a79a79e69d30339e4badab35"
+  inputs-digest = "74a635f97c4bd2bb3431aa1d958b8bebe0e7fe9677e291dd41671509145f9121"
   solver-name = "gps-cdcl"
   solver-version = 1

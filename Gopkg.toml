@@ -10,3 +10,7 @@ ignored = ["github.com/epiphyte/radiucal/plugins",
 [[constraint]]
   version = "v1.2.2"
   name = "github.com/epiphyte/goutils"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/crypto"
