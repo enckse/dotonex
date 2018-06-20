@@ -3,9 +3,6 @@ RADIUCAL_HOME=/var/lib/radiucal/
 IS_DAILY=/tmp/
 source /etc/environment
 IS_LOCAL=0
-define(VERSION,"master")
-VERS=VERSION
-echo "radiucal tools/utils: $VERS"
 if [ ! -e "/usr/share/radiucal/radiucal-tools" ]; then
     IS_LOCAL=1
 fi

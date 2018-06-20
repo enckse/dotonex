@@ -18,7 +18,7 @@ TOOLDIR      := tools/
 
 .PHONY: $(COMPONENTS) tools
 
-all: clean modules radiucal tooling integrate tools format
+all: clean modules radiucal bootstrapper integrate tools format
 
 modules: $(PLUGINS)
 components: $(COMPONENTS)
@@ -73,11 +73,6 @@ analyze:
 netconf:
 	cd $(TOOLDIR)tests && ./check.sh
 
-tooling: bootstrapper scripts
-
 bootstrapper:
 	cd $(TOOLDIR) && ./package.sh > $(GENERATED)
 	go build -o $(BIN)radiucal-bootstrap $(FLAGS) $(TOOLDIR)$(GENERATED) $(TOOLDIR)tooling.go
-
-scripts:
-	m4 -DVERSION='"$(VERSION)"' $(TOOLDIR)configure.sh.in > $(BIN)configure

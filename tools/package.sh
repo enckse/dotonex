@@ -1,5 +1,5 @@
 #!/bin/bash
-FILES="netconf.py configure.sh.in reports.sh users/__config__.py users/__init__.py"
+FILES="netconf.py configure.sh reports.sh users/__config__.py users/__init__.py"
 _gen() {
     echo "package main"
     echo
