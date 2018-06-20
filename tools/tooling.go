@@ -10,17 +10,17 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"golang.org/x/crypto/md4"
 	"github.com/epiphyte/goutils"
+	"golang.org/x/crypto/md4"
 )
 
 func utf16le(s string) []byte {
-    codes := utf16.Encode([]rune(s))
-    b := make([]byte, len(codes)*2)
-    for i, r := range codes {
-        b[i*2] = byte(r)
-        b[i*2+1] = byte(r >> 8)
-    }
+	codes := utf16.Encode([]rune(s))
+	b := make([]byte, len(codes)*2)
+	for i, r := range codes {
+		b[i*2] = byte(r)
+		b[i*2+1] = byte(r >> 8)
+	}
 	return b
 }
 
@@ -42,7 +42,7 @@ func password() {
 }
 
 const (
-	userDir = "users/"
+	userDir     = "users/"
 	resourceDir = "/usr/share/radiucal/"
 )
 
@@ -50,12 +50,12 @@ func useradd() {
 	scanner := bufio.NewScanner(os.Stdin)
 	text := ""
 	fmt.Println("please input user name:")
-    for scanner.Scan() {
+	for scanner.Scan() {
 		text = strings.TrimSpace(scanner.Text())
 		break
-    }
+	}
 	user := ""
-	for _,c := range text {
+	for _, c := range text {
 		if c >= 'a' && c <= 'z' {
 			user += string(c)
 		}
