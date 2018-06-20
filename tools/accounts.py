@@ -2,18 +2,8 @@
 """Provides configuration management/handling for managing freeradius."""
 import argparse
 import os
-import shutil
-import hashlib
-import json
-import subprocess
 import random
 import string
-import filecmp
-import pwd
-import urllib.parse
-import urllib.request
-import datetime
-import ssl
 import hashlib
 
 # user setup
