@@ -10,8 +10,10 @@ _gen() {
     echo "var ("
     for f in $FILES; do
         fname=$(_name "$f")
+        echo "    // $f"
         echo "    $fname = []string{}"
     done
+    echo "    // all files"
     echo "    $filevar = []*embedded{}"
     echo ")"
     echo
