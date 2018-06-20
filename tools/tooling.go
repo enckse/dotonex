@@ -97,7 +97,13 @@ func (e embedded) write() {
 	if e.exec {
 		mode = 0755
 	}
-	ioutil.WriteFile(dest, []byte(e.content), mode)
+	dest = fmt.Sprintf("%s/%s", dest, e.name)
+	err := ioutil.WriteFile(dest, []byte(e.content), mode)
+	if err != nil {
+		fmt.Println(dest)
+		fmt.Println("error creating file")
+		fmt.Println(err)
+	}
 }
 
 func bootstrap(client bool) {
