@@ -72,7 +72,7 @@ analyze:
 netconf:
 	cd $(TOOLDIR)tests && ./check.sh
 
-tooling: bootstrap scripts
+tooling: bootstrapper scripts
 
 bootstrapper:
 	go build -o $(BIN)/radiucal-bootstrap $(FLAGS) $(TOOLDIR)tooling.go
