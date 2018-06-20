@@ -16,7 +16,6 @@ import (
 
 const (
 	userDir     = "users/"
-	resourceDir = "/usr/share/radiucal/"
 )
 
 var vers = "master"
@@ -80,45 +79,30 @@ u_obj.macs = None
 	fmt.Println(fmt.Sprintf("%s was create with a password of %s", user, p))
 }
 
-func copyFiles(files []string, source, destination string) {
-	src := resourceDir
-	if len(source) > 0 {
-		src = filepath.Join(resourceDir, source)
+type embedded struct {
+	content string
+	name    string
+	exec    bool
+	dest    string
+}
+
+func (e embedded) write() {
+	var mode os.FileMode
+	mode = 0644
+	dest := "."
+	if len(e.dest) > 0 {
+		dest = fmt.Sprintf("%s/%s", e.dest)
 	}
-	for _, f := range files {
-		file := filepath.Join(src, f)
-		if goutils.PathNotExists(file) {
-			continue
-		}
-		dest := filepath.Join(destination, f)
-		if goutils.PathExists(dest) {
-			os.Remove(dest)
-		}
-		shell := strings.HasSuffix(f, ".sh")
-		if shell {
-			dest = dest[0 : len(dest)-3]
-		}
-		cmd := fmt.Sprintf("cp %s %s", file, dest)
-		_, err := goutils.RunBashCommand(cmd)
-		if err != nil {
-			fmt.Println("error copying resources")
-			fmt.Println(cmd)
-			fmt.Println(err)
-		}
-		if shell {
-			_, err := goutils.RunBashCommand(fmt.Sprintf("chmod u+x %s", dest))
-			if err != nil {
-				fmt.Println("unable to set x bit on file")
-				fmt.Println(file)
-				fmt.Println(err)
-			}
-		}
+	if e.exec {
+		mode = 0755
 	}
+	ioutil.WriteFile(dest, []byte(e.content), mode)
 }
 
 func bootstrap() {
-	copyFiles([]string{"configure.sh", "reports.sh", "netconf.py"}, "", ".")
-	copyFiles([]string{"__config__.py", "__init__.py"}, userDir, fmt.Sprintf("./%s", userDir))
+	for _, f := range files {
+		f.write()
+	}
 }
 
 func main() {
@@ -129,7 +113,7 @@ func main() {
 		return
 	}
 	errored := false
-	for _, check := range []string{userDir, resourceDir} {
+	for _, check := range []string{userDir} {
 		if goutils.PathNotExists(check) {
 			errored = true
 			fmt.Println(fmt.Sprintf("missing required file/directory: %s", check))
