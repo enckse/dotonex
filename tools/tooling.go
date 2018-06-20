@@ -41,7 +41,10 @@ func password() {
 	fmt.Println(fmt.Sprintf("\npassword:\n%s\n\nmd4:\n%s\n", p, h))
 }
 
-const userDir = "users/"
+const (
+	userDir = "users/"
+	resourceDir = "/usr/share/radiucal/"
+)
 
 func useradd() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -75,16 +78,54 @@ u_obj.macs = None
 	fmt.Println(fmt.Sprintf("%s was create with a password of %s", user, p))
 }
 
-func bootstrap() {
+func copyFiles(files []string, source, destination string) {
+	src := resourceDir
+	if len(source) > 0 {
+		src = filepath.Join(resourceDir, source)
+	}
+	for _, f := range files {
+		file := filepath.Join(src, f)
+		if goutils.PathNotExists(file) {
+			continue
+		}
+		dest := filepath.Join(destination, f)
+		if goutils.PathExists(dest) {
+			os.Remove(dest)
+		}
+		cmd := fmt.Sprintf("cp %s %s", file, dest)
+		_, err := goutils.RunBashCommand(cmd)
+		if err != nil {
+			fmt.Println("error copying resources")
+			fmt.Println(cmd)
+			fmt.Println(err)
+		}
+		if strings.HasPrefix(f, ".sh") {
+			_, err := goutils.RunBashCommand(fmt.Sprintf("chmod u+x %s", file))
+			if err != nil {
+				fmt.Println("unable to set x bit on file")
+				fmt.Println(file)
+				fmt.Println(err)
+			}
+		}
+	}
+}
 
+func bootstrap() {
+	copyFiles([]string{"configure.sh", "reports.sh", "netconf.py"}, "", ".")
+	copyFiles([]string{"__config__.py", "__init__.py"}, userDir, fmt.Sprintf("./%s", userDir))
 }
 
 func main() {
 	cmd := flag.String("command", "", "command to execute")
 	flag.Parse()
-	if goutils.PathNotExists(userDir) {
-		fmt.Println("can only be run from a configuration location")
-		fmt.Println(fmt.Sprintf("missing: %s", userDir))
+	errored := false
+	for _, check := range []string{userDir, resourceDir} {
+		if goutils.PathNotExists(check) {
+			fmt.Println(fmt.Sprintf("missing required file/directory: %s", check))
+		}
+	}
+	if errored {
+		fmt.Println("see previous errors")
 		return
 	}
 	switch *cmd {
