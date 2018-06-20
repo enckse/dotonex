@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	userDir     = "users/"
+	userDir = "users/"
 )
 
 var vers = "master"
