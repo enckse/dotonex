@@ -94,6 +94,10 @@ func copyFiles(files []string, source, destination string) {
 		if goutils.PathExists(dest) {
 			os.Remove(dest)
 		}
+		shell := strings.HasSuffix(f, ".sh")
+		if shell {
+			dest = dest[0 : len(dest)-3]
+		}
 		cmd := fmt.Sprintf("cp %s %s", file, dest)
 		_, err := goutils.RunBashCommand(cmd)
 		if err != nil {
@@ -101,8 +105,8 @@ func copyFiles(files []string, source, destination string) {
 			fmt.Println(cmd)
 			fmt.Println(err)
 		}
-		if strings.HasPrefix(f, ".sh") {
-			_, err := goutils.RunBashCommand(fmt.Sprintf("chmod u+x %s", file))
+		if shell {
+			_, err := goutils.RunBashCommand(fmt.Sprintf("chmod u+x %s", dest))
 			if err != nil {
 				fmt.Println("unable to set x bit on file")
 				fmt.Println(file)

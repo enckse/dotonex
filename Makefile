@@ -75,7 +75,7 @@ netconf:
 tooling: bootstrapper scripts
 
 bootstrapper:
-	go build -o $(BIN)/radiucal-bootstrap $(FLAGS) $(TOOLDIR)tooling.go
+	go build -o $(BIN)radiucal-bootstrap $(FLAGS) $(TOOLDIR)tooling.go
 
 scripts:
 	m4 -DVERSION='"$(VERSION)"' $(TOOLDIR)configure.sh.in > $(BIN)configure
