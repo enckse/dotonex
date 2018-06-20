@@ -91,7 +91,7 @@ func (e embedded) write() {
 	mode = 0644
 	dest := "."
 	if len(e.dest) > 0 {
-		dest = fmt.Sprintf("%s/%s", e.dest)
+		dest = fmt.Sprintf("%s/%s", dest, e.dest)
 	}
 	if e.exec {
 		mode = 0755
