@@ -80,7 +80,7 @@ u_obj.macs = None
 }
 
 type embedded struct {
-	content string
+	content []string
 	name    string
 	exec    bool
 	dest    string
@@ -98,7 +98,7 @@ func (e embedded) write() {
 		mode = 0755
 	}
 	dest = fmt.Sprintf("%s/%s", dest, e.name)
-	err := ioutil.WriteFile(dest, []byte(e.content), mode)
+	err := ioutil.WriteFile(dest, []byte(strings.Join(e.content, "\n")), mode)
 	if err != nil {
 		fmt.Println(dest)
 		fmt.Println("error creating file")

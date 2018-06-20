@@ -4,21 +4,21 @@ _name() {
     echo "$1" | cut -d "." -f 1 | sed "s#/##g;s#[_]##g"
 }
 _gen() {
+    filevar="files"
     echo "package main"
     echo
-    echo "const ("
-    for f in $FILES; do
-        fname=$(_name "$f")
-        echo "    $fname = \`"
-        cat $f
-        echo "\`"
-    done
-    echo ")"
-    echo
-    allvars=""
     echo "var ("
     for f in $FILES; do
         fname=$(_name "$f")
+        echo "    $fname = []string{}"
+    done
+    echo "    $filevar = []*embedded{}"
+    echo ")"
+    echo
+    echo "func init() {"
+    for f in $FILES; do
+        fname=$(_name "$f")
+        cat $f | sed "s/^/    $fname = append($fname, \`/g;s/$/\`)/g"
         bname=$(basename $f | sed "s/\.sh$//g")
         exc="false"
         if echo "$f" | grep -q "\.sh"; then
@@ -34,14 +34,8 @@ _gen() {
             srv="true"
         fi
         name="${fname}Script"
-        echo "    ${name} = &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\", server:$srv}"
-        allvars="$name $allvars"
+        echo "    $filevar = append(files, &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\", server:$srv})"
     done
-    echo "    files = []*embedded{"
-    for v in $allvars; do
-        echo "        $v,"
-    done
-    echo "    }"
-    echo ")"
+    echo "}"
 }
 _gen
