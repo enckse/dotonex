@@ -87,9 +87,9 @@ you may view an example config for more settings: `/etc/radiucal/example.conf`
 
 ## setup/notes
 
-if you wish to use radiucal-tools to generate certs for hostapd
+if you wish to generate certs for hostapd
 ```
-cd /etc/hostapd/certs
+cd /var/lib/radiucal/certs
 ./renew.sh
 ```
 and follow the prompts
