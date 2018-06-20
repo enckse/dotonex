@@ -1,8 +1,0 @@
-[Unit]
-Description=radiucal network configuration updates application
-
-[Service]
-Type=oneshot
-WorkingDirectory=/var/lib/radiucal/netconf
-ExecStart=/usr/bin/make SERVER=1
-KillMode=none
