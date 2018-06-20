@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/epiphyte/goutils"
   packages = ["."]
-  revision = "73973174c98eabb6f864de7e4ca8e24aa19a333a"
-  version = "v1.2.1"
+  revision = "7c7fa722a73075de415be2c26dd4ae304e1561d9"
+  version = "v1.2.2"
 
 [[projects]]
   branch = "master"
@@ -21,6 +21,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "edd8647b47f799411fa1b7e151d79e294211d9db1fa818a9a68eae23f2f5ff8e"
+  inputs-digest = "a46ff57cf7b0b49d7a6d1b8a95c17a415f4885d2a79a79e69d30339e4badab35"
   solver-name = "gps-cdcl"
   solver-version = 1
