@@ -15,6 +15,13 @@ PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 TEST_CONFS   := normal norjct
 COMPONENTS   := core server
 TOOLDIR      := tools/
+FORMATTER    := $(shell command -v goimports 2> /dev/null)
+
+ifndef FORMATTER
+FORMATTER    := gofmt
+else
+FORMATTER    := goimports
+endif
 
 .PHONY: $(COMPONENTS) tools
 
@@ -53,8 +60,8 @@ radiucalbin:
 	go build -o $(BIN)radiucal $(FLAGS) $(MAIN)
 
 format:
-	@echo $(SRC)
-	exit $(shell echo $(SRC) | grep "\.go$$" | goimports -l $(SRC) | wc -l)
+	@echo $(FORMATTER) $(SRC)
+	exit $(shell echo $(SRC) | grep "\.go$$" | $(FORMATTER) -l $(SRC) | wc -l)
 
 setup:
 	rm -rf $(BIN)
