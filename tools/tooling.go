@@ -34,7 +34,7 @@ func getPass() (string, string) {
 	out, err := goutils.RunBashCommand("pwgen 64 1")
 	if err != nil {
 		goutils.WriteError("pwgen", err)
-		panic("unable to generate password")
+		os.Exit(1)
 	}
 	pass := strings.TrimSpace(strings.Join(out, ""))
 	h := md4.New()
@@ -63,7 +63,7 @@ func useradd() {
 	}
 	if len(user) == 0 {
 		fmt.Println("invalid username")
-		return
+		os.Exit(1)
 	}
 	p, h := getPass()
 	script := fmt.Sprintf(`
@@ -103,6 +103,7 @@ func (e embedded) write() {
 		fmt.Println(dest)
 		fmt.Println("error creating file")
 		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
@@ -121,7 +122,7 @@ func main() {
 	flag.Parse()
 	if *cmd == "version" {
 		fmt.Println(vers)
-		return
+		os.Exit(1)
 	}
 	errored := false
 	for _, check := range []string{userDir} {
@@ -132,7 +133,7 @@ func main() {
 	}
 	if errored {
 		fmt.Println("see previous errors")
-		return
+		os.Exit(1)
 	}
 	switch *cmd {
 	case "pwd":
@@ -143,5 +144,6 @@ func main() {
 		bootstrap(*client)
 	default:
 		fmt.Println("unknown command")
+		os.Exit(1)
 	}
 }
