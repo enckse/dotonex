@@ -5,3 +5,4 @@ tools/users/*
 radiucal.*
 tests/plugins/
 tests/log/
+tools/generated.go

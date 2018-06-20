@@ -2,8 +2,9 @@ BIN          := bin/
 TST          := tests/
 PLUGIN       := plugins/
 HARNESS      := $(TST)harness.go
+GENERATED    := generated.go
 MAIN         := radiucal.go 
-SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/")
+SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/" | grep -v "$(GENERATED)")
 PLUGINS      := log stats debug usermac
 VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
 VERSION      := $(shell git describe --long | sed "s/\([^-]*-g\)/r\1/;s/-/./g")
@@ -75,7 +76,8 @@ netconf:
 tooling: bootstrapper scripts
 
 bootstrapper:
-	go build -o $(BIN)radiucal-bootstrap $(FLAGS) $(TOOLDIR)tooling.go
+	cd $(TOOLDIR) && ./package.sh > $(GENERATED)
+	go build -o $(BIN)radiucal-bootstrap $(FLAGS) $(TOOLDIR)$(GENERATED) $(TOOLDIR)tooling.go
 
 scripts:
 	m4 -DVERSION='"$(VERSION)"' $(TOOLDIR)configure.sh.in > $(BIN)configure
