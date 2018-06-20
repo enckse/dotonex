@@ -89,7 +89,7 @@ you may view an example config for more settings: `/etc/radiucal/example.conf`
 
 if you wish to generate certs for hostapd
 ```
-cd /var/lib/radiucal/certs
+cd /etc/radiucal/certs
 ./renew.sh
 ```
 and follow the prompts
