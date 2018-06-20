@@ -34,8 +34,8 @@ _gen() {
             srv="true"
         fi
         name="${fname}Script"
-        echo "    $filevar = append(files, &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\", server:$srv})"
+        echo "    $filevar = append(files, &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\", server: $srv})"
     done
     echo "}"
 }
-_gen
+_gen | sed "s/^    /\t/g"
