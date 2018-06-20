@@ -55,6 +55,7 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		if f == nil {
 			return
 		}
+		defer f.Close()
 		f.Write([]byte(fmt.Sprintf("id -> %s %d (%s)\n", mode, int(objType), t)))
 		dump := core.NewRequestDump(packet, mode, t)
 		dump.DumpPacket(f)
