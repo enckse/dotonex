@@ -5,6 +5,7 @@ _name() {
 }
 _gen() {
     filevar="files"
+    echo "// this file is auto-generated, do NOT edit it"
     echo "package main"
     echo
     echo "var ("
@@ -20,6 +21,7 @@ _gen() {
     echo "func init() {"
     for f in $FILES; do
         fname=$(_name "$f")
+        echo "    // $fname script"
         cat $f | sed "s/^/    $fname = append($fname, \`/g;s/$/\`)/g"
         bname=$(basename $f | sed "s/\.sh$//g")
         exc="false"
@@ -36,6 +38,7 @@ _gen() {
             srv="true"
         fi
         name="${fname}Script"
+        echo "    // $fname embedded object"
         echo "    $filevar = append(files, &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\", server: $srv})"
     done
     echo "}"
