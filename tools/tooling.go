@@ -129,7 +129,7 @@ func networkConfiguration() {
 		os.Exit(1)
 	}
 	for _, l := range o {
-		goutils.WriteInfo(l)
+		fmt.Println(l)
 	}
 }
 
