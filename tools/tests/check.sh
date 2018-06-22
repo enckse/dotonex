@@ -11,6 +11,7 @@ cp *.py $USRS
 fail=0
 cwd=$PWD
 cd ..
+ls -alh users/
 python netconf.py --output tests/$OUT
 cd $cwd
 fail=$?
