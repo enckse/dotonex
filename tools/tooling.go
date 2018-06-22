@@ -68,7 +68,7 @@ func useradd() {
 	}
 	p, h := getPass()
 	script := fmt.Sprintf(`
-import users.__config__ as __config__
+import netconf as __config__
 import users.common as common
 
 u_obj = __config__.Assignment()
