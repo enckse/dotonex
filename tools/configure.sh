@@ -2,7 +2,6 @@
 RADIUCAL_HOME=/var/lib/radiucal/
 IS_DAILY=/tmp/
 source /etc/environment
-IS_LOCAL=$1
 echo "updating network configuration"
 if [ $IS_LOCAL -eq 0 ]; then
     git reset --hard

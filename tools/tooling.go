@@ -16,6 +16,7 @@ import (
 
 const (
 	userDir = "users/"
+	bash    = "bash"
 )
 
 var vers = "master"
@@ -120,9 +121,21 @@ func bootstrap(client bool) {
 	}
 }
 
-func runScript(name, interpreter string, script []string) {
+func runScript(name, interpreter string, client bool, script []string) {
 	opts := &goutils.RunOptions{}
-	opts.StandardIn = []string{strings.Join(script, "\n")}
+	var useScript []string
+	if interpreter == bash {
+		isClient := 1
+		if !client {
+			isClient = 0
+		}
+		useScript = append(useScript, "#!bin/bash")
+		useScript = append(useScript, fmt.Sprintf("IS_LOCAL=%d", isClient))
+	}
+	for _, l := range script {
+		useScript = append(useScript, l)
+	}
+	opts.StandardIn = []string{strings.Join(useScript, "\n")}
 	o, err := goutils.RunCommandWithOptions(opts, interpreter)
 	if err != nil {
 		goutils.WriteError(fmt.Sprintf("unable to execute script: %s", name), err)
@@ -137,7 +150,8 @@ func main() {
 	cmd := flag.String("command", "", "command to execute")
 	client := flag.Bool("client", true, "indicate client or server (true is client)")
 	flag.Parse()
-	if *cmd == "version" {
+	action := *cmd
+	if action == "version" {
 		fmt.Println(vers)
 		os.Exit(1)
 	}
@@ -152,20 +166,20 @@ func main() {
 		fmt.Println("see previous errors")
 		os.Exit(1)
 	}
-	action := *cmd
+	clientInd := *client
 	switch action {
 	case "pwd":
 		password()
 	case "useradd":
 		useradd()
 	case "bootstrap":
-		bootstrap(*client)
+		bootstrap(clientInd)
 	case "netconf":
-		runScript(action, "python", netconf)
+		runScript(action, "python", clientInd, netconf)
 	case "configure":
-		runScript(action, "bash", configure)
+		runScript(action, bash, clientInd, configure)
 	case "reports":
-		runScript(action, "bash", reports)
+		runScript(action, bash, clientInd, reports)
 	default:
 		fmt.Println("unknown command")
 		os.Exit(1)
