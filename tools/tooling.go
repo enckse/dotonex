@@ -80,11 +80,6 @@ u_obj.macs = None
 	fmt.Println(fmt.Sprintf("%s was create with a password of %s", user, p))
 }
 
-type embedded struct {
-	content []string
-	name    string
-}
-
 func runScript(name, interpreter string, client bool, script []string) {
 	logging := goutils.NewLogOptions()
 	logging.NoVariadic = true
@@ -150,11 +145,11 @@ func main() {
 	case "useradd":
 		useradd()
 	case "netconf":
-		runScript(action, "python", clientInd, netconf)
+		runScript(action, "python", clientInd, netconfScript)
 	case "configure":
-		runScript(action, bash, clientInd, configure)
+		runScript(action, bash, clientInd, configureScript)
 	case "reports":
-		runScript(action, bash, clientInd, reports)
+		runScript(action, bash, clientInd, reportsScript)
 	default:
 		fmt.Println("unknown command")
 		os.Exit(1)
