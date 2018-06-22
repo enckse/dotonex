@@ -95,7 +95,11 @@ def _load_objs(name, typed):
 
 def _get_by_indicator(indicator):
     """get by a file type indicator."""
-    return [x for x in sorted(users.__all__) if x.startswith(indicator)]
+    y = []
+    for p in os.listdir("users"):
+        if p.startswith(indicator):
+            y.append(p.replace(".py", ""))
+    return y
 
 
 def _common_call(common, method, entity):

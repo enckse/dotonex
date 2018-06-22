@@ -8,7 +8,11 @@ rm -rf $OUT
 mkdir -p $OUT
 cp *.py $USRS
 fail=0
-python ../netconf.py --output $OUT
+cwd=$PWD
+cd ..
+python netconf.py --output tests/$OUT
+cd tests
+cd $cwd
 fail=$?
 cat $AUDIT_CSV | sort > $AUDIT_CSV_SORT
 mv $AUDIT_CSV_SORT $AUDIT_CSV
