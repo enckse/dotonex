@@ -2,7 +2,6 @@
 """composes the config from user definitions."""
 import argparse
 import os
-import users
 import importlib
 import csv
 from datetime import datetime
