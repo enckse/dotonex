@@ -6,3 +6,4 @@ radiucal.*
 tests/plugins/
 tests/log/
 tools/generated.go
+__pycache__/
