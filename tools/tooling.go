@@ -122,8 +122,13 @@ func bootstrap(client bool) {
 }
 
 func runScript(name, interpreter string, client bool, script []string) {
+	logging := goutils.NewLogOptions()
+	logging.NoVariadic = true
+	logging.NoLevel = true
+	logging.Info = true
+	goutils.ConfigureLogging(logging)
 	opts := &goutils.RunOptions{}
-	opts.DumpStderr = true
+	opts.OnError = goutils.DumpStdall
 	opts.StdoutDelimiter = "\n"
 	updated := ""
 	var useScript []string
@@ -142,6 +147,7 @@ func runScript(name, interpreter string, client bool, script []string) {
 		}
 		useScript = append(useScript, l)
 	}
+	opts.WorkingDir = "."
 	opts.Stdin = []string{strings.Join(useScript, "\n")}
 	o, err := goutils.RunCommandWithOptions(opts, interpreter)
 	if err != nil {

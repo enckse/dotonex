@@ -97,15 +97,15 @@ _update_files() {
 
 if [ $diffed -ne 0 ]; then
     echo "network configuration updated"
+    if [ -e "./local-reports" ]; then
+        ./local-reports $IS_LOCAL
+    fi
     if [ $IS_LOCAL -eq 0 ]; then
         git log --pretty=oneline --abbrev-commit -n 1 | smirc --report
         _update_files
         cp $USERS $RADIUCAL_HOME/eap_users
         _sig
         # run local reports
-        if [ -e "./local-reports" ]; then
-            ./local-reports $IS_LOCAL
-        fi
         radiucal-admin --command "reports"
     fi
 fi
