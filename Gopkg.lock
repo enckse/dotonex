@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/epiphyte/goutils"
   packages = ["."]
-  revision = "d39e64c6aa4cb628247611e3e4900f3d7fac8970"
+  revision = "7882a584967549796aa9c693a8d56da0527a4a15"
 
 [[projects]]
   branch = "master"

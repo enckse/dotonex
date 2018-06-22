@@ -123,6 +123,7 @@ func bootstrap(client bool) {
 
 func runScript(name, interpreter string, client bool, script []string) {
 	opts := &goutils.RunOptions{}
+	opts.DumpStderr = true
 	var useScript []string
 	if interpreter == bash {
 		isClient := 1
@@ -135,7 +136,7 @@ func runScript(name, interpreter string, client bool, script []string) {
 	for _, l := range script {
 		useScript = append(useScript, l)
 	}
-	opts.StandardIn = []string{strings.Join(useScript, "\n")}
+	opts.Stdin = []string{strings.Join(useScript, "\n")}
 	o, err := goutils.RunCommandWithOptions(opts, interpreter)
 	if err != nil {
 		goutils.WriteError(fmt.Sprintf("unable to execute script: %s", name), err)
