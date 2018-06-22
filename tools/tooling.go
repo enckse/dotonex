@@ -124,6 +124,7 @@ func bootstrap(client bool) {
 func runScript(name, interpreter string, client bool, script []string) {
 	opts := &goutils.RunOptions{}
 	opts.DumpStderr = true
+	opts.StdoutDelimiter = "\n"
 	var useScript []string
 	if interpreter == bash {
 		isClient := 1
