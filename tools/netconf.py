@@ -265,7 +265,7 @@ def _get_by_indicator(indicator):
     for p in os.listdir("users"):
         if p.startswith(indicator):
             y.append(p.replace(".py", ""))
-    return y
+    return list(sorted(y))
 
 
 def _common_call(common, method, entity):
