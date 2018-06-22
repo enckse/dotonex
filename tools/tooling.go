@@ -83,42 +83,6 @@ u_obj.macs = None
 type embedded struct {
 	content []string
 	name    string
-	exec    bool
-	dest    string
-	server  bool
-	memory  bool
-}
-
-func (e embedded) write() {
-	var mode os.FileMode
-	mode = 0644
-	dest := "."
-	if len(e.dest) > 0 {
-		dest = fmt.Sprintf("%s/%s", dest, e.dest)
-	}
-	if e.exec {
-		mode = 0755
-	}
-	dest = fmt.Sprintf("%s/%s", dest, e.name)
-	err := ioutil.WriteFile(dest, []byte(strings.Join(e.content, "\n")), mode)
-	if err != nil {
-		fmt.Println(dest)
-		fmt.Println("error creating file")
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-func bootstrap(client bool) {
-	for _, f := range files {
-		if client && f.server {
-			continue
-		}
-		if f.memory {
-			continue
-		}
-		f.write()
-	}
 }
 
 func runScript(name, interpreter string, client bool, script []string) {
@@ -185,8 +149,6 @@ func main() {
 		password()
 	case "useradd":
 		useradd()
-	case "bootstrap":
-		bootstrap(clientInd)
 	case "netconf":
 		runScript(action, "python", clientInd, netconf)
 	case "configure":

@@ -1,5 +1,5 @@
 """User with attributes."""
-import users.__config__ as __config__
+import netconf as __config__
 normal = __config__.Assignment()
 normal.macs = ["001122334455"]
 normal.vlan = "dev"
