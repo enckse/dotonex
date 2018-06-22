@@ -41,6 +41,7 @@ if [ $IS_LOCAL -eq 0 ]; then
     fi
 fi
 
+echo "# empty init" > users/__init__.py
 radiucal-admin --command netconf
 if [ $? -ne 0 ]; then
     echo "composition errors"
