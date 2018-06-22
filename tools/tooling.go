@@ -85,6 +85,7 @@ type embedded struct {
 	exec    bool
 	dest    string
 	server  bool
+	memory  bool
 }
 
 func (e embedded) write() {
@@ -112,6 +113,9 @@ func bootstrap(client bool) {
 		if client && f.server {
 			continue
 		}
+		if f.memory {
+			continue
+		}
 		f.write()
 	}
 }
@@ -119,8 +123,14 @@ func bootstrap(client bool) {
 func networkConfiguration() {
 	opts := &goutils.RunOptions{}
 	opts.StandardIn = []string{strings.Join(netconf, "\n")}
-	o, _ := goutils.RunCommandWithOptions(opts, "python")
-	goutils.WriteInfo("ERROR", o...)
+	o, err := goutils.RunCommandWithOptions(opts, "python")
+	if err != nil {
+		goutils.WriteError("unable to perform netconf", err)
+		os.Exit(1)
+	}
+	for _, l := range o {
+		goutils.WriteInfo(l)
+	}
 }
 
 func main() {

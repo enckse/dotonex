@@ -42,7 +42,7 @@ if [ $IS_LOCAL -eq 0 ]; then
     fi
 fi
 
-python netconf.py --output $PWD/$BIN
+radiucal-admin --command netconf
 if [ $? -ne 0 ]; then
     echo "composition errors"
     exit 1

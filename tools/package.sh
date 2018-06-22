@@ -37,9 +37,13 @@ _gen() {
         if echo "$f" | grep -q "reports\.sh"; then
             srv="true"
         fi
+        mem="false"
+        if echo "$f" | grep -q "netconf\.py"; then
+            mem="true"
+        fi
         name="${fname}Script"
         echo "    // $fname embedded object"
-        echo "    $filevar = append(files, &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\", server: $srv})"
+        echo "    $filevar = append(files, &embedded{content: $fname, name: \"$bname\", exec: $exc, dest: \"$dst\", server: $srv, memory: $mem})"
     done
     echo "}"
 }
