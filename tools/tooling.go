@@ -125,16 +125,21 @@ func runScript(name, interpreter string, client bool, script []string) {
 	opts := &goutils.RunOptions{}
 	opts.DumpStderr = true
 	opts.StdoutDelimiter = "\n"
+	updated := ""
 	var useScript []string
 	if interpreter == bash {
 		isClient := 1
 		if !client {
 			isClient = 0
 		}
-		useScript = append(useScript, "#!bin/bash")
+		updated = "#!/bin/bash"
+		useScript = append(useScript, updated)
 		useScript = append(useScript, fmt.Sprintf("IS_LOCAL=%d", isClient))
 	}
 	for _, l := range script {
+		if len(updated) > 0 && strings.HasPrefix(l, updated) {
+			continue
+		}
 		useScript = append(useScript, l)
 	}
 	opts.Stdin = []string{strings.Join(useScript, "\n")}
