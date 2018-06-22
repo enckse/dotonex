@@ -38,7 +38,7 @@ _gen() {
             srv="true"
         fi
         mem="false"
-        if echo "$f" | grep -q "netconf\.py"; then
+        if echo "$f" | grep -q -E "(netconf\.py|reports\.sh|configure\.sh)"; then
             mem="true"
         fi
         name="${fname}Script"

@@ -120,12 +120,12 @@ func bootstrap(client bool) {
 	}
 }
 
-func networkConfiguration() {
+func runScript(name, interpreter string, script []string) {
 	opts := &goutils.RunOptions{}
-	opts.StandardIn = []string{strings.Join(netconf, "\n")}
-	o, err := goutils.RunCommandWithOptions(opts, "python")
+	opts.StandardIn = []string{strings.Join(script, "\n")}
+	o, err := goutils.RunCommandWithOptions(opts, interpreter)
 	if err != nil {
-		goutils.WriteError("unable to perform netconf", err)
+		goutils.WriteError(fmt.Sprintf("unable to execute script: %s", name), err)
 		os.Exit(1)
 	}
 	for _, l := range o {
@@ -152,7 +152,8 @@ func main() {
 		fmt.Println("see previous errors")
 		os.Exit(1)
 	}
-	switch *cmd {
+	action := *cmd
+	switch action {
 	case "pwd":
 		password()
 	case "useradd":
@@ -160,7 +161,11 @@ func main() {
 	case "bootstrap":
 		bootstrap(*client)
 	case "netconf":
-		networkConfiguration()
+		runScript(action, "python", netconf)
+	case "configure":
+		runScript(action, "bash", configure)
+	case "reports":
+		runScript(action, "bash", reports)
 	default:
 		fmt.Println("unknown command")
 		os.Exit(1)

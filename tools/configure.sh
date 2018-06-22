@@ -107,6 +107,6 @@ if [ $diffed -ne 0 ]; then
         if [ -e "./local-reports" ]; then
             ./local-reports $IS_LOCAL
         fi
-        ./reports 0
+        radiucal-admin --comand "reports"
     fi
 fi
