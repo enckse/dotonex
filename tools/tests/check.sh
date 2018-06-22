@@ -7,6 +7,7 @@ AUDIT_CSV_SORT="${OUT}audit.sort.csv"
 rm -rf $OUT
 mkdir -p $OUT
 mkdir -p $USRS
+echo "# empty init" > $USRS/__init__.py
 cp *.py $USRS
 fail=0
 cwd=$PWD
