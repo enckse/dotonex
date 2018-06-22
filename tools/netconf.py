@@ -320,7 +320,7 @@ def main():
     success = False
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument("--output", type=str, required=True)
+        parser.add_argument("--output", type=str, default="bin/")
         args = parser.parse_args()
         _process(args.output)
         success = True

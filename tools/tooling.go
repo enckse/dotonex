@@ -116,6 +116,13 @@ func bootstrap(client bool) {
 	}
 }
 
+func networkConfiguration() {
+	opts := &goutils.RunOptions{}
+	opts.StandardIn = []string{strings.Join(netconf, "\n")}
+	o, _ := goutils.RunCommandWithOptions(opts, "python")
+	goutils.WriteInfo("ERROR", o...)
+}
+
 func main() {
 	cmd := flag.String("command", "", "command to execute")
 	client := flag.Bool("client", true, "indicate client or server (true is client)")
@@ -142,6 +149,8 @@ func main() {
 		useradd()
 	case "bootstrap":
 		bootstrap(*client)
+	case "netconf":
+		networkConfiguration()
 	default:
 		fmt.Println("unknown command")
 		os.Exit(1)
