@@ -41,6 +41,7 @@ if [ $IS_LOCAL -eq 0 ]; then
     fi
 fi
 
+ls users/ | grep -E "^(user|vlan)[_]" | cut -d "." -f 1 | tr '\n' ',' | sed "s/^/__all__ = ['/g;s/,$/']/g;s/,/', '/g" > users/__init__.py
 radiucal-admin --command netconf
 if [ $? -ne 0 ]; then
     echo "composition errors"

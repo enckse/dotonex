@@ -11,7 +11,7 @@ cp *.py $USRS
 fail=0
 cwd=$PWD
 cd ..
-ls -alh users/
+ls users/ | grep -E "^(user|vlan)[_]" | cut -d "." -f 1 | tr '\n' ',' | sed "s/^/__all__ = ['/g;s/,$/']/g;s/,/', '/g" > users/__init__.py
 python netconf.py --output tests/$OUT
 cd $cwd
 fail=$?
