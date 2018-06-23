@@ -11,14 +11,12 @@ VERSION      := $(shell git describe --long | sed "s/\([^-]*-g\)/r\1/;s/-/./g")
 FLAGS        := -ldflags '-s -w -X main.vers=$(VERSION)' -buildmode=pie
 PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
 GO_TESTS     := go test -v
-PY           := $(shell find . -type f -name "*.py" | grep -v "\_\_init\_\_.py")
 TEST_CONFS   := normal norjct
 COMPONENTS   := core server
-TOOLDIR      := tools/
 
 .PHONY: $(COMPONENTS) tools
 
-all: clean modules radiucal bootstrapper integrate tools format
+all: clean modules radiucal integrate format
 
 modules: $(PLUGINS)
 components: $(COMPONENTS)
@@ -63,16 +61,3 @@ setup:
 	mkdir -p $(VENDOR_LOCAL)
 
 clean: setup $(COMPONENTS)
-
-tools: analyze netconf
-
-analyze:
-	pycodestyle $(PY)
-	pep257 $(PY)
-
-netconf:
-	cd $(TOOLDIR)tests && ./check.sh
-
-bootstrapper:
-	cd $(TOOLDIR) && go run tooling.go --command pack
-	go build -o $(BIN)radiucal-admin $(FLAGS) $(TOOLDIR)$(GENERATED) $(TOOLDIR)tooling.go

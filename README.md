@@ -113,6 +113,8 @@ tools to:
 * help setup hostapd
 * manage radiucal/hostapd settings
 
+source code is [here](https://git.epiphyte.network/cgit/cgit.cgi/prodtools/)
+
 ### certs
 
 please see above but a cert generation setup is installed in the etc area for hostapd
