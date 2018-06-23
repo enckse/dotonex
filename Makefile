@@ -74,5 +74,5 @@ netconf:
 	cd $(TOOLDIR)tests && ./check.sh
 
 bootstrapper:
-	cd $(TOOLDIR) && ./package.sh > $(GENERATED)
+	cd $(TOOLDIR) && go run package.go | sed "s/    /\t/g" > $(GENERATED)
 	go build -o $(BIN)radiucal-admin $(FLAGS) $(TOOLDIR)$(GENERATED) $(TOOLDIR)tooling.go

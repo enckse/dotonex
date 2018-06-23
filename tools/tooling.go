@@ -80,7 +80,15 @@ u_obj.macs = None
 	fmt.Println(fmt.Sprintf("%s was create with a password of %s", user, p))
 }
 
-func runScript(name, interpreter string, client bool, script []string) {
+func runScript(name, interpreter string, client bool, gzip []string) {
+	m := &goutils.MemoryStringCompression{}
+	m.Content = gzip
+	res, err := goutils.MemoryStringDecompress(m)
+	if err != nil {
+		goutils.WriteError("unable to extract resources", err)
+		os.Exit(1)
+	}
+	script := []string{res}
 	logging := goutils.NewLogOptions()
 	logging.NoVariadic = true
 	logging.NoLevel = true
