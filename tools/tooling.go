@@ -15,8 +15,15 @@ import (
 )
 
 const (
-	userDir = "users/"
-	bash    = "bash"
+	userDir      = "users/"
+	bash         = "bash"
+	pwdKey       = "pwd"
+	useraddKey   = "useradd"
+	netconfKey   = "netconf"
+	configureKey = "configure"
+	reportsKey   = "reports"
+	packKey      = "pack"
+	versionKey   = "version"
 )
 
 var (
@@ -24,7 +31,14 @@ var (
 	netconfScript   = []string{}
 	configureScript = []string{}
 	reportsScript   = []string{}
+	skipUserDir     = make(map[string]struct{})
 )
+
+func init() {
+	skipUserDir[packKey] = struct{}{}
+	skipUserDir[versionKey] = struct{}{}
+	skipUserDir[pwdKey] = struct{}{}
+}
 
 func utf16le(s string) []byte {
 	codes := utf16.Encode([]rune(s))
@@ -55,10 +69,15 @@ func die(err error) {
 }
 
 func dieNow(message string, err error, now bool) {
+	messaged := false
 	if err != nil {
+		messaged = true
 		goutils.WriteError(message, err)
 	}
 	if now {
+		if !messaged {
+			goutils.WriteWarn(message)
+		}
 		os.Exit(1)
 	}
 }
@@ -137,32 +156,32 @@ func main() {
 	client := flag.Bool("client", true, "indicate client or server (true is client)")
 	flag.Parse()
 	action := *cmd
-	if action == "version" {
-		fmt.Println(vers)
-		os.Exit(0)
-	}
 	errored := false
-	for _, check := range []string{userDir} {
-		if goutils.PathNotExists(check) {
-			errored = true
-			fmt.Println(fmt.Sprintf("missing required file/directory: %s", check))
+	if _, ok := skipUserDir[action]; !ok {
+		for _, check := range []string{userDir} {
+			if goutils.PathNotExists(check) {
+				errored = true
+				fmt.Println(fmt.Sprintf("missing required file/directory: %s", check))
+			}
 		}
 	}
 	dieNow("see previous error", nil, errored)
 	clientInd := *client
 	switch action {
-	case "pwd":
+	case pwdKey:
 		password()
-	case "useradd":
+	case useraddKey:
 		useradd()
-	case "netconf":
+	case netconfKey:
 		runScript(action, "python", clientInd, netconfScript)
-	case "configure":
+	case configureKey:
 		runScript(action, bash, clientInd, configureScript)
-	case "reports":
+	case reportsKey:
 		runScript(action, bash, clientInd, reportsScript)
-	case "pack":
+	case packKey:
 		pack()
+	case versionKey:
+		fmt.Println(vers)
 	default:
 		dieNow("unknown command", nil, true)
 	}
