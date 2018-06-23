@@ -26,9 +26,11 @@ const (
 	versionKey   = "version"
 )
 
+type Script func() []string
+
 var (
 	vers        = "master"
-	scripting   = make(map[string][]string)
+	scripting   = make(map[string]Script)
 	skipUserDir = make(map[string]struct{})
 	embed       = []string{}
 )
@@ -117,7 +119,7 @@ func runScript(name, interpreter string, client bool) {
 	m := goutils.MemoryStringCompression{}
 	v, ok := scripting[name]
 	dieNow("no script", nil, !ok)
-	m.Content = v
+	m.Content = v()
 	res, err := m.Decompress()
 	die(err)
 	script := []string{res}
@@ -197,23 +199,32 @@ func pack() {
 	file = append(file, "package main")
 	opts := goutils.NewCompressionOptions()
 	opts.Length = 100
+	var callbacks []string
 	file = append(file, "")
-	file = append(file, "func init() {")
 	for _, f := range embed {
 		dieNow("missing file", nil, goutils.PathNotExists(f))
 		fname := strings.Split(f, ".")[0]
 		name := fmt.Sprintf("%sScript", fname)
+		fxn := fmt.Sprintf("%sLoad", fname)
+		callbacks = append(callbacks, fmt.Sprintf("\tscripting[\"%s\"] = %s", name, fxn))
+		file = append(file, fmt.Sprintf("// %s embedded", fname))
+		file = append(file, fmt.Sprintf("func %s() []string {", fxn))
 		r, err := ioutil.ReadFile(f)
 		die(err)
 		c := goutils.MemoryStringCompression{}
 		err = c.Compress(opts, string(r))
 		die(err)
-		file = append(file, fmt.Sprintf("\t// %s compression", name))
 		file = append(file, fmt.Sprintf("\tvar %s []string", name))
 		for _, l := range c.Content {
 			file = append(file, fmt.Sprintf("\t%s = append(%s, `%s`)", name, name, l))
 		}
-		file = append(file, fmt.Sprintf("\tscripting[\"%s\"] = %s", fname, name))
+		file = append(file, fmt.Sprintf("\treturn %s", name))
+		file = append(file, "}")
+		file = append(file, "")
+	}
+	file = append(file, "func init() {")
+	for _, s := range callbacks {
+		file = append(file, s)
 	}
 	file = append(file, "}")
 	file = append(file, "")
