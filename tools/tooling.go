@@ -206,7 +206,7 @@ func pack() {
 		fname := strings.Split(f, ".")[0]
 		name := fmt.Sprintf("%sScript", fname)
 		fxn := fmt.Sprintf("%sLoad", fname)
-		callbacks = append(callbacks, fmt.Sprintf("\tscripting[\"%s\"] = %s", name, fxn))
+		callbacks = append(callbacks, fmt.Sprintf("\tscripting[\"%s\"] = %s", fname, fxn))
 		file = append(file, fmt.Sprintf("// %s embedded", fname))
 		file = append(file, fmt.Sprintf("func %s() []string {", fxn))
 		r, err := ioutil.ReadFile(f)
