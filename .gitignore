@@ -1,9 +1,6 @@
 vendor/
 bin/
-tools/certs/*
-tools/users/*
+certs/*
 radiucal.*
 tests/plugins/
 tests/log/
-tools/generated.go
-__pycache__/
