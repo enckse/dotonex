@@ -27,17 +27,19 @@ const (
 )
 
 var (
-	vers            = "master"
-	netconfScript   = goutils.MemoryStringCompression{}
-	configureScript = goutils.MemoryStringCompression{}
-	reportsScript   = goutils.MemoryStringCompression{}
-	skipUserDir     = make(map[string]struct{})
+	vers        = "master"
+	scripting   = make(map[string][]string)
+	skipUserDir = make(map[string]struct{})
+	embed       = []string{}
 )
 
 func init() {
 	skipUserDir[packKey] = struct{}{}
 	skipUserDir[versionKey] = struct{}{}
 	skipUserDir[pwdKey] = struct{}{}
+	embed = append(embed, fmt.Sprintf("%s.py", netconfKey))
+	embed = append(embed, fmt.Sprintf("%s.sh", reportsKey))
+	embed = append(embed, fmt.Sprintf("%s.sh", configureKey))
 }
 
 func utf16le(s string) []byte {
@@ -111,7 +113,11 @@ u_obj.macs = None
 	fmt.Println(fmt.Sprintf("%s was create with a password of %s", user, p))
 }
 
-func runScript(name, interpreter string, client bool, m goutils.MemoryStringCompression) {
+func runScript(name, interpreter string, client bool) {
+	m := goutils.MemoryStringCompression{}
+	v, ok := scripting[name]
+	dieNow("no script", nil, !ok)
+	m.Content = v
 	res, err := m.Decompress()
 	die(err)
 	script := []string{res}
@@ -171,11 +177,11 @@ func main() {
 	case useraddKey:
 		useradd()
 	case netconfKey:
-		runScript(action, "python", clientInd, netconfScript)
+		runScript(action, "python", clientInd)
 	case configureKey:
-		runScript(action, bash, clientInd, configureScript)
+		runScript(action, bash, clientInd)
 	case reportsKey:
-		runScript(action, bash, clientInd, reportsScript)
+		runScript(action, bash, clientInd)
 	case packKey:
 		pack()
 	case versionKey:
@@ -193,18 +199,21 @@ func pack() {
 	opts.Length = 100
 	file = append(file, "")
 	file = append(file, "func init() {")
-	for _, f := range []string{"configure.sh", "reports.sh", "netconf.py"} {
+	for _, f := range embed {
 		dieNow("missing file", nil, goutils.PathNotExists(f))
-		name := strings.Split(f, ".")[0] + "Script"
+		fname := strings.Split(f, ".")[0]
+		name := fmt.Sprintf("%sScript", fname)
 		r, err := ioutil.ReadFile(f)
 		die(err)
 		c := goutils.MemoryStringCompression{}
 		err = c.Compress(opts, string(r))
 		die(err)
 		file = append(file, fmt.Sprintf("\t// %s compression", name))
+		file = append(file, fmt.Sprintf("\tvar %s []string", name))
 		for _, l := range c.Content {
-			file = append(file, fmt.Sprintf("\t%s.Content = append(%s.Content, `%s`)", name, name, l))
+			file = append(file, fmt.Sprintf("\t%s = append(%s, `%s`)", name, name, l))
 		}
+		file = append(file, fmt.Sprintf("\tscripting[\"%s\"] = %s", fname, name))
 	}
 	file = append(file, "}")
 	file = append(file, "")
