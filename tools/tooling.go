@@ -169,12 +169,13 @@ func main() {
 }
 
 func pack() {
-	fmt.Println("// this file is auto-generated, do NOT edit it")
-	fmt.Println("package main")
+	file := []string{}
+	file = append(file, "// this file is auto-generated, do NOT edit it")
+	file = append(file, "package main")
 	opts := goutils.NewCompressionOptions()
 	opts.Length = 100
-	fmt.Println("")
-	fmt.Println("func init() {")
+	file = append(file, "")
+	file = append(file, "func init() {")
 	for _, f := range []string{"configure.sh", "reports.sh", "netconf.py"} {
 		dieNow("missing file", nil, goutils.PathNotExists(f))
 		name := strings.Split(f, ".")[0] + "Script"
@@ -182,10 +183,13 @@ func pack() {
 		die(err)
 		c, err := goutils.MemoryStringCompress(opts, string(r))
 		die(err)
-		fmt.Println(fmt.Sprintf("    // %s compression", name))
+		file = append(file, fmt.Sprintf("\t// %s compression", name))
 		for _, l := range c.Content {
-			fmt.Println(fmt.Sprintf("    %s = append(%s, `%s`)", name, name, l))
+			file = append(file, fmt.Sprintf("\t%s = append(%s, `%s`)", name, name, l))
 		}
 	}
-	fmt.Println("}")
+	file = append(file, "}")
+	file = append(file, "")
+	err := ioutil.WriteFile("generated.go", []byte(strings.Join(file, "\n")), 0644)
+	die(err)
 }
