@@ -19,7 +19,12 @@ const (
 	bash    = "bash"
 )
 
-var vers = "master"
+var (
+	vers            = "master"
+	netconfScript   = []string{}
+	configureScript = []string{}
+	reportsScript   = []string{}
+)
 
 func utf16le(s string) []byte {
 	codes := utf16.Encode([]rune(s))
@@ -33,10 +38,7 @@ func utf16le(s string) []byte {
 
 func getPass() (string, string) {
 	out, err := goutils.RunBashCommand("pwgen 64 1")
-	if err != nil {
-		goutils.WriteError("pwgen", err)
-		os.Exit(1)
-	}
+	die(err)
 	pass := strings.TrimSpace(strings.Join(out, ""))
 	h := md4.New()
 	h.Write(utf16le(pass))
@@ -46,6 +48,19 @@ func getPass() (string, string) {
 func password() {
 	p, h := getPass()
 	fmt.Println(fmt.Sprintf("\npassword:\n%s\n\nmd4:\n%s\n", p, h))
+}
+
+func die(err error) {
+	dieNow("unrecoverable error", err, err != nil)
+}
+
+func dieNow(message string, err error, now bool) {
+	if err != nil {
+		goutils.WriteError(message, err)
+	}
+	if now {
+		os.Exit(1)
+	}
 }
 
 func useradd() {
@@ -62,10 +77,7 @@ func useradd() {
 			user += string(c)
 		}
 	}
-	if len(user) == 0 {
-		fmt.Println("invalid username")
-		os.Exit(1)
-	}
+	dieNow("invalid username", nil, len(user) == 0)
 	p, h := getPass()
 	script := fmt.Sprintf(`
 import netconf as __config__
@@ -84,10 +96,7 @@ func runScript(name, interpreter string, client bool, gzip []string) {
 	m := &goutils.MemoryStringCompression{}
 	m.Content = gzip
 	res, err := goutils.MemoryStringDecompress(m)
-	if err != nil {
-		goutils.WriteError("unable to extract resources", err)
-		os.Exit(1)
-	}
+	die(err)
 	script := []string{res}
 	logging := goutils.NewLogOptions()
 	logging.NoVariadic = true
@@ -117,10 +126,7 @@ func runScript(name, interpreter string, client bool, gzip []string) {
 	opts.WorkingDir = "."
 	opts.Stdin = []string{strings.Join(useScript, "\n")}
 	o, err := goutils.RunCommandWithOptions(opts, interpreter)
-	if err != nil {
-		goutils.WriteError(fmt.Sprintf("unable to execute script: %s", name), err)
-		os.Exit(1)
-	}
+	die(err)
 	for _, l := range o {
 		fmt.Println(l)
 	}
@@ -133,7 +139,7 @@ func main() {
 	action := *cmd
 	if action == "version" {
 		fmt.Println(vers)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	errored := false
 	for _, check := range []string{userDir} {
@@ -142,10 +148,7 @@ func main() {
 			fmt.Println(fmt.Sprintf("missing required file/directory: %s", check))
 		}
 	}
-	if errored {
-		fmt.Println("see previous errors")
-		os.Exit(1)
-	}
+	dieNow("see previous error", nil, errored)
 	clientInd := *client
 	switch action {
 	case "pwd":
@@ -158,8 +161,31 @@ func main() {
 		runScript(action, bash, clientInd, configureScript)
 	case "reports":
 		runScript(action, bash, clientInd, reportsScript)
+	case "pack":
+		pack()
 	default:
-		fmt.Println("unknown command")
-		os.Exit(1)
+		dieNow("unknown command", nil, true)
 	}
+}
+
+func pack() {
+	fmt.Println("// this file is auto-generated, do NOT edit it")
+	fmt.Println("package main")
+	opts := goutils.NewCompressionOptions()
+	opts.Length = 100
+	fmt.Println("")
+	fmt.Println("func init() {")
+	for _, f := range []string{"configure.sh", "reports.sh", "netconf.py"} {
+		dieNow("missing file", nil, goutils.PathNotExists(f))
+		name := strings.Split(f, ".")[0] + "Script"
+		r, err := ioutil.ReadFile(f)
+		die(err)
+		c, err := goutils.MemoryStringCompress(opts, string(r))
+		die(err)
+		fmt.Println(fmt.Sprintf("    // %s compression", name))
+		for _, l := range c.Content {
+			fmt.Println(fmt.Sprintf("    %s = append(%s, `%s`)", name, name, l))
+		}
+	}
+	fmt.Println("}")
 }
