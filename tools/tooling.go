@@ -114,7 +114,7 @@ u_obj.macs = None
 func runScript(name, interpreter string, client bool, gzip []string) {
 	m := &goutils.MemoryStringCompression{}
 	m.Content = gzip
-	res, err := goutils.MemoryStringDecompress(m)
+	res, err := m.Decompress()
 	die(err)
 	script := []string{res}
 	logging := goutils.NewLogOptions()
@@ -200,7 +200,8 @@ func pack() {
 		name := strings.Split(f, ".")[0] + "Script"
 		r, err := ioutil.ReadFile(f)
 		die(err)
-		c, err := goutils.MemoryStringCompress(opts, string(r))
+		c := goutils.MemoryStringCompression{}
+		err = c.Compress(opts, string(r))
 		die(err)
 		file = append(file, fmt.Sprintf("\t// %s compression", name))
 		for _, l := range c.Content {
