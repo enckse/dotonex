@@ -28,9 +28,9 @@ const (
 
 var (
 	vers            = "master"
-	netconfScript   = []string{}
-	configureScript = []string{}
-	reportsScript   = []string{}
+	netconfScript   = goutils.MemoryStringCompression{}
+	configureScript = goutils.MemoryStringCompression{}
+	reportsScript   = goutils.MemoryStringCompression{}
 	skipUserDir     = make(map[string]struct{})
 )
 
@@ -111,9 +111,7 @@ u_obj.macs = None
 	fmt.Println(fmt.Sprintf("%s was create with a password of %s", user, p))
 }
 
-func runScript(name, interpreter string, client bool, gzip []string) {
-	m := &goutils.MemoryStringCompression{}
-	m.Content = gzip
+func runScript(name, interpreter string, client bool, m goutils.MemoryStringCompression) {
 	res, err := m.Decompress()
 	die(err)
 	script := []string{res}
@@ -205,7 +203,7 @@ func pack() {
 		die(err)
 		file = append(file, fmt.Sprintf("\t// %s compression", name))
 		for _, l := range c.Content {
-			file = append(file, fmt.Sprintf("\t%s = append(%s, `%s`)", name, name, l))
+			file = append(file, fmt.Sprintf("\t%s.Content = append(%s.Content, `%s`)", name, name, l))
 		}
 	}
 	file = append(file, "}")
