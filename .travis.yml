@@ -11,11 +11,6 @@ before_install:
   - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
   # Make the binary executable
   - chmod +x $GOPATH/bin/dep
-  - sudo apt-get -qq update
-  - sudo apt-get install -y python3 python3-setuptools
-  - sudo easy_install3 pip
-  - sudo pip install pycodestyle pep257
-
 
 script:
     - go get -u golang.org/x/tools/cmd/goimports
