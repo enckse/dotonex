@@ -52,14 +52,9 @@ install from the epiphyte [repository](https://mirror.epiphyte.network/repos)
 pacman -S hostapd-server radiucal
 ```
 
-adminstrative machines should install
+handle network configuration
 ```
 pacman -S radiucual-utils
-```
-
-matching tooling for utils on a server
-```
-pacman -S radiucal-tools
 ```
 
 ## services
@@ -113,11 +108,7 @@ run (with a socket listening to be proxied to, e.g. hostapd-server)
 ### radiucal-utils
 
 tools to:
-* provide adminstrative management (subset of radiucal-tools)
-
-### radiucal-tools
-
-tools to:
+* provide adminstrative management
 * report from radiucal
 * help setup hostapd
 * manage radiucal/hostapd settings
@@ -126,9 +117,9 @@ tools to:
 
 please see above but a cert generation setup is installed in the etc area for hostapd
 
-### radiucal-bootstrap
+### radiucal-admin
 
-part of both utils and tools, radiucal-bootstrap is used to manage the network configuration (netconf)
+used to manage the network configuration (netconf)
 * takes pythonic definitions of users and produces an `eap_users` file that hostapd can use
 * outputs report information regarding the current state of the configuration
 * provides ability to create users/passwords for network access
