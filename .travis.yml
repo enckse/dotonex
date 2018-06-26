@@ -8,6 +8,7 @@ arch:
     - go-pie
     - dep
     - go-tools
+    - procps-ng
     script:
     - unset GOROOT
     - export GOPATH=$HOME/go
