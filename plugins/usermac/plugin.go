@@ -32,6 +32,8 @@ var (
 	// Function callback on failed/passed
 	doCallback bool
 	callback   []string
+	onFail     bool
+	onPass     bool
 )
 
 func (l *umac) Reload() {
@@ -47,6 +49,8 @@ func (l *umac) Setup(ctx *core.PluginContext) {
 	db = filepath.Join(ctx.Lib, "users")
 	callback = ctx.Section.GetArrayOrEmpty("callback")
 	doCallback = len(callback) > 0
+	onFail = !ctx.Section.GetFalse("nofail")
+	onPass = !ctx.Section.GetFalse("nopass")
 }
 
 func (l *umac) Pre(packet *core.ClientPacket) bool {
@@ -89,7 +93,7 @@ func checkUserMac(p *core.ClientPacket) error {
 		goutils.WriteDebug("not preauthed", fqdn)
 	}
 	path := filepath.Join(db, fqdn)
-	result := "passed"
+	success := true
 	var failure error
 	res := goutils.PathExists(path)
 	lock.Lock()
@@ -97,13 +101,13 @@ func checkUserMac(p *core.ClientPacket) error {
 	lock.Unlock()
 	if !res {
 		failure = errors.New(fmt.Sprintf("failed preauth: %s %s", username, calling))
-		result = "failed"
+		success = false
 	}
-	go mark(result, username, calling, p)
+	go mark(success, username, calling, p)
 	return failure
 }
 
-func mark(result, user, calling string, p *core.ClientPacket) {
+func mark(success bool, user, calling string, p *core.ClientPacket) {
 	nas := clean(NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -128,12 +132,20 @@ func mark(result, user, calling string, p *core.ClientPacket) {
 		return
 	}
 	defer f.Close()
+	result := "passed"
+	if !success {
+		result = "failed"
+	}
 	msg := fmt.Sprintf("%s (mac:%s) (nas:%s,ip:%s,port:%d)", user, calling, nas, nasip, nasport)
 	if doCallback {
-		goutils.WriteDebug("perform callback", callback...)
-		args := callback[1:]
-		args = append(args, fmt.Sprintf("%s -> %s", result, msg))
-		goutils.RunCommand(callback[0], args...)
+		reportFail := !success && onFail
+		reportPass := success && onPass
+		if reportFail || reportPass {
+			goutils.WriteDebug("perform callback", callback...)
+			args := callback[1:]
+			args = append(args, fmt.Sprintf("%s -> %s", result, msg))
+			goutils.RunCommand(callback[0], args...)
+		}
 	}
 	core.FormatLog(f, t, result, msg)
 }
