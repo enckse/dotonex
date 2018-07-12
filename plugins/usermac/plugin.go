@@ -48,9 +48,11 @@ func (l *umac) Setup(ctx *core.PluginContext) {
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
 	callback = ctx.Section.GetArrayOrEmpty("callback")
-	doCallback = len(callback) > 0
-	onFail = ctx.Section.GetTrue("onfail")
-	onPass = ctx.Section.GetTrue("onpass")
+	if len(callback) > 0 {
+		onFail = ctx.Section.GetTrue("onfail")
+		onPass = ctx.Section.GetTrue("onpass")
+		doCallback = onFail || onPass
+	}
 }
 
 func (l *umac) Pre(packet *core.ClientPacket) bool {
