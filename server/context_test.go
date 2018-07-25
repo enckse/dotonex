@@ -16,6 +16,7 @@ type MockModule struct {
 	pre    int
 	fail   bool
 	reload int
+	post   int
 	// TraceType
 	preAuth int
 }
@@ -26,6 +27,10 @@ func (m *MockModule) Name() string {
 
 func (m *MockModule) Reload() {
 	m.reload++
+}
+
+func (m *MockModule) Post(p *core.ClientPacket) {
+	m.post++
 }
 
 func (m *MockModule) Setup(c *core.PluginContext) {
@@ -93,6 +98,54 @@ func TestSecrets(t *testing.T) {
 	ctx.secrets["0.0.0.0"] = p.Packet.Secret
 	if ctx.authorize(p, preMode) != successCode {
 		t.Error("matching secrets")
+	}
+}
+
+func TestPostAuth(t *testing.T) {
+	ctx, p := getPacket(t)
+	m := &MockModule{}
+	ctx.AddTrace(m)
+	// invalid packet
+	if ctx.authorize(core.NewClientPacket(nil, nil), postMode) != successCode {
+		t.Error("didn't authorize")
+	}
+	if m.trace != 0 {
+		t.Error("did auth")
+	}
+	if ctx.authorize(p, postMode) != successCode {
+		t.Error("didn't authorize")
+	}
+	if m.trace != 1 {
+		t.Error("didn't auth")
+	}
+	ctx.AddPostAuth(m)
+	if ctx.authorize(p, postMode) != successCode {
+		t.Error("didn't authorize")
+	}
+	if m.trace != 2 {
+		t.Error("didn't auth again")
+	}
+	if m.post != 1 {
+		t.Error("didn't postauth")
+	}
+	if ctx.authorize(p, postMode) != successCode {
+		t.Error("did authorize")
+	}
+	if m.trace != 3 {
+		t.Error("didn't auth again")
+	}
+	if m.post != 2 {
+		t.Error("didn't postauth")
+	}
+	ctx.trace = false
+	if ctx.authorize(p, postMode) != successCode {
+		t.Error("did authorize")
+	}
+	if m.trace != 3 {
+		t.Error("didn't auth again")
+	}
+	if m.post != 3 {
+		t.Error("didn't postauth")
 	}
 }
 
