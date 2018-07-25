@@ -77,6 +77,10 @@ func (ctx *Context) AddAccounting(a core.Accounting) {
 	ctx.accts = append(ctx.accts, a)
 }
 
+func PostAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*core.ClientPacket, ReasonCode) {
+	return ctx.doAuthing(b, addr, postMode)
+}
+
 func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*core.ClientPacket, ReasonCode) {
 	return ctx.doAuthing(b, addr, preMode)
 }
