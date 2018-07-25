@@ -32,8 +32,16 @@ func (l *logger) Setup(ctx *core.PluginContext) {
 }
 
 func (l *logger) Pre(packet *core.ClientPacket) bool {
-	write(core.PreAuthMode, core.NoTrace, packet)
+	return writeAuth(core.PreAuthMode, packet)
+}
+
+func writeAuth(mode string, packet *core.ClientPacket) bool {
+	write(mode, core.NoTrace, packet)
 	return true
+}
+
+func (l *logger) Post(packet *core.ClientPacket) bool {
+	return writeAuth(core.PostAuthMode, packet)
 }
 
 func (l *logger) Trace(t core.TraceType, packet *core.ClientPacket) {
