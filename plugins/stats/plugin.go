@@ -52,8 +52,16 @@ func (s *stats) Setup(ctx *core.PluginContext) {
 	modes = core.DisabledModes(s, ctx)
 }
 
+func (s *stats) Post(packet *core.ClientPacket) bool {
+	return authWrite(core.PostAuthMode)
+}
+
 func (s *stats) Pre(packet *core.ClientPacket) bool {
-	write(core.PreAuthMode, core.NoTrace)
+	return authWrite(core.PreAuthMode)
+}
+
+func authWrite(mode string) bool {
+	write(mode, core.NoTrace)
 	return true
 }
 
