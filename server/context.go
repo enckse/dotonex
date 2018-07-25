@@ -130,18 +130,14 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 			var checking authCheck
 			var code ReasonCode
 			if preauthing {
-				checking = func(m core.Module, p *core.ClientPacket) bool {
-					return m.(core.PreAuth).Pre(p)
-				}
+				checking = getAuthChecker(true)
 				for _, m := range ctx.preauths {
 					checks = append(checks, m)
 				}
 				code = preAuthCode
 			}
 			if postauthing {
-				checking = func(m core.Module, p *core.ClientPacket) bool {
-					return m.(core.PostAuth).Post(p)
-				}
+				checking = getAuthChecker(false)
 				for _, m := range ctx.postauths {
 					checks = append(checks, m)
 				}
@@ -163,6 +159,16 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 		}
 	}
 	return valid
+}
+
+func getAuthChecker(preauthing bool) authCheck {
+	return func(m core.Module, p *core.ClientPacket) bool {
+		if preauthing {
+			return m.(core.PreAuth).Pre(p)
+		} else {
+			return m.(core.PostAuth).Post(p)
+		}
+	}
 }
 
 func checkAuthMods(modules []core.Module, packet *core.ClientPacket, fxn authCheck) bool {
