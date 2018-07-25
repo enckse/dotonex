@@ -104,108 +104,78 @@ func TestSecrets(t *testing.T) {
 	}
 }
 
-func TestPostAuth(t *testing.T) {
+func checkAuthMode(t *testing.T, mode authingMode, reasonCode ReasonCode) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
 	ctx.AddTrace(m)
 	// invalid packet
-	if ctx.authorize(core.NewClientPacket(nil, nil), postMode) != successCode {
+	if ctx.authorize(core.NewClientPacket(nil, nil), mode) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 0 {
 		t.Error("did auth")
 	}
-	if ctx.authorize(p, postMode) != successCode {
+	if ctx.authorize(p, mode) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 1 {
 		t.Error("didn't auth")
 	}
-	ctx.AddPostAuth(m)
-	if ctx.authorize(p, postMode) != successCode {
+	var getCounts func() (int, int)
+	if mode == preMode {
+		getCounts = func() (int, int) {
+			return m.pre, m.preAuth
+		}
+		ctx.AddPreAuth(m)
+	} else {
+		getCounts = func() (int, int) {
+			return m.post, m.postAuth
+		}
+		ctx.AddPostAuth(m)
+	}
+	if ctx.authorize(p, mode) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 2 {
 		t.Error("didn't auth again")
 	}
-	if m.post != 1 {
-		t.Error("didn't postauth")
+	cnt, sum := getCounts()
+	if cnt != 1 {
+		t.Error("didn't mod auth")
 	}
 	m.fail = true
-	if ctx.authorize(p, postMode) != postAuthCode {
+	if ctx.authorize(p, mode) != reasonCode {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
 		t.Error("didn't auth again")
 	}
-	if m.post != 2 {
-		t.Error("didn't postauth")
+	cnt, sum = getCounts()
+	if cnt != 2 {
+		t.Error("didn't mod auth")
 	}
 	ctx.trace = false
-	if ctx.authorize(p, postMode) != postAuthCode {
+	if ctx.authorize(p, mode) != reasonCode {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
 		t.Error("didn't auth again")
 	}
-	if m.post != 3 {
-		t.Error("didn't postauth")
+	cnt, sum = getCounts()
+	if cnt != 3 {
+		t.Error("didn't mod auth")
 	}
-	if m.postAuth != 3 {
-		t.Error("not enough postauth types")
+	if sum != 3 {
+		t.Error("not enough mod auth types")
 	}
 }
 
+func TestPostAuth(t *testing.T) {
+	checkAuthMode(t, postMode, postAuthCode)
+}
+
 func TestPreAuth(t *testing.T) {
-	ctx, p := getPacket(t)
-	m := &MockModule{}
-	ctx.AddTrace(m)
-	// invalid packet
-	if ctx.authorize(core.NewClientPacket(nil, nil), preMode) != successCode {
-		t.Error("didn't authorize")
-	}
-	if m.trace != 0 {
-		t.Error("did auth")
-	}
-	if ctx.authorize(p, preMode) != successCode {
-		t.Error("didn't authorize")
-	}
-	if m.trace != 1 {
-		t.Error("didn't auth")
-	}
-	ctx.AddPreAuth(m)
-	if ctx.authorize(p, preMode) != successCode {
-		t.Error("didn't authorize")
-	}
-	if m.trace != 2 {
-		t.Error("didn't auth again")
-	}
-	if m.pre != 1 {
-		t.Error("didn't preauth")
-	}
-	m.fail = true
-	if ctx.authorize(p, preMode) != preAuthCode {
-		t.Error("did authorize")
-	}
-	if m.trace != 3 {
-		t.Error("didn't auth again")
-	}
-	if m.pre != 2 {
-		t.Error("didn't preauth")
-	}
-	ctx.trace = false
-	if ctx.authorize(p, preMode) != preAuthCode {
-		t.Error("did authorize")
-	}
-	if m.trace != 3 {
-		t.Error("didn't auth again")
-	}
-	if m.pre != 3 {
-		t.Error("didn't preauth")
-	}
-	if m.preAuth != 3 {
-		t.Error("not enough preauth types")
-	}
+	checkAuthMode(t, preMode, preAuthCode)
 }
 
 func getPacket(t *testing.T) (*Context, *core.ClientPacket) {
