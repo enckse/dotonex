@@ -56,7 +56,7 @@ type PreAuth interface {
 
 type PostAuth interface {
 	Module
-	Post(*ClientPacket)
+	Post(*ClientPacket) bool
 }
 
 type Tracing interface {

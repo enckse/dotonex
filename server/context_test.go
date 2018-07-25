@@ -18,7 +18,8 @@ type MockModule struct {
 	reload int
 	post   int
 	// TraceType
-	preAuth int
+	preAuth  int
+	postAuth int
 }
 
 func (m *MockModule) Name() string {
@@ -29,8 +30,9 @@ func (m *MockModule) Reload() {
 	m.reload++
 }
 
-func (m *MockModule) Post(p *core.ClientPacket) {
+func (m *MockModule) Post(p *core.ClientPacket) bool {
 	m.post++
+	return !m.fail
 }
 
 func (m *MockModule) Setup(c *core.PluginContext) {
@@ -46,6 +48,7 @@ func (m *MockModule) Trace(t core.TraceType, p *core.ClientPacket) {
 	switch t {
 	case core.TraceRequest:
 		m.preAuth++
+		m.postAuth++
 		break
 	}
 }
@@ -128,7 +131,8 @@ func TestPostAuth(t *testing.T) {
 	if m.post != 1 {
 		t.Error("didn't postauth")
 	}
-	if ctx.authorize(p, postMode) != successCode {
+	m.fail = true
+	if ctx.authorize(p, postMode) != postAuthCode {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
@@ -138,7 +142,7 @@ func TestPostAuth(t *testing.T) {
 		t.Error("didn't postauth")
 	}
 	ctx.trace = false
-	if ctx.authorize(p, postMode) != successCode {
+	if ctx.authorize(p, postMode) != postAuthCode {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
@@ -146,6 +150,9 @@ func TestPostAuth(t *testing.T) {
 	}
 	if m.post != 3 {
 		t.Error("didn't postauth")
+	}
+	if m.postAuth != 3 {
+		t.Error("not enough postauth types")
 	}
 }
 

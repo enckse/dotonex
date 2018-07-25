@@ -24,6 +24,7 @@ const (
 	successCode   ReasonCode = 0
 	badSecretCode ReasonCode = 1
 	preAuthCode   ReasonCode = 2
+	postAuthCode  ReasonCode = 3
 )
 
 type writeBack func([]byte)
@@ -33,6 +34,8 @@ type authingMode int
 type ReasonCode int
 
 type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, ReasonCode)
+
+type authCheck func(core.Module, *core.ClientPacket) bool
 
 type Context struct {
 	Debug     bool
@@ -123,20 +126,33 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 					valid = badSecretCode
 				}
 			}
+			var checks []core.Module
+			var checking authCheck
+			var code ReasonCode
 			if preauthing {
-				for _, mod := range ctx.preauths {
-					if mod.Pre(packet) {
-						continue
-					}
-					if valid == successCode {
-						valid = preAuthCode
-					}
-					goutils.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
+				checking = func(m core.Module, p *core.ClientPacket) bool {
+					return m.(core.PreAuth).Pre(p)
 				}
+				for _, m := range ctx.preauths {
+					checks = append(checks, m)
+				}
+				code = preAuthCode
 			}
 			if postauthing {
-				for _, mod := range ctx.postauths {
-					mod.Post(packet)
+				checking = func(m core.Module, p *core.ClientPacket) bool {
+					return m.(core.PostAuth).Post(p)
+				}
+				for _, m := range ctx.postauths {
+					checks = append(checks, m)
+				}
+				code = postAuthCode
+			}
+			if len(checks) > 0 {
+				failure := checkAuthMods(checks, packet, checking)
+				if failure {
+					if valid == successCode {
+						valid = code
+					}
 				}
 			}
 			if tracing {
@@ -147,6 +163,18 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 		}
 	}
 	return valid
+}
+
+func checkAuthMods(modules []core.Module, packet *core.ClientPacket, fxn authCheck) bool {
+	failure := false
+	for _, mod := range modules {
+		if fxn(mod, packet) {
+			continue
+		}
+		failure = true
+		goutils.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
+	}
+	return failure
 }
 
 func (ctx *Context) FromConfig(libPath string, c *goutils.Config) {
