@@ -17,6 +17,7 @@ import (
 
 const (
 	preMode  authingMode = 0
+	postMode authingMode = 1
 	localKey             = "127.0.0.1"
 	allKey               = "0.0.0.0"
 	// failure of auth reasons
@@ -34,19 +35,21 @@ type ReasonCode int
 type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, ReasonCode)
 
 type Context struct {
-	Debug    bool
-	secret   []byte
-	preauths []core.PreAuth
-	accts    []core.Accounting
-	traces   []core.Tracing
-	modules  []core.Module
-	secrets  map[string][]byte
-	noReject bool
+	Debug     bool
+	secret    []byte
+	preauths  []core.PreAuth
+	postauths []core.PostAuth
+	accts     []core.Accounting
+	traces    []core.Tracing
+	modules   []core.Module
+	secrets   map[string][]byte
+	noReject  bool
 	// shortcuts
-	preauth bool
-	acct    bool
-	trace   bool
-	module  bool
+	postauth bool
+	preauth  bool
+	acct     bool
+	trace    bool
+	module   bool
 }
 
 func (ctx *Context) AddTrace(t core.Tracing) {
@@ -57,6 +60,11 @@ func (ctx *Context) AddTrace(t core.Tracing) {
 func (ctx *Context) AddPreAuth(p core.PreAuth) {
 	ctx.preauth = true
 	ctx.preauths = append(ctx.preauths, p)
+}
+
+func (ctx *Context) AddPostAuth(p core.PostAuth) {
+	ctx.postauth = true
+	ctx.postauths = append(ctx.postauths, p)
 }
 
 func (ctx *Context) AddModule(m core.Module) {
@@ -86,15 +94,19 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 	traceMode := core.NoTrace
 	preauthing := false
 	receiving := false
+	postauthing := false
 	switch mode {
 	case preMode:
 		receiving = true
 		preauthing = ctx.preauth
 		traceMode = core.TraceRequest
 		break
+	case postMode:
+		postauthing = ctx.postauth
+		traceMode = core.TraceRequest
 	}
 	tracing := ctx.trace && traceMode != core.NoTrace
-	if preauthing || tracing || receiving {
+	if preauthing || postauthing || tracing || receiving {
 		ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
@@ -116,6 +128,11 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 						valid = preAuthCode
 					}
 					goutils.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
+				}
+			}
+			if postauthing {
+				for _, mod := range ctx.postauths {
+					mod.Post(packet)
 				}
 			}
 			if tracing {

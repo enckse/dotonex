@@ -193,6 +193,9 @@ func main() {
 		if i, ok := obj.(core.PreAuth); ok {
 			ctx.AddPreAuth(i)
 		}
+		if i, ok := obj.(core.PostAuth); ok {
+			ctx.AddPostAuth(i)
+		}
 		ctx.AddModule(obj)
 	}
 

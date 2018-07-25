@@ -18,6 +18,7 @@ const (
 	AccountingMode = "accounting"
 	TracingMode    = "trace"
 	PreAuthMode    = "preauth"
+	PostAuthMode   = "postauth"
 )
 
 type TraceType int
@@ -51,6 +52,11 @@ type Module interface {
 type PreAuth interface {
 	Module
 	Pre(*ClientPacket) bool
+}
+
+type PostAuth interface {
+	Module
+	Post(*ClientPacket) bool
 }
 
 type Tracing interface {
@@ -132,6 +138,7 @@ func DisabledModes(m Module, ctx *PluginContext) []string {
 	accounting := ctx.config.GetTrue(fmt.Sprintf("%s_disable_accounting", name))
 	tracing := ctx.config.GetTrue(fmt.Sprintf("%s_disable_trace", name))
 	preauth := ctx.config.GetTrue(fmt.Sprintf("%s_disable_preauth", name))
+	postauth := ctx.config.GetTrue(fmt.Sprintf("%s_disable_postauth", name))
 	var modes []string
 	if accounting {
 		modes = append(modes, AccountingMode)
@@ -141,6 +148,9 @@ func DisabledModes(m Module, ctx *PluginContext) []string {
 	}
 	if preauth {
 		modes = append(modes, PreAuthMode)
+	}
+	if postauth {
+		modes = append(modes, PostAuthMode)
 	}
 	return modes
 }
@@ -188,5 +198,7 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 		return t.(PreAuth), nil
 	case Tracing:
 		return t.(Tracing), nil
+	case PostAuth:
+		return t.(PostAuth), nil
 	}
 }
