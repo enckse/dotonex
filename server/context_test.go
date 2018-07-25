@@ -104,7 +104,7 @@ func TestSecrets(t *testing.T) {
 	}
 }
 
-func checkAuthMode(t *testing.T, mode authingMode, reasonCode ReasonCode) {
+func checkAuthMode(t *testing.T, mode authingMode) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
 	ctx.AddTrace(m)
@@ -122,15 +122,18 @@ func checkAuthMode(t *testing.T, mode authingMode, reasonCode ReasonCode) {
 		t.Error("didn't auth")
 	}
 	var getCounts func() (int, int)
+	var reasonCode ReasonCode
 	if mode == preMode {
 		getCounts = func() (int, int) {
 			return m.pre, m.preAuth
 		}
+		reasonCode = preAuthCode
 		ctx.AddPreAuth(m)
 	} else {
 		getCounts = func() (int, int) {
 			return m.post, m.postAuth
 		}
+		reasonCode = postAuthCode
 		ctx.AddPostAuth(m)
 	}
 	if ctx.authorize(p, mode) != successCode {
@@ -171,11 +174,11 @@ func checkAuthMode(t *testing.T, mode authingMode, reasonCode ReasonCode) {
 }
 
 func TestPostAuth(t *testing.T) {
-	checkAuthMode(t, postMode, postAuthCode)
+	checkAuthMode(t, postMode)
 }
 
 func TestPreAuth(t *testing.T) {
-	checkAuthMode(t, preMode, preAuthCode)
+	checkAuthMode(t, preMode)
 }
 
 func getPacket(t *testing.T) (*Context, *core.ClientPacket) {
