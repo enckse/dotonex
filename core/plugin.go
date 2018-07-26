@@ -23,6 +23,8 @@ const (
 
 type TraceType int
 
+type NoopCall func(string, TraceType, *ClientPacket)
+
 const (
 	NoTrace      TraceType = iota
 	TraceRequest TraceType = iota
@@ -131,6 +133,19 @@ func Disabled(mode string, modes []string) bool {
 		}
 	}
 	return false
+}
+
+func NoopPost(packet *ClientPacket, call NoopCall) bool {
+	return noopAuth(PostAuthMode, packet, call)
+}
+
+func NoopPre(packet *ClientPacket, call NoopCall) bool {
+	return noopAuth(PreAuthMode, packet, call)
+}
+
+func noopAuth(mode string, packet *ClientPacket, call NoopCall) bool {
+	call(mode, NoTrace, packet)
+	return true
 }
 
 func DisabledModes(m Module, ctx *PluginContext) []string {

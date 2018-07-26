@@ -53,27 +53,22 @@ func (s *stats) Setup(ctx *core.PluginContext) {
 }
 
 func (s *stats) Post(packet *core.ClientPacket) bool {
-	return authWrite(core.PostAuthMode)
+	return core.NoopPost(packet, write)
 }
 
 func (s *stats) Pre(packet *core.ClientPacket) bool {
-	return authWrite(core.PreAuthMode)
-}
-
-func authWrite(mode string) bool {
-	write(mode, core.NoTrace)
-	return true
+	return core.NoopPre(packet, write)
 }
 
 func (s *stats) Trace(t core.TraceType, packet *core.ClientPacket) {
-	write(core.TracingMode, t)
+	write(core.TracingMode, t, nil)
 }
 
 func (s *stats) Account(packet *core.ClientPacket) {
-	write(core.AccountingMode, core.NoTrace)
+	write(core.AccountingMode, core.NoTrace, nil)
 }
 
-func write(mode string, objType core.TraceType) {
+func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	go func() {
 		lock.Lock()
 		defer lock.Unlock()

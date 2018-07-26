@@ -30,16 +30,11 @@ func (t *tracer) Setup(ctx *core.PluginContext) {
 }
 
 func (t *tracer) Pre(packet *core.ClientPacket) bool {
-	return authDump(core.PreAuthMode, packet)
+	return core.NoopPre(packet, dump)
 }
 
 func (t *tracer) Post(packet *core.ClientPacket) bool {
-	return authDump(core.PostAuthMode, packet)
-}
-
-func authDump(mode string, packet *core.ClientPacket) bool {
-	dump(mode, core.NoTrace, packet)
-	return true
+	return core.NoopPost(packet, dump)
 }
 
 func (t *tracer) Trace(objType core.TraceType, packet *core.ClientPacket) {
