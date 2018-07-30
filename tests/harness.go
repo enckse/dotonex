@@ -39,9 +39,11 @@ func runEndpoint() {
 	count := 0
 	for {
 		var buffer []byte
-		srv.ReadFromUDP(buffer)
+		_, c, _ := srv.ReadFromUDP(buffer)
 		count++
 		ioutil.WriteFile("./bin/count", []byte(fmt.Sprintf("count:%d", count)), 0644)
+		b := newPacket("", "")
+		srv.WriteToUDP(b, c)
 	}
 }
 

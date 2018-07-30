@@ -1,6 +1,8 @@
 count: 3
 name: accounting.0
-count: 3
+count: 5
 name: trace.1
 count: 3
 name: preauth.0
+count: 2
+name: postauth.0

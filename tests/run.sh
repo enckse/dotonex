@@ -30,7 +30,7 @@ pkill harness
 COMPARE="results stats"
 cat ${LOGS}radiucal.audit* | cut -d " " -f 2- > bin/results.log
 rm -f bin/stats.log
-for f in $(echo "acct.stats.accounting stats.trace stats.preauth"); do
+for f in $(echo "acct.stats.accounting stats.trace stats.preauth stats.postauth"); do
     cat ${LOGS}/radiucal.${f}.* | grep -v -E "^(first|last)" >> bin/stats.log
 done
 
