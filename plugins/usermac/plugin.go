@@ -145,8 +145,9 @@ func mark(success bool, user, calling string, p *core.ClientPacket) {
 		if reportFail || reportPass {
 			goutils.WriteDebug("perform callback", callback...)
 			args := callback[1:]
-			args = append(args, fmt.Sprintf("%s -> %s", result, msg))
-			goutils.RunCommand(callback[0], args...)
+			opts := &goutils.RunOptions{}
+			opts.Stdin = append(opts.Stdin, fmt.Sprintf("%s -> %s", result, msg))
+			goutils.RunCommandWithOptions(opts, callback[0], args...)
 		}
 	}
 	core.FormatLog(f, t, result, msg)
