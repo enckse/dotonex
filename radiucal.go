@@ -60,11 +60,19 @@ func setup(hostport string, port int) error {
 	return nil
 }
 
-func runConnection(conn *connection) {
+func runConnection(ctx *server.Context, conn *connection) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, err := conn.server.Read(buffer[0:])
 		if core.LogError("unable to read", err) {
+			continue
+		}
+		buffered := []byte(buffer[0:n])
+		postauthed := server.HandleAuth(server.PostAuthorize, ctx, buffered, conn.client, func(b []byte) {
+			proxy.WriteToUDP(b, conn.client)
+		})
+		if !postauthed {
+			goutils.WriteDebug("client failed postauth")
 			continue
 		}
 		_, err = proxy.WriteToUDP(buffer[0:n], conn.client)
@@ -98,7 +106,7 @@ func runProxy(ctx *server.Context) {
 			}
 			clients[addr] = conn
 			clientLock.Unlock()
-			go runConnection(conn)
+			go runConnection(ctx, conn)
 		} else {
 			clientLock.Unlock()
 		}
