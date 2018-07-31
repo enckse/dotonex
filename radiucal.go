@@ -68,16 +68,22 @@ func runConnection(ctx *server.Context, conn *connection) {
 			continue
 		}
 		buffered := []byte(buffer[0:n])
-		postauthed := server.HandleAuth(server.PostAuthorize, ctx, buffered, conn.client, func(b []byte) {
-			proxy.WriteToUDP(b, conn.client)
-		})
-		if !postauthed {
-			goutils.WriteDebug("client failed postauth")
+		if !checkAuth("post", server.PostAuthorize, ctx, buffered, conn.client, conn.client) {
 			continue
 		}
 		_, err = proxy.WriteToUDP(buffer[0:n], conn.client)
 		core.LogError("relaying", err)
 	}
+}
+
+func checkAuth(name string, fxn server.AuthorizePacket, ctx *server.Context, b []byte, addr, client *net.UDPAddr) bool {
+	auth := server.HandleAuth(fxn, ctx, b, addr, func(buffer []byte) {
+		proxy.WriteToUDP(buffer, client)
+	})
+	if !auth {
+		goutils.WriteDebug("client failed auth check", name)
+	}
+	return auth
 }
 
 func runProxy(ctx *server.Context) {
@@ -111,11 +117,7 @@ func runProxy(ctx *server.Context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		preauthed := server.HandleAuth(server.PreAuthorize, ctx, buffered, cliaddr, func(b []byte) {
-			proxy.WriteToUDP(b, conn.client)
-		})
-		if !preauthed {
-			goutils.WriteDebug("client failed preauth")
+		if !checkAuth("pre", server.PreAuthorize, ctx, buffered, cliaddr, conn.client) {
 			continue
 		}
 		_, err = conn.server.Write(buffer[0:n])

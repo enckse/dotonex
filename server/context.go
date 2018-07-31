@@ -33,7 +33,7 @@ type authingMode int
 
 type ReasonCode int
 
-type packetAuthorize func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, ReasonCode)
+type AuthorizePacket func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, ReasonCode)
 
 type authCheck func(core.Module, *core.ClientPacket) bool
 
@@ -348,7 +348,7 @@ func (ctx *Context) Account(packet *core.ClientPacket) {
 	}
 }
 
-func HandleAuth(fxn packetAuthorize, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
+func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
 	packet, authCode := fxn(ctx, b, addr)
 	authed := authCode == successCode
 	if !authed {
