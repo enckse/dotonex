@@ -75,7 +75,7 @@ systemctl enable --now radiucal@accounting.service
 
 you may view an example config for more settings: `/etc/radiucal/example.conf`
 
-## setup/notes
+## certs
 
 if you wish to generate certs for hostapd
 ```
@@ -84,7 +84,7 @@ cd /etc/radiucal/certs
 ```
 and follow the prompts
 
-# build (dev)
+## build (dev)
 
 clone this repository
 ```
@@ -97,10 +97,6 @@ run (with a socket listening to be proxied to, e.g. hostapd-server)
 ```
 
 [![Build Status](https://travis-ci.org/epiphyte/radiucal.png)](https://travis-ci.org/epiphyte/radiucal)
-
-## certs
-
-please see above but a cert generation setup is installed in the etc area for hostapd
 
 ## administration
 
