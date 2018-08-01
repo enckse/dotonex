@@ -52,11 +52,6 @@ install from the epiphyte [repository](https://mirror.epiphyte.network/repos)
 pacman -S hostapd-server radiucal
 ```
 
-handle network configuration
-```
-pacman -S radiucual-utils
-```
-
 ## services
 
 setup your `/etc/hostapd/hostapd.conf`
