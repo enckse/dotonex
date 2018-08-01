@@ -103,29 +103,13 @@ run (with a socket listening to be proxied to, e.g. hostapd-server)
 
 [![Build Status](https://travis-ci.org/epiphyte/radiucal.png)](https://travis-ci.org/epiphyte/radiucal)
 
-## helpers
-
-### radiucal-utils
-
-tools to:
-* provide adminstrative management
-* report from radiucal
-* help setup hostapd
-* manage radiucal/hostapd settings
-
-source code is [here](https://git.epiphyte.network/cgit/cgit.cgi/prodtools/)
-
-### certs
+## certs
 
 please see above but a cert generation setup is installed in the etc area for hostapd
 
-### radiucal-admin
+## administration
 
-used to manage the network configuration (netconf)
-* takes pythonic definitions of users and produces an `eap_users` file that hostapd can use
-* outputs report information regarding the current state of the configuration
-* provides ability to create users/passwords for network access
-* outputs auth attempt information
+see tooling [here](https://git.epiphyte.network/cgit/cgit.cgi/prodtools/)
 
 ## debugging
 
