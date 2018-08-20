@@ -7,7 +7,7 @@ MAIN         := radiucal.go
 SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/")
 PLUGINS      := log stats debug usermac
 VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
-VERSION      := $(shell git describe --long | sed "s/\([^-]*-g\)/r\1/;s/-/./g")
+VERSION      ?= $(shell git describe --long | sed "s/\([^-]*-g\)/r\1/;s/-/./g")
 FLAGS        := -ldflags '-s -w -X main.vers=$(VERSION)' -buildmode=pie
 PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
 GO_TESTS     := go test -v
