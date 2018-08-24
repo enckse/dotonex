@@ -11,7 +11,7 @@ import (
 	"layeh.com/radius/rfc2865"
 )
 
-func newPacket(user, mac string) []byte {
+func newPacket(user, mac string, ip net.IP) []byte {
 	var secret = []byte("secret")
 	p := radius.New(radius.CodeAccessRequest, secret)
 	if err := rfc2865.UserName_AddString(p, user); err != nil {
@@ -19,6 +19,11 @@ func newPacket(user, mac string) []byte {
 	}
 	if err := rfc2865.CallingStationID_AddString(p, mac); err != nil {
 		panic("unable to set attribute: calling-station-id")
+	}
+	if ip != nil {
+		if err := rfc2865.NASIPAddress_Add(p, ip); err != nil {
+			panic("unable to set attribute: nas-ip")
+		}
 	}
 	b, err := p.Encode()
 	if err != nil {
@@ -42,14 +47,14 @@ func runEndpoint() {
 		_, c, _ := srv.ReadFromUDP(buffer)
 		count++
 		ioutil.WriteFile("./bin/count", []byte(fmt.Sprintf("count:%d", count)), 0644)
-		b := newPacket("", "")
+		b := newPacket("", "", nil)
 		srv.WriteToUDP(b, c)
 	}
 }
 
-func write(user, mac string, conn *net.UDPConn) {
+func write(user, mac string, conn *net.UDPConn, nasip net.IP) {
 	time.Sleep(1 * time.Second)
-	p := newPacket(user, mac)
+	p := newPacket(user, mac, nasip)
 	_, err := conn.Write(p)
 	if err != nil {
 		panic("unable to write")
@@ -69,9 +74,11 @@ func test(accounting bool) {
 	if err != nil {
 		panic("unable to dial")
 	}
-	write("test", "11-22-33-44-55-66", srv)
-	write("test", "11-22-33-44-55-67", srv)
-	write("test", "11-22-33-44-55-66", srv)
+	for _, ip := range []net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(192, 100, 100, 100)} {
+		write("test", "11-22-33-44-55-66", srv, ip)
+		write("test", "11-22-33-44-55-67", srv, ip)
+		write("test", "11-22-33-44-55-66", srv, ip)
+	}
 }
 
 func main() {

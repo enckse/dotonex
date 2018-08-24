@@ -10,6 +10,9 @@ _acct() {
     bin/radiucal --instance acct --config tests/test.acct.conf > $OUT.acct 2>&1
 }
 
+echo "==========================="
+echo "running $CONF"
+echo "==========================="
 _run &
 _acct &
 sleep 1
@@ -57,13 +60,13 @@ _checks() {
     fi
 }
 
-reject=2
+reject=8
 if [[ "$CONF" == "norjct" ]]; then
     reject=0
 fi
 
 _checks "rejecting client" $reject
-_checks "client failed auth check" 2
+_checks "client failed auth check" 8
 echo "stdout checks passed"
 sleep 3
 echo "$CONF is completed..."
