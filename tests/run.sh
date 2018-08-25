@@ -38,7 +38,7 @@ for f in $(echo "acct.stats.accounting stats.trace stats.preauth stats.postauth"
 done
 
 for d in $(echo $COMPARE); do
-    diff -u bin/$d.log tests/expected.$CONF.$d.log
+    diff --color -u tests/expected.$CONF.$d.log bin/$d.log
     if [ $? -ne 0 ]; then
         echo "integration test failed ($d)"
         exit 1
