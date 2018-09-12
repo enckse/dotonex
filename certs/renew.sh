@@ -1,6 +1,5 @@
 #!/bin/bash
-print-bar()
-{
+print-bar() {
     echo "
 ==================
 $@
