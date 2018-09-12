@@ -1,5 +1,5 @@
 #!/bin/bash
-function print-bar()
+print-bar()
 {
     echo "
 ==================
