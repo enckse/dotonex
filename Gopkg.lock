@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:6432f60b7c059471f0431d2df3d2e5bbf36817b647fa431f24e8e5e7f929ff88"
+  digest = "1:b7fe0eacab7146b58517f3ed87be1d4db7fef4b2ecd4b599d53f00cb60df8eeb"
   name = "github.com/epiphyte/goutils"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "5f5ddadec905d8e972f7f1fa214c2ee681a1dac3"
-  version = "v1.2.7"
+  revision = "8732fdd2f0894844a076986b5d49809d64d68c57"
+  version = "v1.2.8"
 
 [[projects]]
   branch = "master"
@@ -20,7 +20,7 @@
     "rfc2865",
   ]
   pruneopts = "NUT"
-  revision = "639444c7e76fc723e16102be38be27c938a75d85"
+  revision = "86e590152a3b227910515879c6d980c324b4c737"
 
 [solve-meta]
   analyzer-name = "dep"
