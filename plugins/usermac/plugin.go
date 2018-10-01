@@ -86,6 +86,7 @@ func checkUserMac(p *core.ClientPacket) error {
 	lock.Unlock()
 	if canCache && ok {
 		goutils.WriteDebug("object is preauthed", fqdn)
+		go mark(good, username, calling, p, true)
 		if good {
 			return nil
 		} else {
@@ -105,11 +106,11 @@ func checkUserMac(p *core.ClientPacket) error {
 		failure = errors.New(fmt.Sprintf("failed preauth: %s %s", username, calling))
 		success = false
 	}
-	go mark(success, username, calling, p)
+	go mark(success, username, calling, p, false)
 	return failure
 }
 
-func mark(success bool, user, calling string, p *core.ClientPacket) {
+func mark(success bool, user, calling string, p *core.ClientPacket, cached bool) {
 	nas := clean(NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -139,7 +140,7 @@ func mark(success bool, user, calling string, p *core.ClientPacket) {
 		result = "failed"
 	}
 	msg := fmt.Sprintf("%s (mac:%s) (nas:%s,ip:%s,port:%d)", user, calling, nas, nasip, nasport)
-	if doCallback {
+	if doCallback && !cached {
 		reportFail := !success && onFail
 		reportPass := success && onPass
 		if reportFail || reportPass {
