@@ -1,1 +1,8 @@
-expected.normal.stats.log
+count: 6
+name: accounting.0
+count: 8
+name: trace.1
+count: 6
+name: preauth.0
+count: 2
+name: postauth.0
