@@ -96,8 +96,6 @@ run (with a socket listening to be proxied to, e.g. hostapd-server)
 ./bin/radiucal
 ```
 
-![Build Status](https://git.epiphyte.network/cgit/radiucal.png)
-
 ## administration
 
 see tooling [here](https://git.epiphyte.network/cgit/cgit.cgi/prodtools/)
