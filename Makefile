@@ -52,7 +52,7 @@ radiucalbin:
 
 format:
 	@echo $(SRC)
-	exit $(shell echo $(SRC) | grep "\.go$$" | goimports -l $(SRC) | wc -l)
+	exit $(shell goimports -l $(SRC) | wc -l)
 
 setup:
 	rm -rf $(BIN)
