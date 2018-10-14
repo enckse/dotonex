@@ -2,16 +2,16 @@
 
 
 [[projects]]
-  digest = "1:b7fe0eacab7146b58517f3ed87be1d4db7fef4b2ecd4b599d53f00cb60df8eeb"
+  digest = "1:8c023a3fb79138f4916c06015c7d2fd6edd4c88ea24c931bd273d1d0960328a1"
   name = "github.com/epiphyte/goutils"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "8732fdd2f0894844a076986b5d49809d64d68c57"
-  version = "v1.2.8"
+  revision = "95bf0ec6303ebb72470ea74a734fb54f2b0865ad"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:b889cbd6fc383f9c783e857be450d01854964313d00d45b9f025542dd2d2a45a"
+  digest = "1:ba196e5d5862832e27f14bf1956999cf6ee9c49fc0709a928a3dff67e95cb689"
   name = "layeh.com/radius"
   packages = [
     ".",
@@ -20,7 +20,7 @@
     "rfc2865",
   ]
   pruneopts = "NUT"
-  revision = "86e590152a3b227910515879c6d980c324b4c737"
+  revision = "3e49d211563650cdc0a7848a2e315d1737cac01c"
 
 [solve-meta]
   analyzer-name = "dep"
