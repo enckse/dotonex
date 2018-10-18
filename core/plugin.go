@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"plugin"
-	"strings"
 	"time"
 
 	"github.com/epiphyte/goutils"
@@ -182,10 +181,6 @@ func newFile(path, name, instance string, appending bool) (*os.File, time.Time) 
 		return nil, t
 	}
 	return f, t
-}
-
-func FormatLog(f *os.File, t time.Time, indicator, message string) {
-	f.Write([]byte(fmt.Sprintf("%s [%s] %s\n", t.Format("2006-01-02T15:04:05"), strings.ToUpper(indicator), message)))
 }
 
 func LoadPlugin(path string, ctx *PluginContext) (Module, error) {

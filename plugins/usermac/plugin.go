@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/epiphyte/goutils"
 	"github.com/epiphyte/radiucal/core"
@@ -21,9 +23,10 @@ func (l *umac) Name() string {
 }
 
 var (
-	cache    map[string]bool = make(map[string]bool)
-	lock     *sync.Mutex     = new(sync.Mutex)
-	fileLock *sync.Mutex     = new(sync.Mutex)
+	cache    map[string]bool     = make(map[string]bool)
+	lock     *sync.Mutex         = new(sync.Mutex)
+	fileLock *sync.Mutex         = new(sync.Mutex)
+	logged   map[string]struct{} = make(map[string]struct{})
 	canCache bool
 	db       string
 	logs     string
@@ -39,7 +42,10 @@ var (
 func (l *umac) Reload() {
 	lock.Lock()
 	defer lock.Unlock()
+	fileLock.Lock()
+	defer fileLock.Unlock()
 	cache = make(map[string]bool)
+	logged = make(map[string]struct{})
 }
 
 func (l *umac) Setup(ctx *core.PluginContext) {
@@ -110,6 +116,13 @@ func checkUserMac(p *core.ClientPacket) error {
 	return failure
 }
 
+func formatLog(f *os.File, t time.Time, indicator, message string) {
+	l := fmt.Sprintf("%s [%s] %s\n", t.Format("2006-01-02T15:04:05"), strings.ToUpper(indicator), message)
+	if _, ok := logged[l]; !ok {
+		f.Write([]byte(l))
+	}
+}
+
 func mark(success bool, user, calling string, p *core.ClientPacket, cached bool) {
 	nas := clean(NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
@@ -151,5 +164,5 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 			goutils.RunCommandWithOptions(opts, callback[0], args...)
 		}
 	}
-	core.FormatLog(f, t, result, msg)
+	formatLog(f, t, result, msg)
 }
