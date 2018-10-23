@@ -11,7 +11,7 @@ Expectations:
 * Running on archlinux as a host/server
 * hostapd can do a lot with EAP and RADIUS as a service, this should serve as an exploration of these features
 * Fully replace freeradius for 802.1x/AAA/etc.
-* utilize a trimmed version of hostapd (from here on called `hostapd-server`) using a config and PKGBUILD [here](https://github.com/epiphyte/pkgbuilds/tree/master/hostapd)
+* utilize a trimmed version of hostapd using a config and PKGBUILD [here](https://git.epiphyte.network/cgit/cgit.cgi/pkgbuilds/)
 
 ## AAA
 
@@ -94,7 +94,7 @@ clone this repository
 make
 ```
 
-run (with a socket listening to be proxied to, e.g. hostapd-server)
+run (with a socket listening to be proxied to, e.g. hostapd)
 ```
 ./bin/radiucal
 ```
