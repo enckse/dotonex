@@ -50,8 +50,10 @@ the proxy:
 
 install from the epiphyte [repository](https://mirror.epiphyte.network/repos)
 ```
-pacman -S hostapd-server radiucal
+pacman -S radiucal
 ```
+
+* Required `hostapd` from [ctrlpkg](https://mirror.epiphyte.network/repos)
 
 ## services
 
