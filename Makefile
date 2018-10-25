@@ -7,8 +7,9 @@ SRC          := $(shell find {core,plugins,tests,server} -type f -name "*.go") $
 PLUGINS      := log stats debug usermac naswhitelist
 VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
 VERSION      ?= $(shell git describe --long | sed "s/\([^-]*-g\)/r\1/;s/-/./g")
-FLAGS        := -ldflags '-s -w -X main.vers=$(VERSION)' -buildmode=pie
-PLUGIN_FLAGS := --buildmode=plugin -ldflags '-s -w'
+CMN_FLAGS    :=  -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
+FLAGS        := $(CMN_FLAGS)pie
+PLUGIN_FLAGS := $(CMN_FLAGS)plugin
 GO_TESTS     := go test -v
 TEST_CONFS   := normal norjct
 COMPONENTS   := core server
