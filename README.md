@@ -46,14 +46,7 @@ the proxy:
 * provides a cut-in for more plugins
 * overrides the concept of "radius_clients" as all will have to have a single shared secret
 
-# install
-
-install from the epiphyte [repository](https://mirror.epiphyte.network/repos)
-```
-pacman -S radiucal
-```
-
-* Required `hostapd` from [ctrlpkg](https://mirror.epiphyte.network/repos)
+# setup
 
 ## services
 
@@ -110,11 +103,7 @@ see tooling [here](https://git.epiphyte.network/cgit/cgit.cgi/prodtools/)
 this requires that:
 * the radius server is configured to listen/accept on the given ip below
 * MAC is formatted as 00:11:22:aa:bb:cc
-
-start with installing wpa_supplicant to get eapol_test
-```
-pacman -S wpa_supplicant
-```
+* `eapol_test` is installed
 
 setup a test config
 ```
