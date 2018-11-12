@@ -11,16 +11,16 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ba196e5d5862832e27f14bf1956999cf6ee9c49fc0709a928a3dff67e95cb689"
+  digest = "1:5acfda36c464e16a70adfe654d2704c7a12b047e5c272f1bb5736cce89dbd2ab"
   name = "layeh.com/radius"
   packages = [
     ".",
     "debug",
     "dictionary",
-    "rfc2865",
+    "rfc2865"
   ]
   pruneopts = "NUT"
-  revision = "3e49d211563650cdc0a7848a2e315d1737cac01c"
+  revision = "aae5d47e21a8f0022d118dd2cba63fc92c94cc73"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -29,7 +29,7 @@
     "github.com/epiphyte/goutils",
     "layeh.com/radius",
     "layeh.com/radius/debug",
-    "layeh.com/radius/rfc2865",
+    "layeh.com/radius/rfc2865"
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

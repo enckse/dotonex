@@ -38,7 +38,6 @@ $(TEST_CONFS):
 	rm -f $(TST)log/*
 	./tests/run.sh $@
 
-
 $(COMPONENTS):
 	rm -f $(VENDOR_LOCAL)/$@
 	ln -s $(PWD)/$@ $(VENDOR_LOCAL)/$@
@@ -52,7 +51,7 @@ radiucalbin:
 
 format:
 	@echo $(SRC)
-	exit $(shell goimports -l $(SRC) | wc -l)
+	exit $(shell gofmt -l $(SRC) | wc -l)
 
 setup:
 	rm -rf $(BIN)
