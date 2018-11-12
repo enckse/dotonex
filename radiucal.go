@@ -182,7 +182,7 @@ func main() {
 	ctx.FromConfig(lib, conf)
 	mods := conf.GetArrayOrEmpty("plugins")
 	pCtx := core.NewPluginContext(conf)
-	pCtx.Logs = filepath.Join(lib, "log")
+	pCtx.Logs = conf.GetStringOrDefault("log", "/var/log/radiucal/")
 	pCtx.Lib = lib
 	pCtx.Instance = *instance
 	pPath := filepath.Join(lib, "plugins")

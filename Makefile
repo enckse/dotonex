@@ -6,7 +6,7 @@ MAIN         := radiucal.go
 SRC          := $(shell find {core,plugins,tests,server} -type f -name "*.go") $(MAIN)
 PLUGINS      := log stats debug usermac naswhitelist
 VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
-VERSION      ?= $(shell git describe --long | sed "s/\([^-]*-g\)/r\1/;s/-/./g")
+VERSION      := DEVELOP
 CMN_FLAGS    :=  -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 FLAGS        := $(CMN_FLAGS)pie
 PLUGIN_FLAGS := $(CMN_FLAGS)plugin
