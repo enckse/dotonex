@@ -1,53 +1,46 @@
 BIN          := bin/
 TST          := tests/
 PLUGIN       := plugins/
-HARNESS      := $(TST)harness.go
-MAIN         := radiucal.go 
-SRC          := $(shell find {core,plugins,tests,server} -type f -name "*.go") $(MAIN)
+SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/")
 PLUGINS      := log stats debug usermac naswhitelist
-VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal
 VERSION      := DEVELOP
 CMN_FLAGS    :=  -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 FLAGS        := $(CMN_FLAGS)pie
 PLUGIN_FLAGS := $(CMN_FLAGS)plugin
-GO_TESTS     := go test -v
 TEST_CONFS   := normal norjct
 COMPONENTS   := core server
 
 .PHONY: $(COMPONENTS) tools
 
-all: clean modules radiucal integrate format
+all: clean modules radiucal test format
 
 modules: $(PLUGINS)
 components: $(COMPONENTS)
 
 $(PLUGINS):
-	@echo $@
 	go build $(PLUGIN_FLAGS) -o $(BIN)$@.rd $(PLUGIN)$@/plugin.go
-	cd $(PLUGIN)$@ && $(GO_TESTS)
+
+test: utests integrate
+
+utests:
+	for f in $(shell find . -type f -name "*_test.go" -exec dirname {} \;); do go test -v $$f; done
 
 integrate: harness $(TEST_CONFS)
 
 harness:
-	mkdir -p $(TST)plugins/
+	rm -f $(TST)/plugins/*
 	cp $(BIN)*.rd $(TST)plugins/
-	go build -o $(BIN)harness $(HARNESS)
+	go build -o $(BIN)harness $(TST)harness.go
 
 $(TEST_CONFS):
-	mkdir -p $(TST)log/
 	rm -f $(TST)log/*
 	./tests/run.sh $@
 
 $(COMPONENTS):
-	rm -f $(VENDOR_LOCAL)/$@
-	ln -s $(PWD)/$@ $(VENDOR_LOCAL)/$@
-	cd $@ && $(GO_TESTS)
+	ln -sf $(PWD)/$@ $(PWD)/vendor/github.com/epiphyte/radiucal/
 
-radiucal: components radiucalbin
-	$(GO_TESTS)
-
-radiucalbin:
-	go build -o $(BIN)radiucal $(FLAGS) $(MAIN)
+radiucal:
+	go build -o $(BIN)radiucal $(FLAGS) radiucal.go
 
 format:
 	@echo $(SRC)
@@ -56,7 +49,7 @@ format:
 setup:
 	rm -rf $(BIN)
 	mkdir -p $(BIN)
-	rm -rf $(VENDOR_LOCAL)
-	mkdir -p $(VENDOR_LOCAL)
+	mkdir -p $(TST)plugins/
+	mkdir -p $(TST)log/
 
-clean: setup $(COMPONENTS)
+clean: setup components
