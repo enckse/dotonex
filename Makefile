@@ -9,6 +9,13 @@ FLAGS        := $(CMN_FLAGS)pie
 PLUGIN_FLAGS := $(CMN_FLAGS)plugin
 TEST_CONFS   := normal norjct
 COMPONENTS   := core server
+VAR_LIB      := var/lib/radiucal/
+VAR_PLUG     := $(VAR_LIB)plugins/
+ETC          := etc/radiucal/
+ETC_CERTS    := $(ETC)certs/
+SUPPORT      := supporting/
+SYSD         := lib/systemd/system/
+TMPD         := usr/lib/tmpfiles.d/
 
 .PHONY: $(COMPONENTS) tools
 
@@ -53,3 +60,13 @@ setup:
 	mkdir -p $(TST)log/
 
 clean: setup components
+
+install:
+	install -Dm755 $(BIN)radiucal $(DESTDIR)usr/bin/radiucal
+	for f in $(VAR_LIB) $(VAR_PLUG) $(ETC) $(ETC_CERTS) $(SYSD) $(TMPD); do install -Dm755 -d $(DESTDIR)$$f; done
+	for f in ca.cnf Makefile server.cnf xpextensions; do install -Dm644 certs/$$f $(DESTDIR)$(ETC_CERTS); done
+	for f in renew.sh bootstrap; do install -Dm755 certs/$$f $(DESTDIR)$(ETC_CERTS); done
+	for f in $(shell find $(BIN) -type f -name "*.rd"); do install -Dm644 $$f $(DESTDIR)$(VAR_PLUG); done
+	for f in $(shell find $(SUPPORT) -type f -name "*.conf" | cut -d "/" -f 2); do install -Dm644 $(SUPPORT)$$f $(DESTDIR)$(ETC)$$f.ex; done
+	for f in $(shell find $(SUPPORT) -type f -name "*.service"); do install -Dm644 $$f $(DESTDIR)$(SYSD); done
+	install -Dm644 $(SUPPORT)tmpfiles.d $(DESTDIR)$(TMPD)radiucal.conf
