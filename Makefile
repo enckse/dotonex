@@ -16,6 +16,7 @@ ETC_CERTS    := $(ETC)certs/
 SUPPORT      := supporting/
 SYSD         := lib/systemd/system/
 TMPD         := usr/lib/tmpfiles.d/
+VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal/
 
 .PHONY: $(COMPONENTS) tools
 
@@ -44,7 +45,7 @@ $(TEST_CONFS):
 	./tests/run.sh $@
 
 $(COMPONENTS):
-	ln -sf $(PWD)/$@ $(PWD)/vendor/github.com/epiphyte/radiucal/
+	ln -sf $(PWD)/$@ $(VENDOR_LOCAL)
 
 radiucal:
 	go build -o $(BIN)radiucal $(FLAGS) radiucal.go
@@ -58,6 +59,7 @@ setup:
 	mkdir -p $(BIN)
 	mkdir -p $(TST)plugins/
 	mkdir -p $(TST)log/
+	mkdir -p $(VENDOR_LOCAL)
 
 clean: setup components
 
