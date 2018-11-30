@@ -2,12 +2,16 @@
 
 
 [[projects]]
-  digest = "1:8c023a3fb79138f4916c06015c7d2fd6edd4c88ea24c931bd273d1d0960328a1"
+  digest = "1:c8933b40f36994d597608af5b8a650b20c1d12f419f7549331919a9df7a02e1c"
   name = "github.com/epiphyte/goutils"
-  packages = ["."]
+  packages = [
+    "config",
+    "logger",
+    "opsys"
+  ]
   pruneopts = "NUT"
-  revision = "95bf0ec6303ebb72470ea74a734fb54f2b0865ad"
-  version = "v1.3.0"
+  revision = "c1257852128d813aceac4882e7f959d2f40b11b6"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -26,7 +30,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/epiphyte/goutils",
+    "github.com/epiphyte/goutils/config",
+    "github.com/epiphyte/goutils/logger",
     "layeh.com/radius",
     "layeh.com/radius/debug",
     "layeh.com/radius/rfc2865"

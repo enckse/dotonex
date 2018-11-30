@@ -9,7 +9,7 @@ ignored = ["github.com/epiphyte/radiucal/plugins",
 
 [[constraint]]
   name = "github.com/epiphyte/goutils"
-  version = "v1.3.0"
+  version = "v2.0.0"
 
 [prune]
   go-tests = true

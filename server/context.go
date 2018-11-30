@@ -10,7 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/goutils/config"
+	"github.com/epiphyte/goutils/logger"
+	"github.com/epiphyte/goutils/opsys"
 	"github.com/epiphyte/radiucal/core"
 	"layeh.com/radius"
 )
@@ -122,7 +124,7 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 			if receiving {
 				err := ctx.checkSecret(packet)
 				if err != nil {
-					goutils.WriteError("invalid radius secret", err)
+					logger.WriteError("invalid radius secret", err)
 					valid = badSecretCode
 				}
 			}
@@ -178,18 +180,18 @@ func checkAuthMods(modules []core.Module, packet *core.ClientPacket, fxn authChe
 			continue
 		}
 		failure = true
-		goutils.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
+		logger.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
 	}
 	return failure
 }
 
-func (ctx *Context) FromConfig(libPath string, c *goutils.Config) {
+func (ctx *Context) FromConfig(libPath string, c *config.Config) {
 	ctx.noReject = c.GetTrue("noreject")
 	secrets := filepath.Join(libPath, "secrets")
 	ctx.parseSecrets(secrets)
 	ctx.secrets = make(map[string][]byte)
 	secrets = filepath.Join(libPath, "clients")
-	if goutils.PathExists(secrets) {
+	if opsys.PathExists(secrets) {
 		mappings, err := parseSecretMappings(secrets)
 		if err != nil {
 			panic("invalid client secret mappings")
@@ -230,7 +232,7 @@ func parseSecretFile(secretFile string) (string, error) {
 }
 
 func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
-	if goutils.PathNotExists(secretFile) {
+	if opsys.PathNotExists(secretFile) {
 		return nil, errors.New("no secrets file")
 	}
 	f, err := os.Open(secretFile)
@@ -266,11 +268,11 @@ func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, er
 
 func (ctx *Context) DebugDump() {
 	if ctx.Debug {
-		goutils.WriteDebug("secret", string(ctx.secret))
+		logger.WriteDebug("secret", string(ctx.secret))
 		if len(ctx.secrets) > 0 {
-			goutils.WriteDebug("client mappings")
+			logger.WriteDebug("client mappings")
 			for k, v := range ctx.secrets {
-				goutils.WriteDebug(k, string(v))
+				logger.WriteDebug(k, string(v))
 			}
 		}
 	}
@@ -278,9 +280,9 @@ func (ctx *Context) DebugDump() {
 
 func (ctx *Context) Reload() {
 	if ctx.module {
-		goutils.WriteInfo("reloading")
+		logger.WriteInfo("reloading")
 		for _, m := range ctx.modules {
-			goutils.WriteDebug("reloading module", m.Name())
+			logger.WriteDebug("reloading module", m.Name())
 			m.Reload()
 		}
 	}
@@ -307,7 +309,7 @@ func (ctx *Context) checkSecret(p *core.ClientPacket) error {
 		}
 		ip = h
 		good := false
-		goutils.WriteInfo(ip)
+		logger.WriteInfo(ip)
 		for k, v := range ctx.secrets {
 			if strings.HasPrefix(ip, k) || k == allKey {
 				if bytes.Equal(v, inSecret) {
@@ -358,16 +360,16 @@ func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr, 
 				p = p.Response(radius.CodeAccessReject)
 				rej, err := p.Encode()
 				if err == nil {
-					goutils.WriteDebug("rejecting client")
+					logger.WriteDebug("rejecting client")
 					write(rej)
 				} else {
 					if ctx.Debug {
-						goutils.WriteError("unable to encode rejection", err)
+						logger.WriteError("unable to encode rejection", err)
 					}
 				}
 			} else {
 				if ctx.Debug && packet.Error != nil {
-					goutils.WriteError("unable to parse packets", packet.Error)
+					logger.WriteError("unable to parse packets", packet.Error)
 				}
 			}
 		}

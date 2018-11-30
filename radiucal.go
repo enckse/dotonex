@@ -11,7 +11,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/goutils/config"
+	"github.com/epiphyte/goutils/logger"
 	"github.com/epiphyte/radiucal/core"
 	"github.com/epiphyte/radiucal/server"
 	"layeh.com/radius"
@@ -81,18 +82,18 @@ func checkAuth(name string, fxn server.AuthorizePacket, ctx *server.Context, b [
 		proxy.WriteToUDP(buffer, client)
 	})
 	if !auth {
-		goutils.WriteDebug("client failed auth check", name)
+		logger.WriteDebug("client failed auth check", name)
 	}
 	return auth
 }
 
 func runProxy(ctx *server.Context) {
 	if ctx.Debug {
-		goutils.WriteInfo("=============WARNING==================")
-		goutils.WriteInfo("debugging is enabled!")
-		goutils.WriteInfo("dumps from debugging may contain secrets")
-		goutils.WriteInfo("do NOT share debugging dumps")
-		goutils.WriteInfo("=============WARNING==================")
+		logger.WriteInfo("=============WARNING==================")
+		logger.WriteInfo("debugging is enabled!")
+		logger.WriteInfo("dumps from debugging may contain secrets")
+		logger.WriteInfo("do NOT share debugging dumps")
+		logger.WriteInfo("=============WARNING==================")
 		ctx.DebugDump()
 	}
 	var buffer [radius.MaxPacketLength]byte
@@ -137,22 +138,22 @@ func account(ctx *server.Context) {
 }
 
 func main() {
-	goutils.WriteInfo(fmt.Sprintf("radiucal (%s)", vers))
-	var config = flag.String("config", "/etc/radiucal/radiucal.conf", "Configuration file")
+	logger.WriteInfo(fmt.Sprintf("radiucal (%s)", vers))
+	var cfg = flag.String("config", "/etc/radiucal/radiucal.conf", "Configuration file")
 	var instance = flag.String("instance", "", "Instance name")
 	var debugging = flag.Bool("debug", false, "debugging")
 	flag.Parse()
-	conf, err := goutils.LoadConfig(*config, goutils.NewConfigSettings())
+	conf, err := config.LoadConfig(*cfg, config.NewConfigSettings())
 	if err != nil {
-		goutils.WriteError("unable to load config", err)
+		logger.WriteError("unable to load config", err)
 		panic("invalid/unable to load config")
 	}
 	debug := conf.GetTrue("debug") || *debugging
-	logOpts := goutils.NewLogOptions()
+	logOpts := logger.NewLogOptions()
 	logOpts.Debug = debug
 	logOpts.Info = true
 	logOpts.Instance = *instance
-	goutils.ConfigureLogging(logOpts)
+	logger.ConfigureLogging(logOpts)
 	host := conf.GetStringOrDefault("host", "localhost")
 	var to int = 1814
 	accounting := conf.GetTrue("accounting")
@@ -162,13 +163,13 @@ func main() {
 	} else {
 		to, err = conf.GetIntOrDefault("to", 1814)
 		if err != nil {
-			goutils.WriteError("unable to get bind-to", err)
+			logger.WriteError("unable to get bind-to", err)
 			panic("cannot bind to another socket")
 		}
 	}
 	bind, err := conf.GetIntOrDefault("bind", defaultBind)
 	if err != nil {
-		goutils.WriteError("unable to bind address", err)
+		logger.WriteError("unable to bind address", err)
 		panic("unable to bind")
 	}
 	addr := fmt.Sprintf("%s:%d", host, to)
@@ -188,10 +189,10 @@ func main() {
 	pPath := filepath.Join(lib, "plugins")
 	for _, p := range mods {
 		oPath := filepath.Join(pPath, fmt.Sprintf("%s.rd", p))
-		goutils.WriteInfo("loading plugin", p, oPath)
+		logger.WriteInfo("loading plugin", p, oPath)
 		obj, err := core.LoadPlugin(oPath, pCtx)
 		if err != nil {
-			goutils.WriteError(fmt.Sprintf("unable to load plugin: %s", p), err)
+			logger.WriteError(fmt.Sprintf("unable to load plugin: %s", p), err)
 			panic("unable to load plugin")
 		}
 		if i, ok := obj.(core.Accounting); ok {
@@ -221,7 +222,7 @@ func main() {
 	}()
 
 	if accounting {
-		goutils.WriteInfo("accounting mode")
+		logger.WriteInfo("accounting mode")
 		account(ctx)
 	} else {
 		runProxy(ctx)

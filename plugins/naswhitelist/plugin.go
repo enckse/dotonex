@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/goutils/logger"
 	"github.com/epiphyte/radiucal/core"
 	. "layeh.com/radius/rfc2865"
 )
@@ -49,7 +49,7 @@ func (l *nwl) startup(array []string) {
 		for _, ip := range array {
 			ipSplit := len(strings.Split(ip, "."))
 			if ipSplit > 4 {
-				goutils.WriteWarn("invalid ip", ip)
+				logger.WriteWarn("invalid ip", ip)
 				continue
 			}
 			enabled = true
@@ -66,7 +66,7 @@ func (l *nwl) startup(array []string) {
 			whitelist[ip] = isBlacklist
 		}
 
-		goutils.WriteDebug("ips (ordered)", order...)
+		logger.WriteDebug("ips (ordered)", order...)
 	}
 }
 
@@ -96,7 +96,7 @@ func (l *nwl) Pre(packet *core.ClientPacket) bool {
 	for _, k := range order {
 		v, ok := whitelist[k]
 		if !ok {
-			goutils.WriteWarn("internal error")
+			logger.WriteWarn("internal error")
 			return false
 		}
 		match := false

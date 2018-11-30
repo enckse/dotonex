@@ -9,7 +9,8 @@ import (
 	"plugin"
 	"time"
 
-	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/goutils/config"
+	"github.com/epiphyte/goutils/logger"
 	"layeh.com/radius/debug"
 )
 
@@ -35,9 +36,9 @@ type PluginContext struct {
 	// Location of the general lib directory
 	Lib string
 	// Plugin section (subsection of config)
-	Section *goutils.Config
+	Section *config.Config
 	// Backing config
-	config *goutils.Config
+	config *config.Config
 	// Instance name
 	Instance string
 	// Enable caching
@@ -70,7 +71,7 @@ type Accounting interface {
 	Account(*ClientPacket)
 }
 
-func NewPluginContext(config *goutils.Config) *PluginContext {
+func NewPluginContext(config *config.Config) *PluginContext {
 	p := &PluginContext{}
 	p.Cache = config.GetTrue("cache")
 	p.config = config
@@ -177,7 +178,7 @@ func newFile(path, name, instance string, appending bool) (*os.File, time.Time) 
 	logPath, t := NewFilePath(path, name, instance)
 	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0660)
 	if err != nil {
-		goutils.WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
+		logger.WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
 		return nil, t
 	}
 	return f, t

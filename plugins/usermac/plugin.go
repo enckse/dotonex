@@ -10,7 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/epiphyte/goutils"
+	"github.com/epiphyte/goutils/logger"
+	"github.com/epiphyte/goutils/opsys"
 	"github.com/epiphyte/radiucal/core"
 	. "layeh.com/radius/rfc2865"
 )
@@ -91,7 +92,7 @@ func checkUserMac(p *core.ClientPacket) error {
 	good, ok := cache[fqdn]
 	lock.Unlock()
 	if canCache && ok {
-		goutils.WriteDebug("object is preauthed", fqdn)
+		logger.WriteDebug("object is preauthed", fqdn)
 		go mark(good, username, calling, p, true)
 		if good {
 			return nil
@@ -99,12 +100,12 @@ func checkUserMac(p *core.ClientPacket) error {
 			return errors.New(fmt.Sprintf("%s is blacklisted", fqdn))
 		}
 	} else {
-		goutils.WriteDebug("not preauthed", fqdn)
+		logger.WriteDebug("not preauthed", fqdn)
 	}
 	path := filepath.Join(db, fqdn)
 	success := true
 	var failure error
-	res := goutils.PathExists(path)
+	res := opsys.PathExists(path)
 	lock.Lock()
 	cache[fqdn] = res
 	lock.Unlock()
@@ -157,11 +158,11 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 		reportFail := !success && onFail
 		reportPass := success && onPass
 		if reportFail || reportPass {
-			goutils.WriteDebug("perform callback", callback...)
+			logger.WriteDebug("perform callback", callback...)
 			args := callback[1:]
-			opts := &goutils.RunOptions{}
+			opts := &opsys.RunOptions{}
 			opts.Stdin = append(opts.Stdin, fmt.Sprintf("%s -> %s", result, msg))
-			goutils.RunCommandWithOptions(opts, callback[0], args...)
+			opsys.RunCommandWithOptions(opts, callback[0], args...)
 		}
 	}
 	formatLog(f, t, result, msg)
