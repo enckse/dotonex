@@ -15,7 +15,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5acfda36c464e16a70adfe654d2704c7a12b047e5c272f1bb5736cce89dbd2ab"
+  digest = "1:51489174659ef2bd8bff93f03f76073c310da42c9be31b2d58bc3e3014e97669"
   name = "layeh.com/radius"
   packages = [
     ".",
@@ -24,7 +24,7 @@
     "rfc2865"
   ]
   pruneopts = "NUT"
-  revision = "aae5d47e21a8f0022d118dd2cba63fc92c94cc73"
+  revision = "83b1b1c7637c881a8d7ec9a8ffcc67e5f6e56968"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -32,6 +32,7 @@
   input-imports = [
     "github.com/epiphyte/goutils/config",
     "github.com/epiphyte/goutils/logger",
+    "github.com/epiphyte/goutils/opsys",
     "layeh.com/radius",
     "layeh.com/radius/debug",
     "layeh.com/radius/rfc2865"
