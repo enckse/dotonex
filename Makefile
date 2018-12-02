@@ -1,14 +1,13 @@
 BIN          := bin/
 TST          := tests/
 PLUGIN       := plugins/
-SRC          := $(shell find . -type f -name "*.go" | grep -v "vendor/")
+SRC          := $(shell find . -type f -name "*.go")
 PLUGINS      := log stats debug usermac naswhitelist
 VERSION      := DEVELOP
 CMN_FLAGS    :=  -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 FLAGS        := $(CMN_FLAGS)pie
 PLUGIN_FLAGS := $(CMN_FLAGS)plugin
 TEST_CONFS   := normal norjct
-COMPONENTS   := core server
 VAR_LIB      := /var/lib/radiucal/
 VAR_PLUG     := $(VAR_LIB)plugins/
 ETC          := /etc/radiucal/
@@ -16,14 +15,12 @@ ETC_CERTS    := $(ETC)certs/
 SUPPORT      := supporting/
 SYSD         := /lib/systemd/system/
 TMPD         := /usr/lib/tmpfiles.d/
-VENDOR_LOCAL := $(PWD)/vendor/github.com/epiphyte/radiucal/
 
-.PHONY: $(COMPONENTS) tools
+.PHONY: tools
 
 all: clean modules radiucal test format
 
 modules: $(PLUGINS)
-components: $(COMPONENTS)
 
 $(PLUGINS):
 	go build $(PLUGIN_FLAGS) -o $(BIN)$@.rd $(PLUGIN)$@/plugin.go
@@ -44,24 +41,20 @@ $(TEST_CONFS):
 	rm -f $(TST)log/*
 	./tests/run.sh $@
 
-$(COMPONENTS):
-	ln -sf $(PWD)/$@ $(VENDOR_LOCAL)
-
 radiucal:
 	go build -o $(BIN)radiucal $(FLAGS) radiucal.go
 
 format:
 	@echo $(SRC)
-	exit $(shell gofmt -l $(SRC) | wc -l)
+	exit $(shell goimports -l $(SRC) | wc -l)
 
 setup:
 	rm -rf $(BIN)
 	mkdir -p $(BIN)
 	mkdir -p $(TST)plugins/
 	mkdir -p $(TST)log/
-	mkdir -p $(VENDOR_LOCAL)
 
-clean: setup components
+clean: setup
 
 install:
 	install -Dm755 $(BIN)radiucal $(DESTDIR)/usr/bin/radiucal

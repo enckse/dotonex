@@ -1,0 +1,4 @@
+github.com/epiphyte/goutils v2.0.0+incompatible h1:z/tEXlA/VlpXauGXL5QmQSqkeiW1dpuvPbFwVoNluSI=
+github.com/epiphyte/goutils v2.0.0+incompatible/go.mod h1:t+lELoJ/wdhHs6KYE4s+L+YP3CCoeujqTcISyKTq9aE=
+layeh.com/radius v0.0.0-20181129000116-83b1b1c7637c h1:sY/j1+kUZqKPmvfL8+5U8jABlIx7hixcKOfNfMBsZYE=
+layeh.com/radius v0.0.0-20181129000116-83b1b1c7637c/go.mod h1:fywZKyu//X7iRzaxLgPWsvc0L26IUpVvE/aeIL2JtIQ=
