@@ -1,0 +1,5 @@
+VALID_MAC = "001122334455"
+DROP_MAC = "ffffffffffff"
+DEV = 10
+PROD = 11
+HIGH = 4000

@@ -1,0 +1,9 @@
+github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
+github.com/epiphyte/goutils v2.0.0+incompatible h1:z/tEXlA/VlpXauGXL5QmQSqkeiW1dpuvPbFwVoNluSI=
+github.com/epiphyte/goutils v2.0.0+incompatible/go.mod h1:t+lELoJ/wdhHs6KYE4s+L+YP3CCoeujqTcISyKTq9aE=
+github.com/yuin/gopher-lua v0.0.0-20181109042959-a0dfe84f6227 h1:GRy+0tGtORsCA+CJUMfhLuN71eQ0LtsQRDBQKbzESdc=
+github.com/yuin/gopher-lua v0.0.0-20181109042959-a0dfe84f6227/go.mod h1:fFiAh+CowNFr0NK5VASokuwKwkbacRmHsVA7Yb1Tqac=
+golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85 h1:et7+NAX3lLIk5qUCTA9QelBjGE/NkhzYw/mhnr0s7nI=
+golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
+layeh.com/gopher-luar v1.0.4 h1:BFgt94J/CXh4HkDcE2b7A7pBaVeQKEVfHEBRKL/K/Tc=
+layeh.com/gopher-luar v1.0.4/go.mod h1:N3rev/ttQd8yVluXaYsa0M/eknzRYWe+pxZ35ZFmaaI=
