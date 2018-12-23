@@ -16,9 +16,9 @@ SUPPORT      := supporting/
 SYSD         := /lib/systemd/system/
 TMPD         := /usr/lib/tmpfiles.d/
 
-.PHONY: tools
+.PHONY: admin
 
-all: clean modules radiucal test format
+all: clean modules radiucal administrate test format
 
 modules: $(PLUGINS)
 
@@ -26,6 +26,9 @@ $(PLUGINS):
 	go build $(PLUGIN_FLAGS) -o $(BIN)$@.rd $(PLUGIN)$@/plugin.go
 
 test: utests integrate
+
+admin:
+	cd admin && make FLAGS="$(FLAGS)"
 
 utests:
 	for f in $(shell find . -type f -name "*_test.go" -exec dirname {} \;); do go test -v $$f; done
