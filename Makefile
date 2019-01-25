@@ -18,7 +18,7 @@ TMPD         := /usr/lib/tmpfiles.d/
 
 .PHONY: admin
 
-all: clean modules radiucal administrate test format
+all: clean modules radiucal admin test format
 
 modules: $(PLUGINS)
 
