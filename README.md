@@ -8,7 +8,7 @@ Designed for using a go proxy+hostapd as an 802.1x RADIUS server for network aut
 This is a go proxy+hostapd setup that provides a very simple configuration to manage 802.1x authentication and management on a LAN.
 
 Expectations:
-* Running on archlinux as a host/server
+* Running on debian as a host/server
 * hostapd can do a lot with EAP and RADIUS as a service, this should serve as an exploration of these features
 * Fully replace freeradius for 802.1x/AAA/etc.
 
