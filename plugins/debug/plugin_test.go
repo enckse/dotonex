@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/epiphyte/radiucal/core"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
+	"voidedtech.com/radiucal/core"
 )
 
 func TestDebug(t *testing.T) {

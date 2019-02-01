@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/epiphyte/radiucal/core"
+	"voidedtech.com/radiucal/core"
 )
 
 var (

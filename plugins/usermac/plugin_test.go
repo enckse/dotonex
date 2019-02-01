@@ -3,9 +3,9 @@ package main
 import (
 	"testing"
 
-	"github.com/epiphyte/radiucal/core"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
+	"voidedtech.com/radiucal/core"
 )
 
 func TestUserMacBasics(t *testing.T) {

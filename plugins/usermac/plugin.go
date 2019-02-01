@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/epiphyte/goutils/logger"
-	"github.com/epiphyte/goutils/opsys"
-	"github.com/epiphyte/radiucal/core"
 	. "layeh.com/radius/rfc2865"
+	"voidedtech.com/goutils/logger"
+	"voidedtech.com/goutils/opsys"
+	"voidedtech.com/radiucal/core"
 )
 
 type umac struct {

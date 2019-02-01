@@ -5,9 +5,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/epiphyte/goutils/logger"
-	"github.com/epiphyte/radiucal/core"
 	. "layeh.com/radius/rfc2865"
+	"voidedtech.com/goutils/logger"
+	"voidedtech.com/radiucal/core"
 )
 
 const (

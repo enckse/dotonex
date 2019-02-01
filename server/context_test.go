@@ -5,9 +5,9 @@ import (
 	"net"
 	"testing"
 
-	"github.com/epiphyte/radiucal/core"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
+	"voidedtech.com/radiucal/core"
 )
 
 type MockModule struct {

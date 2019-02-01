@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/epiphyte/goutils/config"
-	"github.com/epiphyte/goutils/logger"
-	"github.com/epiphyte/radiucal/core"
-	"github.com/epiphyte/radiucal/server"
 	"layeh.com/radius"
+	"voidedtech.com/goutils/config"
+	"voidedtech.com/goutils/logger"
+	"voidedtech.com/radiucal/core"
+	"voidedtech.com/radiucal/server"
 )
 
 var vers = "master"

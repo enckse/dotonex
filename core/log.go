@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/epiphyte/goutils/logger"
+	"voidedtech.com/goutils/logger"
 )
 
 func LogError(message string, err error) bool {

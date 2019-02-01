@@ -3,9 +3,9 @@ package main
 import (
 	"strings"
 
-	"github.com/epiphyte/goutils/logger"
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
+	"voidedtech.com/goutils/logger"
 )
 
 type assignType int

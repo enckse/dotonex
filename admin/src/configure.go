@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/epiphyte/goutils/logger"
-	"github.com/epiphyte/goutils/opsys"
+	"voidedtech.com/goutils/logger"
+	"voidedtech.com/goutils/opsys"
 )
 
 const (

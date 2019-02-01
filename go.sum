@@ -1,6 +1,4 @@
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
-github.com/epiphyte/goutils v2.0.0+incompatible h1:z/tEXlA/VlpXauGXL5QmQSqkeiW1dpuvPbFwVoNluSI=
-github.com/epiphyte/goutils v2.0.0+incompatible/go.mod h1:t+lELoJ/wdhHs6KYE4s+L+YP3CCoeujqTcISyKTq9aE=
 github.com/yuin/gopher-lua v0.0.0-20181214045814-db9ae37725ec h1:vpF8Kxql6/3OvGH4y2SKtpN3WsB17mvJ8f8H1o2vucQ=
 github.com/yuin/gopher-lua v0.0.0-20181214045814-db9ae37725ec/go.mod h1:fFiAh+CowNFr0NK5VASokuwKwkbacRmHsVA7Yb1Tqac=
 github.com/yuin/gopher-lua v0.0.0-20190125051437-7b9317363aa9 h1:Wy3fAQLBPP0JSWdq3kBnmbFgXDHcyhtPpd+8kENV7mU=
@@ -15,3 +13,5 @@ layeh.com/radius v0.0.0-20181129000116-83b1b1c7637c h1:sY/j1+kUZqKPmvfL8+5U8jABl
 layeh.com/radius v0.0.0-20181129000116-83b1b1c7637c/go.mod h1:fywZKyu//X7iRzaxLgPWsvc0L26IUpVvE/aeIL2JtIQ=
 layeh.com/radius v0.0.0-20190118135028-0f678f039617 h1:UfoQTGVcI2tUZdQxp4kyh07KW0RB+HrUez9LeHurAvs=
 layeh.com/radius v0.0.0-20190118135028-0f678f039617/go.mod h1:fywZKyu//X7iRzaxLgPWsvc0L26IUpVvE/aeIL2JtIQ=
+voidedtech.com/goutils v2.0.1+incompatible h1:F901OeR0zK67WOD/wHnRtNz7GfJSldnj95F/P3pVuJY=
+voidedtech.com/goutils v2.0.1+incompatible/go.mod h1:VLiHD+fUHbOqF/Yf7QZkKuj3EfNnR4uatWsiCkD0oQw=

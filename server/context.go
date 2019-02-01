@@ -10,11 +10,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/epiphyte/goutils/config"
-	"github.com/epiphyte/goutils/logger"
-	"github.com/epiphyte/goutils/opsys"
-	"github.com/epiphyte/radiucal/core"
 	"layeh.com/radius"
+	"voidedtech.com/goutils/config"
+	"voidedtech.com/goutils/logger"
+	"voidedtech.com/goutils/opsys"
+	"voidedtech.com/radiucal/core"
 )
 
 const (

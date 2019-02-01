@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/epiphyte/radiucal/core"
+	"voidedtech.com/radiucal/core"
 )
 
 type modedata struct {

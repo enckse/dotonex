@@ -15,11 +15,11 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"github.com/epiphyte/goutils/logger"
-	"github.com/epiphyte/goutils/opsys"
-	"github.com/epiphyte/goutils/random"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/md4"
+	"voidedtech.com/goutils/logger"
+	"voidedtech.com/goutils/opsys"
+	"voidedtech.com/goutils/random"
 )
 
 const (

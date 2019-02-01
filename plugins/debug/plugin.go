@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/epiphyte/radiucal/core"
+	"voidedtech.com/radiucal/core"
 )
 
 type tracer struct {
