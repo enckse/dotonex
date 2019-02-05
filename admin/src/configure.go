@@ -18,7 +18,7 @@ const (
 	daily    = "/tmp/"
 	changed  = outputDir + "changed"
 	varLib   = "/var/lib/radiucal/"
-	varHome  = varLib + "users/"
+	varHome  = varLib + "config/"
 	manBin   = outputDir + manifest
 )
 
@@ -90,7 +90,7 @@ func configure(client bool) {
 			runCommand(fmt.Sprintf("touch %s", dailyRun))
 		}
 	}
-	runCommand(fmt.Sprintf("cat %s* | sha256sum | cut -d ' ' -f 1 > %s", userDir, hash))
+	runCommand(fmt.Sprintf("cat %s* | sha256sum | cut -d ' ' -f 1 > %s", configDir, hash))
 	diffed := true
 	if opsys.PathExists(hash) && opsys.PathExists(prevHash) {
 		runCommand(fmt.Sprintf("diff -u %s %s; if [ $? -ne 0 ]; then touch %s; fi", prevHash, hash, changed))
