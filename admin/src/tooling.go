@@ -15,7 +15,6 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/crypto/md4"
 	"voidedtech.com/goutils/logger"
 	"voidedtech.com/goutils/opsys"
@@ -88,7 +87,7 @@ func utf16le(s string) []byte {
 	return b
 }
 
-func getPass(param *inputArgs) (string, string, string) {
+func getPass(param *inputArgs) (string, string) {
 	pass := param.pass
 	if len(pass) == 0 {
 		random.SeedTime()
@@ -96,16 +95,12 @@ func getPass(param *inputArgs) (string, string, string) {
 	}
 	h := md4.New()
 	h.Write(utf16le(pass))
-	b, e := bcrypt.GenerateFromPassword([]byte(pass), 10)
-	if e != nil {
-		logger.Fatal("unable to bcrypt password", e)
-	}
-	return pass, fmt.Sprintf("%x", string(h.Sum(nil))), string(b)
+	return pass, fmt.Sprintf("%x", string(h.Sum(nil)))
 }
 
 func password(params *inputArgs) {
-	p, h, b := getPass(params)
-	fmt.Println(fmt.Sprintf("\npassword: %s\n\nmd4: %s\n\nbcrypt: %s\n", p, h, b))
+	p, h := getPass(params)
+	fmt.Println(fmt.Sprintf("\npassword: %s\n\nmd4: %s\n", p, h))
 }
 
 func die(err error) {
@@ -143,14 +138,14 @@ func useradd(param *inputArgs) {
 		}
 	}
 	dieNow("invalid username", nil, len(user) == 0)
-	p, h, b := getPass(param)
+	p, h := getPass(param)
 	script := fmt.Sprintf(`--user %s
 object = network:Define(<device_type_str>, <device_id_str>)
 object.Macs = {}
 object:Assigned(<VLAN_NUMBER>)
 `, user)
 	ioutil.WriteFile(filepath.Join(configDir, fmt.Sprintf("user_%s.lua", user)), []byte(script), 0644)
-	fmt.Println(fmt.Sprintf("%s was created with password: %s (bcrypt: %s)", user, p, b))
+	fmt.Println(fmt.Sprintf("%s was created with password: %s", user, p))
 	opsys.RunBashCommand(fmt.Sprintf("echo '%s,%s' >> %s/passwords", user, h, configDir))
 }
 
