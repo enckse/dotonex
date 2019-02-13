@@ -338,7 +338,7 @@ func fileToScript(fileName string) string {
 
 func getScript(fileName string) string {
 	include := ""
-	p := filepath.Join(userDir, includesFile)
+	p := filepath.Join(configDir, includesFile)
 	if opsys.PathExists(p) {
 		include = fileToScript(p)
 	}
@@ -381,7 +381,7 @@ func (n *network) addSystem(s *Systems) {
 }
 
 func netconfRun() {
-	f, err := ioutil.ReadDir(userDir)
+	f, err := ioutil.ReadDir(configDir)
 	die(err)
 	net := &network{}
 	net.mab = make(map[string]struct{})
@@ -391,7 +391,7 @@ func netconfRun() {
 	for _, file := range f {
 		name := file.Name()
 		if (strings.HasPrefix(name, userFile) || strings.HasPrefix(name, vlanFile)) && strings.HasSuffix(name, luaExtension) {
-			path := filepath.Join(userDir, name)
+			path := filepath.Join(configDir, name)
 			if opsys.PathExists(path) {
 				logger.WriteInfo("reading", name)
 				if strings.HasPrefix(name, userFile) {
@@ -416,7 +416,7 @@ func netconfRun() {
 
 func readPasses() map[string]string {
 	userPasses := make(map[string]string)
-	path := filepath.Join(userDir, passwordFile)
+	path := filepath.Join(configDir, passwordFile)
 	data, err := ioutil.ReadFile(path)
 	die(err)
 	tracked := make(map[string]string)
