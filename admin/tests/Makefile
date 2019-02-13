@@ -1,6 +1,6 @@
 OUT   := ../../bin/
 FILES := $(OUT)bin/
-USRS  := $(OUT)config/
+USRS  := $(OUT)users/
 DIFFS := audit.csv manifest eap_users sysinfo.csv segment-diagram.dot segments.md
 
 .PHONY: $(DIFFS)

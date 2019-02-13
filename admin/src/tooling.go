@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	configDir    = "config/"
+	userDir      = "users/"
 	pwdKey       = "pwd"
 	useraddKey   = "useradd"
 	netconfKey   = "netconf"
@@ -34,8 +34,8 @@ const (
 	encKey       = "enc"
 	decKey       = "dec"
 	passwordFile = "passwords"
-	userPass     = configDir + passwordFile
-	userPassEnc  = configDir + passwordFile + ".keys"
+	userPass     = userDir + passwordFile
+	userPassEnc  = userDir + passwordFile + ".keys"
 	// input args
 	userArg = "user"
 	passArg = "pass"
@@ -144,9 +144,9 @@ object = network:Define(<device_type_str>, <device_id_str>)
 object.Macs = {}
 object:Assigned(<VLAN_NUMBER>)
 `, user)
-	ioutil.WriteFile(filepath.Join(configDir, fmt.Sprintf("user_%s.lua", user)), []byte(script), 0644)
-	fmt.Println(fmt.Sprintf("%s was created with password: %s", user, p))
-	opsys.RunBashCommand(fmt.Sprintf("echo '%s,%s' >> %s/passwords", user, h, configDir))
+	ioutil.WriteFile(filepath.Join(userDir, fmt.Sprintf("user_%s.lua", user)), []byte(script), 0644)
+	fmt.Println(fmt.Sprintf("%s was created with password: %s (bcrypt: %s)", user, p, b))
+	opsys.RunBashCommand(fmt.Sprintf("echo '%s,%s' >> %s/passwords", user, h, userDir))
 }
 
 func main() {
@@ -158,7 +158,7 @@ func main() {
 	action := *cmd
 	errored := false
 	if _, ok := skipUserDir[action]; !ok {
-		for _, check := range []string{configDir} {
+		for _, check := range []string{userDir} {
 			if opsys.PathNotExists(check) {
 				errored = true
 				fmt.Println(fmt.Sprintf("missing required file/directory: %s", check))
