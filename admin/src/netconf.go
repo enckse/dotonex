@@ -194,6 +194,11 @@ func vlanReports(vlans []*VLAN) {
 		if vlan.route != "none" {
 			diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\" [color=red]", vlan.name, vlan.route))
 		}
+		if vlan.initiate != "" {
+			for _, o := range strings.Split(vlan.initiate, " ") {
+				diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\"", vlan.name, o))
+			}
+		}
 		entry := []string{vlan.group, vlan.name, vlan.net, fmt.Sprintf("%d", vlan.number), vlan.owner, vlan.desc}
 		segments = append(segments, entry)
 	}

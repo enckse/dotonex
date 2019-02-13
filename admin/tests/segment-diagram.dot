@@ -7,4 +7,5 @@ digraph g {
     "prod" -> "" [color=red]
     "high" [shape="record"]
     "high" -> "" [color=red]
+    "high" -> "prod"
 }
