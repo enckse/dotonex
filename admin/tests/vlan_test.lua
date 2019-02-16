@@ -5,5 +5,5 @@ object = segments:Define(PROD, "prod")
 object:Add()
 
 object = segments:Define(HIGH, "high")
-object.Initiate = "prod"
+object.Initiate = {"prod"}
 object:Add()

@@ -20,7 +20,7 @@ const (
 )
 
 type definition interface {
-	Segment(int, string, string, string, string, string, string, string)
+	Segment(int, string, []string, string, string, string, string, string)
 	Object(assignType, string, int)
 	Describe(id, key, value string)
 }
@@ -46,7 +46,7 @@ type entity struct {
 type segment struct {
 	Name     string
 	Num      int
-	Initiate string
+	Initiate []string
 	Route    string
 	Net      string
 	Owner    string

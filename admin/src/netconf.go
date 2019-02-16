@@ -38,7 +38,7 @@ type VLAN struct {
 	file     string
 	number   int
 	name     string
-	initiate string
+	initiate []string
 	route    string
 	net      string
 	owner    string
@@ -66,7 +66,7 @@ type outputs struct {
 	sysCols    map[string]struct{}
 }
 
-func (n *network) Segment(num int, name, initiate, route, net, owner, desc, group string) {
+func (n *network) Segment(num int, name string, initiate []string, route, net, owner, desc, group string) {
 	if num < 0 || num > 4096 || strings.TrimSpace(name) == "" {
 		logger.Fatal(fmt.Sprintf("invalid vlan definition: name or number is invalid (%s or %d)", name, num), nil)
 	}
@@ -194,8 +194,8 @@ func vlanReports(vlans []*VLAN) {
 		if vlan.route != "none" {
 			diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\" [color=red]", vlan.name, vlan.route))
 		}
-		if vlan.initiate != "" {
-			for _, o := range strings.Split(vlan.initiate, " ") {
+		if len(vlan.initiate) > 0 {
+			for _, o := range vlan.initiate {
 				diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\"", vlan.name, o))
 			}
 		}
