@@ -132,20 +132,10 @@ func (e *entity) Mabed(vlan int) {
 }
 
 func (e *entity) Own(id string, macs []string) {
-	f := e.fake(id, macs)
-	f.Owned()
-}
-
-func (e *entity) Mab(vlan int, id string, macs []string) {
-	o := e.fake(id, macs)
-	o.Mabed(vlan)
-}
-
-func (e *entity) fake(id string, macs []string) *entity {
 	o := e.Define("n/a", id)
 	o.Macs = macs
 	o.describe = false
-	return o
+	o.Owned()
 }
 
 func buildSystems(path string, s definition) {
