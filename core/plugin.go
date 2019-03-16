@@ -119,7 +119,7 @@ func NewFilePath(path, name, instance string) (string, time.Time) {
 	if len(inst) > 0 {
 		inst = fmt.Sprintf(".%s", inst)
 	}
-	logPath := filepath.Join(path, fmt.Sprintf("radiucal%s.%s.%s", inst, name, t.Format("2006-01-02")))
+	logPath := filepath.Join(path, fmt.Sprintf("%s.%s.%s", inst, name, t.Format("2006-01-02")))
 	return logPath, t
 }
 
