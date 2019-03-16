@@ -1,5 +1,5 @@
 bin/
 certs/*
-radiucal.*
+audit.*
 tests/plugins/
 tests/log/
