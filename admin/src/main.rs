@@ -1,9 +1,19 @@
+mod encrypt;
 mod useradd;
-
 mod constants {
+    use rand::distributions::Alphanumeric;
+    use rand::Rng;
     pub const CONFIG_DIR: &str = "config";
+    pub const PASSWORDS: &str = "passwords";
+    pub fn random_string(length: usize) -> String {
+        return rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(length)
+            .collect::<String>();
+    }
 }
 
+use crate::encrypt::{decrypt_file, encrypt_file};
 use crate::useradd::{get_pass, new_user};
 use std::env;
 
@@ -51,6 +61,12 @@ fn main() {
         }
         "pwd" => {
             valid = get_pass(&pass);
+        }
+        "enc" => {
+            valid = encrypt_file(&pass);
+        }
+        "dec" => {
+            valid = decrypt_file(&pass);
         }
         _ => {
             println!("command unknown: {}", command);

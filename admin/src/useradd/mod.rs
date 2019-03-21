@@ -1,8 +1,6 @@
 use md4::{Digest, Md4};
 extern crate rand;
-use crate::constants::CONFIG_DIR;
-use rand::distributions::Alphanumeric;
-use rand::Rng;
+use crate::constants::{random_string, CONFIG_DIR, PASSWORDS};
 use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::prelude::*;
@@ -28,10 +26,7 @@ fn md4_hash(value: &str) -> String {
 /// use or generate a password
 fn generate_password(input_password: &str, out_password: &mut String) -> String {
     if input_password == "" {
-        let pass = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(64)
-            .collect::<String>();
+        let pass: String = random_string(64);
         out_password.push_str(&pass);
     } else {
         out_password.push_str(input_password);
@@ -82,7 +77,7 @@ fn create_user(user_name: &str, input_password: &str) -> Result<bool, io::Error>
     let user_path = Path::new(CONFIG_DIR).join(user_file);
     let mut buffer = File::create(user_path)?;
     buffer.write(b"user:\n")?;
-    let pass_file = Path::new(CONFIG_DIR).join("passwords");
+    let pass_file = Path::new(CONFIG_DIR).join(PASSWORDS);
     let mut file = OpenOptions::new()
         .write(true)
         .append(true)
