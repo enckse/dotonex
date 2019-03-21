@@ -3,7 +3,7 @@ extern crate rand;
 use rand::Rng;
 use rand::distributions::Alphanumeric;
 use std::io;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::path::{Path};
 
@@ -68,5 +68,8 @@ pub fn new_user(user_name: &str, input_password: &str) -> Result<bool, io::Error
     let user_path = Path::new(CONFIG_DIR).join(user_file);
     let mut buffer = File::create(user_path)?;
     buffer.write(b"user:\n")?;
+    let pass_file = Path::new(CONFIG_DIR).join("passwords");
+    let mut file = OpenOptions::new().write(true).append(true).open(pass_file)?;
+    file.write_fmt(format_args!("{},{}\n", user, md4))?;
     return Ok(true);
 }
