@@ -1,10 +1,11 @@
-use crate::constants::OUTPUT_DIR;
-use std::fs::{copy, create_dir, remove_file, write};
+use crate::constants::{CONFIG_DIR, OUTPUT_DIR};
+use std::fs::{copy, create_dir, write};
 use std::path::Path;
 use std::process::Command;
 use std::str;
 extern crate chrono;
 use chrono::Local;
+use std::fs;
 
 const HASHED: &str = "last";
 
@@ -59,11 +60,7 @@ pub fn run_configuration(client: bool) -> bool {
     let hash = outdir.join(HASHED);
     let prev_hash = outdir.join(HASHED.to_owned() + ".prev");
     if hash.exists() {
-        copy(hash, prev_hash).expect("unable to maintain last hash");
-    }
-    let changed = outdir.join("changed");
-    if changed.exists() {
-        remove_file(changed).expect("unable to clear change cache");
+        copy(&hash, &prev_hash).expect("unable to maintain last hash");
     }
     // TODO: run netconf processing of inputs
     let server = !client;
@@ -85,5 +82,33 @@ pub fn run_configuration(client: bool) -> bool {
         }
     }
 
+    let mut diffed = true;
+    let files = fs::read_dir(CONFIG_DIR).expect("unable to read config directory");
+    let mut file_list: std::vec::Vec<String> = std::vec::Vec::new();
+    for f in files {
+        let entry = f.expect("unable to read dir");
+        file_list.push(entry.path().to_string_lossy().into_owned());
+    }
+    file_list.sort();
+    let output = Command::new("sha256sum")
+        .args(file_list)
+        .output()
+        .expect("sha256sum command failed");
+    fs::write(&hash, output.stdout).expect("unable to store hashes");
+    if hash.exists() && prev_hash.exists() {
+        let output = Command::new("diff")
+            .arg("-u")
+            .arg(hash)
+            .arg(prev_hash)
+            .status()
+            .expect("diff command failed");
+        diffed = !output.success();
+    }
+    if diffed {
+        println!("configuration updated");
+        if server {
+            // TODO: run update commands
+        }
+    }
     return true;
 }
