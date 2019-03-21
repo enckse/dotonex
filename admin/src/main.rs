@@ -7,6 +7,8 @@ mod constants {
     pub const CONFIG_DIR: &str = "config";
     pub const PASSWORDS: &str = "passwords";
     pub const OUTPUT_DIR: &str = "bin/";
+    pub const MANIFEST: &str = "manifest";
+    pub const EAP_USERS: &str = "eap_users";
     pub fn random_string(length: usize) -> String {
         return rand::thread_rng()
             .sample_iter(&Alphanumeric)

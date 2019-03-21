@@ -1,6 +1,6 @@
-use crate::constants::{CONFIG_DIR, OUTPUT_DIR};
-use std::fs::{copy, create_dir, write};
-use std::path::Path;
+use crate::constants::{CONFIG_DIR, EAP_USERS, MANIFEST, OUTPUT_DIR};
+use std::fs::{copy, create_dir, create_dir_all, remove_file, write};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
@@ -51,6 +51,65 @@ fn signal_all() -> bool {
     return true;
 }
 
+fn update(outdir: PathBuf) -> bool {
+    let manifest = outdir.join(MANIFEST);
+    if !manifest.exists() {
+        println!("missing manifest file");
+        return false;
+    }
+    let var_lib = Path::new("/tmp/var/lib/radiucal/");
+    let var_home = var_lib.join("users");
+    if !var_home.exists() {
+        create_dir_all(&var_home).expect("unable to make live configs");
+    }
+    let contents = fs::read_to_string(manifest).expect("unable to read manifest");
+    let base_users: std::vec::Vec<&str> = contents.split("\n").collect();
+    let mut new_users: std::vec::Vec<String> = std::vec::Vec::new();
+    for b in base_users {
+        if b == "" {
+            continue;
+        }
+        new_users.push(var_home.join(b).to_string_lossy().into_owned());
+    }
+    let cur_users = get_file_list(&var_home.to_string_lossy().into_owned());
+    for u in cur_users {
+        match new_users.iter().position(|r| r == &u) {
+            Some(_) => {}
+            None => {
+                println!("dropping file {}", u);
+                remove_file(u).expect("unable to remove file");
+            }
+        }
+    }
+    for u in new_users {
+        if u == "" {
+            continue;
+        }
+        let user_file = Path::new(&u);
+        if !user_file.exists() {
+            fs::write(user_file, "user").expect("unable to write file");
+        }
+    }
+    let eap_bin = outdir.join(EAP_USERS);
+    let eap_var = var_lib.join(EAP_USERS);
+    if !eap_bin.exists() {
+        println!("eap_users file is missing?");
+        return false;
+    }
+    copy(eap_bin, eap_var).expect("unable to copy eap_users file");
+    return signal_all();
+}
+
+fn get_file_list(dir: &str) -> std::vec::Vec<String> {
+    let mut file_list: std::vec::Vec<String> = std::vec::Vec::new();
+    let files = fs::read_dir(dir).expect("unable to read directory");
+    for f in files {
+        let entry = f.expect("unable to read dir");
+        file_list.push(entry.path().to_string_lossy().into_owned());
+    }
+    return file_list;
+}
+
 pub fn run_configuration(client: bool) -> bool {
     println!("updating networking configuration");
     let outdir = Path::new(OUTPUT_DIR);
@@ -83,12 +142,7 @@ pub fn run_configuration(client: bool) -> bool {
     }
 
     let mut diffed = true;
-    let files = fs::read_dir(CONFIG_DIR).expect("unable to read config directory");
-    let mut file_list: std::vec::Vec<String> = std::vec::Vec::new();
-    for f in files {
-        let entry = f.expect("unable to read dir");
-        file_list.push(entry.path().to_string_lossy().into_owned());
-    }
+    let mut file_list = get_file_list(CONFIG_DIR);
     file_list.sort();
     let output = Command::new("sha256sum")
         .args(file_list)
@@ -107,7 +161,7 @@ pub fn run_configuration(client: bool) -> bool {
     if diffed {
         println!("configuration updated");
         if server {
-            // TODO: run update commands
+            return update(outdir.to_path_buf());
         }
     }
     return true;
