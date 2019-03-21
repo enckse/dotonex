@@ -1,12 +1,12 @@
 use md4::{Digest, Md4};
 extern crate rand;
+use crate::constants::CONFIG_DIR;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::prelude::*;
 use std::path::Path;
-use crate::constants::CONFIG_DIR;
 
 /// Process a password into a digest hash output
 fn process<D: Digest + Default>(value: &str) -> String {
@@ -39,8 +39,16 @@ fn generate_password(input_password: &str, out_password: &mut String) -> String 
     return md4_hash(&out_password);
 }
 
+/// get a password as a hashed value
+pub fn get_pass(pass: &str) -> bool {
+    let mut out = String::new();
+    let md4 = generate_password(pass, &mut out);
+    println!("password: {}\nmd4 hash: {}", out, md4);
+    return true;
+}
+
 /// create a new user
-pub fn new_user(user_name: &str, input_password: &str) -> Result<bool, io::Error> {
+fn create_user(user_name: &str, input_password: &str) -> Result<bool, io::Error> {
     let mut user = user_name;
     let mut input = String::new();
     if user_name == "" {
@@ -81,4 +89,17 @@ pub fn new_user(user_name: &str, input_password: &str) -> Result<bool, io::Error
         .open(pass_file)?;
     file.write_fmt(format_args!("{},{}\n", user, md4))?;
     return Ok(true);
+}
+
+pub fn new_user(user_name: &str, pass: &str) -> bool {
+    let status = create_user(user_name, pass);
+    match status {
+        Ok(n) => {
+            return n;
+        }
+        Err(error) => {
+            println!("{}", error);
+            return false;
+        }
+    }
 }
