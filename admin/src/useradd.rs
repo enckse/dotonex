@@ -1,11 +1,11 @@
-use md4::{Md4, Digest};
+use md4::{Digest, Md4};
 extern crate rand;
-use rand::Rng;
 use rand::distributions::Alphanumeric;
-use std::io;
+use rand::Rng;
 use std::fs::{File, OpenOptions};
+use std::io;
 use std::io::prelude::*;
-use std::path::{Path};
+use std::path::Path;
 
 const CONFIG_DIR: &str = "config";
 
@@ -26,7 +26,10 @@ fn md4_hash(value: &str) -> String {
 
 fn generate_password(input_password: &str, out_password: &mut String) -> String {
     if input_password == "" {
-        let pass = rand::thread_rng().sample_iter(&Alphanumeric).take(64).collect::<String>();
+        let pass = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(64)
+            .collect::<String>();
         out_password.push_str(&pass);
     } else {
         out_password.push_str(input_password);
@@ -69,7 +72,10 @@ pub fn new_user(user_name: &str, input_password: &str) -> Result<bool, io::Error
     let mut buffer = File::create(user_path)?;
     buffer.write(b"user:\n")?;
     let pass_file = Path::new(CONFIG_DIR).join("passwords");
-    let mut file = OpenOptions::new().write(true).append(true).open(pass_file)?;
+    let mut file = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(pass_file)?;
     file.write_fmt(format_args!("{},{}\n", user, md4))?;
     return Ok(true);
 }
