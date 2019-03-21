@@ -1,11 +1,17 @@
 mod useradd;
-use crate::useradd::generate_password;
+use crate::useradd::new_user;
 
 fn main() {
-    let mut pass = String::new();
-    let md4 = generate_password("abc", &mut pass);
-    println!("password:{}\nmd4:{}", pass, md4);
-    pass = String::new();
-    let md42 = generate_password("", &mut pass);
-    println!("password:{}\nmd4:{}", pass, md42);
+    let valid = new_user("", "");
+    match valid {
+        Ok(n) => {
+            if !n {
+                std::process::exit(1);
+            }
+        }
+        Err(error) => {
+            println!("{}", error);
+            std::process::exit(2);
+        },
+    }
 }

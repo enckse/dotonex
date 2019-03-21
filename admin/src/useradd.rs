@@ -2,6 +2,12 @@ use md4::{Md4, Digest};
 extern crate rand;
 use rand::Rng;
 use rand::distributions::Alphanumeric;
+use std::io;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::{Path};
+
+const CONFIG_DIR: &str = "config";
 
 fn process<D: Digest + Default>(value: &str) -> String {
     let mut sh: D = Default::default();
@@ -18,7 +24,7 @@ fn md4_hash(value: &str) -> String {
     return process::<Md4>(value);
 }
 
-pub fn generate_password(input_password: &str, out_password: &mut String) -> String {
+fn generate_password(input_password: &str, out_password: &mut String) -> String {
     if input_password == "" {
         let pass = rand::thread_rng().sample_iter(&Alphanumeric).take(64).collect::<String>();
         out_password.push_str(&pass);
@@ -26,4 +32,41 @@ pub fn generate_password(input_password: &str, out_password: &mut String) -> Str
         out_password.push_str(input_password);
     }
     return md4_hash(&out_password);
+}
+
+pub fn new_user(user_name: &str, input_password: &str) -> Result<bool, io::Error> {
+    let mut user = user_name;
+    let mut input = String::new();
+    if user_name == "" {
+        println!("please provide user name:");
+        match io::stdin().read_line(&mut input) {
+            Ok(_) => {
+                user = &input;
+            }
+            Err(error) => return Err(error),
+        }
+        user = user.trim();
+        if user == "" {
+            println!("empty username");
+            return Ok(false);
+        }
+    }
+    for c in user.chars() {
+        if c >= 'a' && c <= 'z' {
+            continue;
+        }
+        println!("invalid user name (a-z): {}", user);
+        return Ok(false);
+    }
+    let mut out = String::new();
+    let md4 = generate_password(input_password, &mut out);
+    println!("username: {}\npassword: {}\nmd4 hash: {}", user, out, md4);
+    let mut user_file = String::new();
+    user_file.push_str("user_");
+    user_file.push_str(user);
+    user_file.push_str(".yaml");
+    let user_path = Path::new(CONFIG_DIR).join(user_file);
+    let mut buffer = File::create(user_path)?;
+    buffer.write(b"user:\n")?;
+    return Ok(true);
 }
