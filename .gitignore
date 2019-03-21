@@ -3,3 +3,6 @@ certs/*
 audit.*
 tests/plugins/
 tests/log/
+target/
+Cargo.lock
+**/*.rs.bk
