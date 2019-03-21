@@ -1,3 +1,4 @@
+mod configure;
 mod encrypt;
 mod useradd;
 mod constants {
@@ -5,6 +6,7 @@ mod constants {
     use rand::Rng;
     pub const CONFIG_DIR: &str = "config";
     pub const PASSWORDS: &str = "passwords";
+    pub const OUTPUT_DIR: &str = "bin/";
     pub fn random_string(length: usize) -> String {
         return rand::thread_rng()
             .sample_iter(&Alphanumeric)
@@ -13,6 +15,7 @@ mod constants {
     }
 }
 
+use crate::configure::run_configuration;
 use crate::encrypt::{decrypt_file, encrypt_file};
 use crate::useradd::{get_pass, new_user};
 use std::env;
@@ -24,8 +27,8 @@ fn main() {
         return;
     }
     let mut client = false;
-    let mut pass: String = String::new();
-    let mut user: String = String::new();
+    let mut pass = String::new();
+    let mut user = String::new();
     let command = args[1].to_string();
     if args.len() > 2 {
         let mut idx = -1;
@@ -34,12 +37,18 @@ fn main() {
             if idx < 2 {
                 continue;
             }
+            if !a.starts_with("--") {
+                println!("parameter must start with --");
+                return;
+            }
             let parts: Vec<&str> = a.split("=").collect();
             if parts.len() != 2 {
                 println!("invalid parameter input");
                 return;
             }
-            match parts[0] {
+            let mut p = String::new();
+            p.push_str(&parts[0][2..]);
+            match &*p {
                 "user" => {
                     user = parts[1].to_string();
                 }
@@ -67,6 +76,9 @@ fn main() {
         }
         "dec" => {
             valid = decrypt_file(&pass);
+        }
+        "configure" => {
+            valid = run_configuration(client);
         }
         _ => {
             println!("command unknown: {}", command);

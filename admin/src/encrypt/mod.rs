@@ -28,7 +28,7 @@ fn encrypt_decrypt(pass: &str, decrypt: bool) -> bool {
     let ofile = Path::new(CONFIG_DIR).join(out_file);
     let key = GenericArray::from_slice(pass.as_bytes());
     match fs::read(ifile) {
-        Ok(mut data) => {
+        Ok(data) => {
             let mut use_data: std::vec::Vec<u8>;
             let mut nonce_data: std::vec::Vec<u8>;
             if decrypt {
