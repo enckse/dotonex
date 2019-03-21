@@ -1,4 +1,9 @@
 mod useradd;
+
+mod constants {
+    pub const CONFIG_DIR: &str = "config";
+}
+
 use crate::useradd::new_user;
 
 fn main() {

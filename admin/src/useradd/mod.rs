@@ -6,9 +6,9 @@ use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::prelude::*;
 use std::path::Path;
+use crate::constants::CONFIG_DIR;
 
-const CONFIG_DIR: &str = "config";
-
+/// Process a password into a digest hash output
 fn process<D: Digest + Default>(value: &str) -> String {
     let mut sh: D = Default::default();
     sh.input(value);
@@ -20,10 +20,12 @@ fn process<D: Digest + Default>(value: &str) -> String {
     return buf;
 }
 
+/// md4 hashing
 fn md4_hash(value: &str) -> String {
     return process::<Md4>(value);
 }
 
+/// use or generate a password
 fn generate_password(input_password: &str, out_password: &mut String) -> String {
     if input_password == "" {
         let pass = rand::thread_rng()
@@ -37,6 +39,7 @@ fn generate_password(input_password: &str, out_password: &mut String) -> String 
     return md4_hash(&out_password);
 }
 
+/// create a new user
 pub fn new_user(user_name: &str, input_password: &str) -> Result<bool, io::Error> {
     let mut user = user_name;
     let mut input = String::new();
