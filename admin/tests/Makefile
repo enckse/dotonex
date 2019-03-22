@@ -2,6 +2,8 @@ OUT   := ../../bin/
 FILES := $(OUT)bin/
 USRS  := $(OUT)config/
 DIFFS := audit.csv manifest eap_users sysinfo.csv segment-diagram.dot segments.md
+PATH  := $(OUT):$(shell echo $$PATH)
+export PATH
 
 .PHONY: $(DIFFS)
 
@@ -14,7 +16,7 @@ clean:
 	cp *.lua $(USRS)
 
 run:
-	@cd $(OUT) && ./radiucal-admin --command netconf
+	@cd $(OUT) && PATH=.; ./radiucal-admin netconf
 
 $(DIFFS):
 	diff -u $@ $(FILES)$@

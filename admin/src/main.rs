@@ -17,9 +17,11 @@ mod constants {
     }
 }
 
-use crate::configure::run_configuration;
+use crate::configure::{all, netconf};
 use crate::encrypt::{decrypt_file, encrypt_file};
 use crate::useradd::{get_pass, new_user};
+use crate::constants::CONFIG_DIR;
+use std::path::Path;
 use std::env;
 
 fn main() {
@@ -32,6 +34,10 @@ fn main() {
     let mut pass = String::new();
     let mut user = String::new();
     let command = args[1].to_string();
+    if !Path::new(CONFIG_DIR).exists() {
+        println!("config directory missing...");
+        return;
+    }
     if args.len() > 2 {
         let mut idx = -1;
         for a in args.into_iter() {
@@ -80,7 +86,10 @@ fn main() {
             valid = decrypt_file(&pass);
         }
         "configure" => {
-            valid = run_configuration(client);
+            valid = all(client);
+        }
+        "netconf" => {
+            valid = netconf();
         }
         _ => {
             println!("command unknown: {}", command);

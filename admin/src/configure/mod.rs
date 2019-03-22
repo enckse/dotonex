@@ -110,7 +110,16 @@ fn get_file_list(dir: &str) -> std::vec::Vec<String> {
     return file_list;
 }
 
-pub fn run_configuration(client: bool) -> bool {
+pub fn netconf() -> bool {
+    let output = Command::new("radiucal-legacy")
+        .arg("--command")
+        .arg("netconf")
+        .status()
+        .expect("legacy command failed");
+    return output.success()
+}
+
+pub fn all(client: bool) -> bool {
     println!("updating networking configuration");
     let outdir = Path::new(OUTPUT_DIR);
     if !outdir.exists() {
@@ -121,7 +130,9 @@ pub fn run_configuration(client: bool) -> bool {
     if hash.exists() {
         copy(&hash, &prev_hash).expect("unable to maintain last hash");
     }
-    // TODO: run netconf processing of inputs
+    if !netconf() {
+        return false;
+    }
     let server = !client;
     let date = Local::now().format(".radius.%Y-%m-%d").to_string();
     if server {
