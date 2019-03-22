@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -456,4 +457,26 @@ func checkMAC(mac string) {
 		}
 	}
 	logger.Fatal(fmt.Sprintf("invalid mac detected: %s", mac), nil)
+}
+
+func die(err error) {
+	dieNow("unrecoverable error", err, err != nil)
+}
+
+func dieNow(message string, err error, now bool) {
+	messaged := false
+	if err != nil {
+		messaged = true
+		logger.WriteError(message, err)
+	}
+	if now {
+		if !messaged {
+			logger.WriteWarn(message)
+		}
+		os.Exit(1)
+	}
+}
+
+func main() {
+	netconfRun()
 }

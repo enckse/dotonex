@@ -112,8 +112,6 @@ fn get_file_list(dir: &str) -> std::vec::Vec<String> {
 
 pub fn netconf() -> bool {
     let output = Command::new("radiucal-legacy")
-        .arg("--command")
-        .arg("netconf")
         .status()
         .expect("legacy command failed");
     return output.success();
