@@ -116,7 +116,7 @@ pub fn netconf() -> bool {
         .arg("netconf")
         .status()
         .expect("legacy command failed");
-    return output.success()
+    return output.success();
 }
 
 pub fn all(client: bool) -> bool {

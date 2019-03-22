@@ -1,6 +1,8 @@
 use md4::{Digest, Md4};
 extern crate rand;
 use crate::constants::{random_string, CONFIG_DIR, PASSWORDS};
+use encoding::all::UTF_16LE;
+use encoding::{EncoderTrap, Encoding};
 use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::prelude::*;
@@ -9,7 +11,10 @@ use std::path::Path;
 /// Process a password into a digest hash output
 fn process<D: Digest + Default>(value: &str) -> String {
     let mut sh: D = Default::default();
-    sh.input(value);
+    let utf16 = UTF_16LE
+        .encode(value, EncoderTrap::Ignore)
+        .expect("utf-16le failure");
+    sh.input(utf16);
     let r = &sh.result();
     let mut buf = String::with_capacity(r.len());
     for byte in r {

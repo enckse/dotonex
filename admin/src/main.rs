@@ -18,11 +18,11 @@ mod constants {
 }
 
 use crate::configure::{all, netconf};
+use crate::constants::CONFIG_DIR;
 use crate::encrypt::{decrypt_file, encrypt_file};
 use crate::useradd::{get_pass, new_user};
-use crate::constants::CONFIG_DIR;
-use std::path::Path;
 use std::env;
+use std::path::Path;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
