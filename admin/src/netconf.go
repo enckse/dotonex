@@ -18,6 +18,7 @@ const (
 	userFile     = "user_"
 	vlanFile     = "vlan_"
 	luaExtension = ".lua"
+	configDir    = "config/"
 )
 
 type assignment struct {
@@ -143,7 +144,7 @@ func (o *outputs) eapWrite() {
 		track[k] = struct{}{}
 		content = append(content, o.eap[k])
 	}
-	writeContent(eapUsers, content)
+	writeContent("eap_users", content)
 }
 
 func writeFile(file string, values []string) {
@@ -154,7 +155,7 @@ func writeFile(file string, values []string) {
 
 func writeContent(file string, lines []string) {
 	content := strings.Join(lines, "\n")
-	err := ioutil.WriteFile(filepath.Join(outputDir, file), []byte(content), 0644)
+	err := ioutil.WriteFile(filepath.Join("bin/", file), []byte(content), 0644)
 	die(err)
 }
 
@@ -303,7 +304,7 @@ func (n *network) process() {
 		}
 		logger.WriteInfo("checks completed")
 		writeFile("audit.csv", output.audits)
-		writeFile(manifest, output.manifest)
+		writeFile("manifest", output.manifest)
 		writeContent("sysinfo.csv", output.systemInfo())
 		vlanReports(n.vlans)
 		output.eapWrite()
@@ -416,7 +417,7 @@ func netconfRun() {
 
 func readPasses() map[string]string {
 	userPasses := make(map[string]string)
-	path := filepath.Join(configDir, passwordFile)
+	path := filepath.Join(configDir, "passwords")
 	data, err := ioutil.ReadFile(path)
 	die(err)
 	tracked := make(map[string]string)

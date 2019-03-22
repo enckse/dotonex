@@ -8,15 +8,6 @@ import (
 	"voidedtech.com/goutils/logger"
 )
 
-const (
-	configDir    = "config/"
-	outputDir    = "bin/"
-	eapUsers     = "eap_users"
-	manifest     = "manifest"
-	passwordFile = "passwords"
-	userPass     = configDir + passwordFile
-)
-
 var (
 	vers = "master"
 )
