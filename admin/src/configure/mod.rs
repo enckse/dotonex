@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
-use crate::vlans::load_vlans;
+use crate::objects::load_vlans;
 use chrono::Local;
 use std::fs;
 

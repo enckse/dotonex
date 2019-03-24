@@ -1,7 +1,7 @@
 mod configure;
 mod encrypt;
 mod useradd;
-mod vlans;
+mod objects;
 mod constants {
     use rand::distributions::Alphanumeric;
     use rand::Rng;
