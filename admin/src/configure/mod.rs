@@ -128,10 +128,15 @@ pub fn netconf() -> bool {
             }
         }
     }
-    let _vlans = load_vlans(paths);
+    let mut vlan_args: Vec<String> = Vec::new();
+    let vlans = load_vlans(paths);
+    for v in vlans {
+        vlan_args.push(format!("{}={}", v.name, v.number));
+    }
     let output = Command::new("radiucal-admin-legacy")
-    .status()
-    .expect("legacy command failed");
+        .args(vlan_args)
+        .status()
+        .expect("legacy command failed");
     return output.success();
 }
 

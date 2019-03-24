@@ -43,27 +43,8 @@ type entity struct {
 	describe bool
 }
 
-type segment struct {
-	Name     string
-	Num      int
-	Initiate []string
-	Route    string
-	Net      string
-	Owner    string
-	Desc     string
-	Group    string
-}
-
 func (e *entity) Disabled() {
 	stateDisable = true
-}
-
-func (s *segment) Add() {
-	state.Segment(s.Num, s.Name, s.Initiate, s.Route, s.Net, s.Owner, s.Desc, s.Group)
-}
-
-func (s *segment) Define(num int, name string) *segment {
-	return &segment{Num: num, Name: name}
 }
 
 func (e *entity) Define(typed, id string) *entity {
@@ -145,9 +126,7 @@ func buildSystems(path string, s definition) {
 	L := lua.NewState()
 	defer L.Close()
 	e := &entity{}
-	seg := &segment{Num: invalidVLAN}
 	L.SetGlobal("network", luar.New(L, e))
-	L.SetGlobal("segments", luar.New(L, seg))
 	script := getScript(path)
 	if err := L.DoString(script); err != nil {
 		logger.WriteWarn(script)

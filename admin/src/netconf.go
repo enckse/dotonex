@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"voidedtech.com/goutils/logger"
@@ -37,9 +38,9 @@ type Systems struct {
 }
 
 type VLAN struct {
-	file     string
-	number   int
-	name     string
+	file   string
+	number int
+	name   string
 }
 
 type network struct {
@@ -60,16 +61,6 @@ type outputs struct {
 	trackLines map[string]struct{}
 	sysTrack   map[string]map[string][]string
 	sysCols    map[string]struct{}
-}
-
-func (n *network) Segment(num int, name string, initiate []string, route, net, owner, desc, group string) {
-	if num < 0 || num > 4096 || strings.TrimSpace(name) == "" {
-		logger.Fatal(fmt.Sprintf("invalid vlan definition: name or number is invalid (%s or %d)", name, num), nil)
-	}
-	v := &VLAN{}
-	v.name = name
-	v.number = num
-	n.vlans = append(n.vlans, v)
 }
 
 func (o *outputs) trackLine(lineType, line string) {
@@ -341,17 +332,34 @@ func (n *network) addSystem(s *Systems) {
 	n.systems = append(n.systems, s)
 }
 
-func netconfRun() {
+func netconfRun(vlans []string) {
 	f, err := ioutil.ReadDir(configDir)
 	die(err)
 	net := &network{}
+	for i, v := range vlans {
+		if i == 0 {
+			continue
+		}
+		parts := strings.Split(v, "=")
+		if len(parts) != 2 {
+			logger.WriteWarn("invalid vlan definition", parts...)
+			return
+		}
+		def := &VLAN{}
+		def.name = parts[0]
+		def.number, err = strconv.Atoi(parts[1])
+		if err != nil {
+			logger.Fatal("invalid vlan number given", err)
+		}
+		net.vlans = append(net.vlans, def)
+	}
 	net.mab = make(map[string]struct{})
 	net.own = make(map[string]struct{})
 	net.login = make(map[string]struct{})
 	net.refVLAN = make(map[int]struct{})
 	for _, file := range f {
 		name := file.Name()
-		if (strings.HasPrefix(name, userFile) || strings.HasPrefix(name, vlanFile)) && strings.HasSuffix(name, luaExtension) {
+		if (strings.HasPrefix(name, userFile)) && strings.HasSuffix(name, luaExtension) {
 			path := filepath.Join(configDir, name)
 			if opsys.PathExists(path) {
 				logger.WriteInfo("reading", name)
@@ -437,5 +445,10 @@ func dieNow(message string, err error, now bool) {
 }
 
 func main() {
-	netconfRun()
+	if len(os.Args) < 2 {
+		logger.WriteWarn("invalid call, no vlans")
+		return
+	}
+	logger.WriteInfo("vlans", os.Args...)
+	netconfRun(os.Args)
 }
