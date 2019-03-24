@@ -18,7 +18,6 @@ import (
 const (
 	includesFile = "includes.lua"
 	userFile     = "user_"
-	vlanFile     = "vlan_"
 	luaExtension = ".lua"
 	configDir    = "config/"
 )
@@ -38,7 +37,6 @@ type Systems struct {
 }
 
 type VLAN struct {
-	file   string
 	number int
 	name   string
 }
@@ -369,13 +367,6 @@ func netconfRun(vlans []string) {
 					s.desc = make(map[string]map[string][]string)
 					buildSystems(path, s)
 					net.addSystem(s)
-				} else {
-					n := &network{}
-					buildSystems(path, n)
-					for _, v := range n.vlans {
-						v.file = name
-						net.vlans = append(net.vlans, v)
-					}
 				}
 			}
 		}
