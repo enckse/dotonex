@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
+use crate::vlans::load_vlans;
 use chrono::Local;
 use std::fs;
 
@@ -111,10 +112,28 @@ fn get_file_list(dir: &str) -> std::vec::Vec<String> {
 }
 
 pub fn netconf() -> bool {
-    let output = Command::new("radiucal-admin-legacy")
-        .status()
-        .expect("legacy command failed");
-    return output.success();
+    let configs = fs::read_dir(CONFIG_DIR).expect("unable to read config dir");
+    let mut paths: Vec<PathBuf> = Vec::new();
+    for p in configs {
+        match p {
+            Ok(path) => {
+                let path_raw = path.path();
+                if path_raw.to_string_lossy().ends_with(".yaml") {
+                    paths.push(path_raw);
+                }
+            }
+            Err(e) => {
+                println!("unable to read config dir file {}", e);
+                return false;
+            }
+        }
+    }
+    let _vlans = load_vlans(paths);
+    /*let output = Command::new("radiucal-admin-legacy")
+    .status()
+    .expect("legacy command failed");*/
+    //return output.success();
+    return true;
 }
 
 pub fn all(client: bool) -> bool {

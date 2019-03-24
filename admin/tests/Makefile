@@ -14,6 +14,7 @@ clean:
 	mkdir -p $(FILES)
 	cp passwords $(USRS)
 	cp *.lua $(USRS)
+	cp *.yaml $(USRS)
 
 run:
 	@cd $(OUT) && PATH=.; ./radiucal-admin netconf

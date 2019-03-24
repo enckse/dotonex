@@ -40,12 +40,6 @@ type VLAN struct {
 	file     string
 	number   int
 	name     string
-	initiate []string
-	route    string
-	net      string
-	owner    string
-	desc     string
-	group    string
 }
 
 type network struct {
@@ -74,12 +68,6 @@ func (n *network) Segment(num int, name string, initiate []string, route, net, o
 	}
 	v := &VLAN{}
 	v.name = name
-	v.initiate = initiate
-	v.route = route
-	v.net = net
-	v.owner = owner
-	v.desc = desc
-	v.group = group
 	v.number = num
 	n.vlans = append(n.vlans, v)
 }
@@ -186,34 +174,6 @@ func (s *outputs) add(user string, desc map[string]map[string][]string) {
 	}
 }
 
-func vlanReports(vlans []*VLAN) {
-	segments := [][]string{}
-	segments = append(segments, []string{"cell", "segment", "lan", "vlan", "owner", "description"})
-	segments = append(segments, []string{"---", "---", "---", "---", "---", "---"})
-	diagram := []string{"digraph g {", "    size=\"6,6\";", "    node [color=lightblue2, style=filled];"}
-	for _, vlan := range vlans {
-		diagram = append(diagram, fmt.Sprintf("    \"%s\" [shape=\"record\"]", vlan.name))
-		if vlan.route != "none" {
-			diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\" [color=red]", vlan.name, vlan.route))
-		}
-		if len(vlan.initiate) > 0 {
-			for _, o := range vlan.initiate {
-				diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\"", vlan.name, o))
-			}
-		}
-		entry := []string{vlan.group, vlan.name, vlan.net, fmt.Sprintf("%d", vlan.number), vlan.owner, vlan.desc}
-		segments = append(segments, entry)
-	}
-	diagram = append(diagram, "}")
-	markdown := []string{}
-	for _, line := range segments {
-		l := fmt.Sprintf("| %s |", strings.Join(line, " | "))
-		markdown = append(markdown, l)
-	}
-	writeContent("segment-diagram.dot", diagram)
-	writeContent("segments.md", markdown)
-}
-
 func (output *outputs) systemInfo() []string {
 	cols := []string{}
 	for k, _ := range output.sysCols {
@@ -307,7 +267,6 @@ func (n *network) process() {
 		writeFile("audit.csv", output.audits)
 		writeFile("manifest", output.manifest)
 		writeContent("sysinfo.csv", output.systemInfo())
-		vlanReports(n.vlans)
 		output.eapWrite()
 		return
 	}
