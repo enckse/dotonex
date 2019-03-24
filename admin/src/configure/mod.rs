@@ -129,11 +129,10 @@ pub fn netconf() -> bool {
         }
     }
     let _vlans = load_vlans(paths);
-    /*let output = Command::new("radiucal-admin-legacy")
+    let output = Command::new("radiucal-admin-legacy")
     .status()
-    .expect("legacy command failed");*/
-    //return output.success();
-    return true;
+    .expect("legacy command failed");
+    return output.success();
 }
 
 pub fn all(client: bool) -> bool {
