@@ -105,6 +105,11 @@ pub fn load_vlans(paths: Vec<PathBuf>) -> Vec<VLAN> {
                 println!("{}", n.to_string_lossy());
                 if n.to_string_lossy().starts_with("vlan_") {
                     let v = load_vlan(p.to_string_lossy().to_string());
+                    for e in &vlans {
+                        if e.name == v.name || e.number == v.number {
+                            panic!("vlan redefined: {} == {}", e.name, v.name)
+                        }
+                    }
                     dot.write(v.to_diagram().as_bytes())
                         .expect("could not write to dot file");
                     md.write(v.to_markdown().as_bytes())

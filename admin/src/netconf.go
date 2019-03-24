@@ -203,9 +203,6 @@ func (n *network) process() {
 		vlans := make(map[int]string)
 		output := &outputs{}
 		for _, v := range n.vlans {
-			if _, ok := vlans[v.number]; ok {
-				logger.Fatal(fmt.Sprintf("vlan redefined (%d %s)", v.number, v.name), nil)
-			}
 			vlans[v.number] = v.name
 		}
 		for k, _ := range n.refVLAN {
