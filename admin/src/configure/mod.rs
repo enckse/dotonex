@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
-use crate::objects::{load_objects, load_vlans, VLAN};
+use crate::objects::{load_objects, load_vlans, Object, VLAN};
 use chrono::Local;
 use std::collections::HashMap;
 use std::fs;
@@ -144,6 +144,10 @@ fn create_outputs(vlans: HashMap<String, VLAN>) {
     dot.write(b"}\n").expect("unable to close dot file");
 }
 
+fn check_objects(vlans: &HashMap<String, VLAN>, objects: &HashMap<String, Object>) -> bool {
+    return true;
+}
+
 pub fn netconf() -> bool {
     let configs = fs::read_dir(CONFIG_DIR).expect("unable to read config dir");
     let mut paths: Vec<PathBuf> = Vec::new();
@@ -192,6 +196,9 @@ pub fn netconf() -> bool {
             return false;
         }
     };
+    if !check_objects(&vlans, &objs) {
+        return false;
+    }
     create_outputs(vlans);
     let output = Command::new("radiucal-admin-legacy")
         .args(vlan_args)
