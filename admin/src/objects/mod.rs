@@ -142,7 +142,7 @@ pub fn load_vlans(paths: Vec<PathBuf>) -> Result<HashMap<String, VLAN>, String> 
 pub fn load_objects(file: String) -> Result<HashMap<String, Object>, String> {
     let doc = load_yaml(file);
     let mut objs: HashMap<String, Object> = HashMap::new();
-    match doc["objects"].as_hash() {
+    match doc.as_hash() {
         Some(hash) => {
             for o in hash {
                 let obj = Object {

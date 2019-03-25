@@ -10,7 +10,7 @@ endif
 all: clean app test
 
 app:
-	go build -o $(BIN)radiucal-legacy $(FLAGS) src/*.go
+	go build -o $(BIN)radiucal-admin-legacy $(FLAGS) src/*.go
 	cargo build $(BUILD)
 	cp target/$(RELEASE)/radiucal-admin $(BIN)
 
