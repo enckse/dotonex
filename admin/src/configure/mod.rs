@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
-use crate::objects::load_vlans;
+use crate::objects::{load_objects, load_vlans};
 use chrono::Local;
 use std::fs;
 
@@ -130,9 +130,7 @@ pub fn netconf() -> bool {
     }
     let mut vlan_args: Vec<String> = Vec::new();
     let vlans = match load_vlans(paths) {
-        Ok(v) => {
-            v
-        }
+        Ok(v) => v,
         Err(e) => {
             println!("{}", e);
             return false;
@@ -149,6 +147,18 @@ pub fn netconf() -> bool {
         println!("no vlans defined");
         return false;
     }
+    let objs = match load_objects(
+        Path::new(CONFIG_DIR)
+            .join("objects.yaml")
+            .to_string_lossy()
+            .to_string(),
+    ) {
+        Ok(o) => o,
+        Err(e) => {
+            println!("{}", e);
+            return false;
+        }
+    };
     let output = Command::new("radiucal-admin-legacy")
         .args(vlan_args)
         .status()

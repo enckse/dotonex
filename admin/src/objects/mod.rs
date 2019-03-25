@@ -17,6 +17,13 @@ pub struct VLAN {
     route: String,
 }
 
+pub struct Object {
+    make: String,
+    name: String,
+    model: String,
+    revision: String,
+}
+
 impl VLAN {
     fn to_markdown(&self) -> String {
         return format!(
@@ -49,13 +56,17 @@ fn optional_field(doc: &Yaml, key: &str) -> String {
     }
 }
 
-fn load_vlan(file: String) -> Result<VLAN, String> {
+fn load_yaml(file: String) -> Yaml {
     println!("reading: {}", file);
     let mut f = File::open(file).expect("unable to load file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("unable to read file");
     let docs = YamlLoader::load_from_str(&buffer).expect("unable to parse yaml");
-    let doc = &docs[0];
+    return docs[0].clone();
+}
+
+fn load_vlan(file: String) -> Result<VLAN, String> {
+    let doc = load_yaml(file);
     let mut initiate: Vec<String> = Vec::new();
     match doc["initiate"].as_vec() {
         Some(vector) => {
@@ -67,11 +78,11 @@ fn load_vlan(file: String) -> Result<VLAN, String> {
     }
     let vlan = VLAN {
         name: doc["name"].as_str().expect("invalid vlan name").to_string(),
-        description: optional_field(doc, "description"),
-        net: optional_field(doc, "net"),
-        owner: optional_field(doc, "owner"),
-        route: optional_field(doc, "route"),
-        group: optional_field(doc, "group"),
+        description: optional_field(&doc, "description"),
+        net: optional_field(&doc, "net"),
+        owner: optional_field(&doc, "owner"),
+        route: optional_field(&doc, "route"),
+        group: optional_field(&doc, "group"),
         number: doc["number"].as_i64().expect("invalid number"),
         initiate: initiate,
     };
@@ -126,4 +137,27 @@ pub fn load_vlans(paths: Vec<PathBuf>) -> Result<HashMap<String, VLAN>, String> 
     }
     dot.write(b"}\n").expect("unable to close dot file");
     Ok(vlans)
+}
+
+pub fn load_objects(file: String) -> Result<HashMap<String, Object>, String> {
+    let doc = load_yaml(file);
+    let mut objs: HashMap<String, Object> = HashMap::new();
+    match doc["objects"].as_vec() {
+        Some(vector) => {
+            for o in vector {
+                let obj = Object {
+                    name: o["name"].as_str().expect("missing name field").to_string(),
+                    make: o["make"].as_str().expect("missing make field").to_string(),
+                    model: o["model"]
+                        .as_str()
+                        .expect("missing model field")
+                        .to_string(),
+                    revision: optional_field(&doc, "revision"),
+                };
+                objs.insert(obj.name.to_owned(), obj);
+            }
+        }
+        None => {}
+    }
+    Ok(objs)
 }
