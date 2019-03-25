@@ -1,12 +1,18 @@
 BIN      := ../bin/
-FLAGS    := 
+FLAGS    :=
+RELEASE  := release
+BUILD    := --locked --$(RELEASE)
+ifneq ($(RELEASE),release)
+	BUILD   =
+	RELEASE = debug
+endif
 
 all: clean app test
 
 app:
 	go build -o $(BIN)radiucal-legacy $(FLAGS) src/*.go
-	cargo build --release
-	cp target/release/radiucal-admin $(BIN)
+	cargo build $(BUILD)
+	cp target/$(RELEASE)/radiucal-admin $(BIN)
 
 test:
 	cd tests && make
