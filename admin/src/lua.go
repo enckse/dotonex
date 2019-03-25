@@ -20,7 +20,6 @@ const (
 )
 
 type definition interface {
-	Segment(int, string, []string, string, string, string, string, string)
 	Object(assignType, string, int)
 	Describe(id, key, value string)
 }
