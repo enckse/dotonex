@@ -1,9 +1,8 @@
 extern crate yaml_rust;
-use crate::constants::OUTPUT_DIR;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use yaml_rust::{Yaml, YamlLoader};
 
 pub struct VLAN {
@@ -24,14 +23,31 @@ pub struct Object {
     revision: String,
 }
 
+pub struct Device {
+    make: String,
+    name: String,
+    model: String,
+    revision: String,
+    serial: String,
+    macs: Vec<String>,
+}
+
+impl Object {
+    fn copy_to(&self, device: &mut Device) {
+        device.make = self.make.to_owned();
+        device.model = self.model.to_owned();
+        device.revision = self.revision.to_owned();
+    }
+}
+
 impl VLAN {
-    fn to_markdown(&self) -> String {
+    pub fn to_markdown(&self) -> String {
         return format!(
             "| {} | {} | {} | {} | {} | {} |\n",
             self.group, self.name, self.net, self.number, self.owner, self.description
         );
     }
-    fn to_diagram(&self) -> String {
+    pub fn to_diagram(&self) -> String {
         let mut result: String = String::new();
         result.push_str(&format!("    \"{}\" [shape=\"record\"]\n", self.name));
         if self.route != "none" {
@@ -95,23 +111,6 @@ fn load_vlan(file: String) -> Result<VLAN, String> {
 pub fn load_vlans(paths: Vec<PathBuf>) -> Result<HashMap<String, VLAN>, String> {
     let mut vlans: HashMap<String, VLAN> = HashMap::new();
     let mut vlan_nums: HashSet<i64> = HashSet::new();
-    let out = Path::new(OUTPUT_DIR);
-    let mut dot =
-        File::create(out.join("segment-diagram.dot")).expect("unable to create dot diagram");
-    let mut md = File::create(out.join("segments.md")).expect("unable to create segments markdown");
-    dot.write(
-        b"digraph g {
-    size=\"6,6\";
-    node [color=lightblue2, style=filled];
-",
-    )
-    .expect("dot header failed");
-    md.write(
-        b"| cell | segment | lan | vlan | owner | description |
-| --- | --- | --- | --- | --- | --- |
-",
-    )
-    .expect("md header failed");
     for p in paths {
         match p.file_name() {
             Some(n) => {
@@ -125,17 +124,12 @@ pub fn load_vlans(paths: Vec<PathBuf>) -> Result<HashMap<String, VLAN>, String> 
                         return Err(format!("vlan redefined {}", v.number));
                     }
                     vlan_nums.insert(v.number.to_owned());
-                    dot.write(v.to_diagram().as_bytes())
-                        .expect("could not write to dot file");
-                    md.write(v.to_markdown().as_bytes())
-                        .expect("could not write to md file");
                     vlans.insert(v.name.to_owned(), v);
                 }
             }
             None => continue,
         }
     }
-    dot.write(b"}\n").expect("unable to close dot file");
     Ok(vlans)
 }
 

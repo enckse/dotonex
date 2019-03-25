@@ -4,9 +4,12 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
-use crate::objects::{load_objects, load_vlans};
+use crate::objects::{load_objects, load_vlans, VLAN};
 use chrono::Local;
+use std::collections::HashMap;
 use std::fs;
+use std::fs::File;
+use std::io::prelude::*;
 
 const HASHED: &str = "last";
 
@@ -111,6 +114,36 @@ fn get_file_list(dir: &str) -> std::vec::Vec<String> {
     return file_list;
 }
 
+fn create_outputs(vlans: HashMap<String, VLAN>) {
+    let out = Path::new(OUTPUT_DIR);
+    let mut dot =
+        File::create(out.join("segment-diagram.dot")).expect("unable to create dot diagram");
+    let mut md = File::create(out.join("segments.md")).expect("unable to create segments markdown");
+    dot.write(
+        b"digraph g {
+    size=\"6,6\";
+    node [color=lightblue2, style=filled];
+",
+    )
+    .expect("dot header failed");
+    md.write(
+        b"| cell | segment | lan | vlan | owner | description |
+| --- | --- | --- | --- | --- | --- |
+",
+    )
+    .expect("md header failed");
+    let mut vlan_keys: Vec<&str> = vlans.iter().map(|(a, c)| (&a[..])).collect::<Vec<_>>();
+    vlan_keys.sort();
+    for v in vlan_keys {
+        let obj = vlans.get(v).expect("unable to internally index vlans");
+        dot.write(obj.to_diagram().as_bytes())
+            .expect("could not append to dot file");
+        md.write(obj.to_markdown().as_bytes())
+            .expect("could not append to md file");
+    }
+    dot.write(b"}\n").expect("unable to close dot file");
+}
+
 pub fn netconf() -> bool {
     let configs = fs::read_dir(CONFIG_DIR).expect("unable to read config dir");
     let mut paths: Vec<PathBuf> = Vec::new();
@@ -159,6 +192,7 @@ pub fn netconf() -> bool {
             return false;
         }
     };
+    create_outputs(vlans);
     let output = Command::new("radiucal-admin-legacy")
         .args(vlan_args)
         .status()
