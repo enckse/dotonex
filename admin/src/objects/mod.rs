@@ -1,5 +1,6 @@
 extern crate yaml_rust;
 use crate::constants::OUTPUT_DIR;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -82,6 +83,8 @@ fn load_vlan(file: String) -> VLAN {
 
 pub fn load_vlans(paths: Vec<PathBuf>) -> Vec<VLAN> {
     let mut vlans: Vec<VLAN> = Vec::new();
+    let mut vlan_names: HashSet<String> = HashSet::new();
+    let mut vlan_nums: HashSet<i64> = HashSet::new();
     let out = Path::new(OUTPUT_DIR);
     let mut dot =
         File::create(out.join("segment-diagram.dot")).expect("unable to create dot diagram");
@@ -105,11 +108,14 @@ pub fn load_vlans(paths: Vec<PathBuf>) -> Vec<VLAN> {
                 println!("{}", n.to_string_lossy());
                 if n.to_string_lossy().starts_with("vlan_") {
                     let v = load_vlan(p.to_string_lossy().to_string());
-                    for e in &vlans {
-                        if e.name == v.name || e.number == v.number {
-                            panic!("vlan redefined: {} == {}", e.name, v.name)
-                        }
+                    if vlan_names.contains(&v.name) {
+                        panic!("vlan redefined {}", v.name);
                     }
+                    if vlan_nums.contains(&v.number) {
+                        panic!("vlan redefined {}", v.number);
+                    }
+                    vlan_names.insert(v.name.to_owned());
+                    vlan_nums.insert(v.number.to_owned());
                     dot.write(v.to_diagram().as_bytes())
                         .expect("could not write to dot file");
                     md.write(v.to_markdown().as_bytes())
