@@ -32,6 +32,19 @@ pub struct Device {
     macs: Vec<String>,
 }
 
+pub struct Assignment {
+    vlan: String,
+    mode: String,
+    nodes: Vec<String>,
+}
+
+pub struct User {
+    default: String,
+    disabled: bool,
+    devices: Vec<Device>,
+    assignments: Vec<Assignment>,
+}
+
 impl Object {
     fn copy_to(&self, device: &mut Device) {
         device.make = self.make.to_owned();
