@@ -142,13 +142,16 @@ pub fn load_vlans(paths: Vec<PathBuf>) -> Result<HashMap<String, VLAN>, String> 
 pub fn load_objects(file: String) -> Result<HashMap<String, Object>, String> {
     let doc = load_yaml(file);
     let mut objs: HashMap<String, Object> = HashMap::new();
-    match doc["objects"].as_vec() {
-        Some(vector) => {
-            for o in vector {
+    match doc["objects"].as_hash() {
+        Some(hash) => {
+            for o in hash {
                 let obj = Object {
-                    name: o["name"].as_str().expect("missing name field").to_string(),
-                    make: o["make"].as_str().expect("missing make field").to_string(),
-                    model: o["model"]
+                    name: o.0.as_str().expect("missing name field").to_string(),
+                    make: o.1["make"]
+                        .as_str()
+                        .expect("missing make field")
+                        .to_string(),
+                    model: o.1["model"]
                         .as_str()
                         .expect("missing model field")
                         .to_string(),

@@ -1,1 +1,4 @@
-objects: []
+objects:
+    testxyz:
+        make: testmake
+        model: testmodel
