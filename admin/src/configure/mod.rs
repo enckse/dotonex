@@ -129,13 +129,25 @@ pub fn netconf() -> bool {
         }
     }
     let mut vlan_args: Vec<String> = Vec::new();
-    let vlans = load_vlans(paths);
+    let vlans = match load_vlans(paths) {
+        Ok(v) => {
+            v
+        }
+        Err(e) => {
+            println!("{}", e);
+            return false;
+        }
+    };
     for v in vlans.keys() {
         vlan_args.push(format!(
             "{}={}",
             v,
             vlans.get(v).expect("internal map error").number
         ));
+    }
+    if vlans.len() == 0 {
+        println!("no vlans defined");
+        return false;
     }
     let output = Command::new("radiucal-admin-legacy")
         .args(vlan_args)

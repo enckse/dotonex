@@ -49,7 +49,7 @@ fn optional_field(doc: &Yaml, key: &str) -> String {
     }
 }
 
-fn load_vlan(file: String) -> VLAN {
+fn load_vlan(file: String) -> Result<VLAN, String> {
     println!("reading: {}", file);
     let mut f = File::open(file).expect("unable to load file");
     let mut buffer = String::new();
@@ -76,12 +76,12 @@ fn load_vlan(file: String) -> VLAN {
         initiate: initiate,
     };
     if vlan.number < 0 || vlan.number > 4096 || vlan.name == "" {
-        panic!("invalid vlan definition");
+        return Err(format!("invalid vlan definition"));
     }
-    return vlan;
+    return Ok(vlan);
 }
 
-pub fn load_vlans(paths: Vec<PathBuf>) -> HashMap<String, VLAN> {
+pub fn load_vlans(paths: Vec<PathBuf>) -> Result<HashMap<String, VLAN>, String> {
     let mut vlans: HashMap<String, VLAN> = HashMap::new();
     let mut vlan_nums: HashSet<i64> = HashSet::new();
     let out = Path::new(OUTPUT_DIR);
@@ -106,12 +106,12 @@ pub fn load_vlans(paths: Vec<PathBuf>) -> HashMap<String, VLAN> {
             Some(n) => {
                 println!("{}", n.to_string_lossy());
                 if n.to_string_lossy().starts_with("vlan_") {
-                    let v = load_vlan(p.to_string_lossy().to_string());
+                    let v = load_vlan(p.to_string_lossy().to_string())?;
                     if vlans.contains_key(&v.name) {
-                        panic!("vlan redefined {}", v.name);
+                        return Err(format!("vlan redefined {}", v.name));
                     }
                     if vlan_nums.contains(&v.number) {
-                        panic!("vlan redefined {}", v.number);
+                        return Err(format!("vlan redefined {}", v.number));
                     }
                     vlan_nums.insert(v.number.to_owned());
                     dot.write(v.to_diagram().as_bytes())
@@ -125,5 +125,5 @@ pub fn load_vlans(paths: Vec<PathBuf>) -> HashMap<String, VLAN> {
         }
     }
     dot.write(b"}\n").expect("unable to close dot file");
-    vlans
+    Ok(vlans)
 }
