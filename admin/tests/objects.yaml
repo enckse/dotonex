@@ -2,3 +2,7 @@ objects:
     testxyz:
         make: testmake
         model: testmodel
+    testrev:
+        make: testmake2
+        model: testmodel2
+        revision: xyz
