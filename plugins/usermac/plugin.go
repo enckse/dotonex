@@ -51,8 +51,8 @@ func (l *umac) Reload() {
 
 type UserMacConfig struct {
 	Callback []string
-	OnFail bool
-	OnPass bool
+	OnFail   bool
+	OnPass   bool
 }
 
 func (l *umac) Setup(ctx *core.PluginContext) error {
