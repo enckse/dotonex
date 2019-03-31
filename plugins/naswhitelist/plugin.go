@@ -34,7 +34,9 @@ func (l *nwl) Reload() {
 }
 
 type NasWhitelistConfig struct {
-	Whitelist []string
+	NasWhitelist struct {
+		Whitelist []string
+	}
 }
 
 func (l *nwl) Setup(ctx *core.PluginContext) error {
@@ -43,7 +45,7 @@ func (l *nwl) Setup(ctx *core.PluginContext) error {
 	if err != nil {
 		return err
 	}
-	array := conf.Whitelist
+	array := conf.NasWhitelist.Whitelist
 	l.startup(array)
 	return nil
 }

@@ -35,7 +35,8 @@ func (m *MockModule) Post(p *core.ClientPacket) bool {
 	return !m.fail
 }
 
-func (m *MockModule) Setup(c *core.PluginContext) {
+func (m *MockModule) Setup(c *core.PluginContext) error {
+	return nil
 }
 
 func (m *MockModule) Pre(p *core.ClientPacket) bool {
