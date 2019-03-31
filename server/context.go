@@ -193,7 +193,7 @@ func (ctx *Context) FromConfig(libPath string, c *core.Configuration) {
 	if opsys.PathExists(secrets) {
 		mappings, err := parseSecretMappings(secrets)
 		if err != nil {
-			panic("invalid client secret mappings")
+			logger.Fatal("invalid client secret mappings", err)
 		}
 		for k, v := range mappings {
 			ctx.secrets[k] = []byte(v)

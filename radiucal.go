@@ -188,8 +188,7 @@ func main() {
 		logger.WriteInfo("loading plugin", p, oPath)
 		obj, err := core.LoadPlugin(oPath, pCtx)
 		if err != nil {
-			logger.WriteError(fmt.Sprintf("unable to load plugin: %s", p), err)
-			panic("unable to load plugin")
+			logger.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
 		}
 		if i, ok := obj.(core.Accounting); ok {
 			ctx.AddAccounting(i)
