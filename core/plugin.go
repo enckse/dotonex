@@ -86,9 +86,9 @@ func (p *PluginContext) clone(moduleName string) *PluginContext {
 	return n
 }
 
-func (p *PluginContext) SubConfig(i interface{}) error {
+func (p *PluginContext) SetupBackingConfig() ([]byte, *preyaml.Directives) {
 	d := &preyaml.Directives{}
-	return preyaml.UnmarshalBytes(p.config.backing, d, i)
+	return p.config.backing, d
 }
 
 type requestDump struct {
@@ -150,32 +150,32 @@ func noopAuth(mode string, packet *ClientPacket, call NoopCall) bool {
 	return true
 }
 
-func isEnabled(list []string, name string) bool {
+func isFlagged(list []string, name string) bool {
 	for _, v := range list {
 		if name == v {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func DisabledModes(m Module, ctx *PluginContext) []string {
 	name := m.Name()
-	accounting := isEnabled(ctx.config.Disable.Accounting, name)
-	tracing := isEnabled(ctx.config.Disable.Trace, name)
-	preauth := isEnabled(ctx.config.Disable.Preauth, name)
-	postauth := isEnabled(ctx.config.Disable.Postauth, name)
+	noAccounting := isFlagged(ctx.config.Disable.Accounting, name)
+	noTracing := isFlagged(ctx.config.Disable.Trace, name)
+	noPreauth := isFlagged(ctx.config.Disable.Preauth, name)
+	noPostauth := isFlagged(ctx.config.Disable.Postauth, name)
 	var modes []string
-	if accounting {
+	if noAccounting {
 		modes = append(modes, AccountingMode)
 	}
-	if tracing {
+	if noTracing {
 		modes = append(modes, TracingMode)
 	}
-	if preauth {
+	if noPreauth {
 		modes = append(modes, PreAuthMode)
 	}
-	if postauth {
+	if noPostauth {
 		modes = append(modes, PostAuthMode)
 	}
 	return modes

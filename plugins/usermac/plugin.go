@@ -13,6 +13,7 @@ import (
 	. "layeh.com/radius/rfc2865"
 	"voidedtech.com/goutils/logger"
 	"voidedtech.com/goutils/opsys"
+	"voidedtech.com/goutils/preyaml"
 	"voidedtech.com/radiucal/core"
 )
 
@@ -63,7 +64,8 @@ func (l *umac) Setup(ctx *core.PluginContext) error {
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
 	conf := &UserMacConfig{}
-	err := ctx.SubConfig(conf)
+	c, d := ctx.SetupBackingConfig()
+	err := preyaml.UnmarshalBytes(c, d, conf)
 	if err != nil {
 		return err
 	}
