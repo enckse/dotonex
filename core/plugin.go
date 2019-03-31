@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"layeh.com/radius/debug"
-	"voidedtech.com/goutils/config"
 	"voidedtech.com/goutils/logger"
+	"voidedtech.com/goutils/preyaml"
 )
 
 const (
@@ -35,10 +35,8 @@ type PluginContext struct {
 	Logs string
 	// Location of the general lib directory
 	Lib string
-	// Plugin section (subsection of config)
-	Section *config.Config
 	// Backing config
-	config *config.Config
+	config *Configuration
 	// Instance name
 	Instance string
 	// Enable caching
@@ -47,7 +45,7 @@ type PluginContext struct {
 
 type Module interface {
 	Reload()
-	Setup(*PluginContext)
+	Setup(*PluginContext) error
 	Name() string
 }
 
@@ -71,9 +69,9 @@ type Accounting interface {
 	Account(*ClientPacket)
 }
 
-func NewPluginContext(config *config.Config) *PluginContext {
+func NewPluginContext(config *Configuration) *PluginContext {
 	p := &PluginContext{}
-	p.Cache = config.GetTrue("cache")
+	p.Cache = config.Cache
 	p.config = config
 	return p
 }
@@ -85,8 +83,12 @@ func (p *PluginContext) clone(moduleName string) *PluginContext {
 	n.Instance = p.Instance
 	n.Cache = p.Cache
 	n.config = p.config
-	n.Section = p.config.GetSection(fmt.Sprintf("[%s]", moduleName))
 	return n
+}
+
+func (p *PluginContext) SubConfig(i interface{}) error {
+	d := &preyaml.Directives{}
+	return preyaml.UnmarshalBytes(p.config.backing, d, i)
 }
 
 type requestDump struct {
@@ -148,12 +150,21 @@ func noopAuth(mode string, packet *ClientPacket, call NoopCall) bool {
 	return true
 }
 
+func isEnabled(list []string, name string) bool {
+	for _, v := range list {
+		if name == v {
+			return false
+		}
+	}
+	return true
+}
+
 func DisabledModes(m Module, ctx *PluginContext) []string {
 	name := m.Name()
-	accounting := ctx.config.GetTrue(fmt.Sprintf("%s_disable_accounting", name))
-	tracing := ctx.config.GetTrue(fmt.Sprintf("%s_disable_trace", name))
-	preauth := ctx.config.GetTrue(fmt.Sprintf("%s_disable_preauth", name))
-	postauth := ctx.config.GetTrue(fmt.Sprintf("%s_disable_postauth", name))
+	accounting := isEnabled(ctx.config.Disable.Accounting, name)
+	tracing := isEnabled(ctx.config.Disable.Trace, name)
+	preauth := isEnabled(ctx.config.Disable.Preauth, name)
+	postauth := isEnabled(ctx.config.Disable.Postauth, name)
 	var modes []string
 	if accounting {
 		modes = append(modes, AccountingMode)
@@ -198,7 +209,10 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("unable to load plugin %s", path))
 	}
-	mod.Setup(ctx.clone(mod.Name()))
+	err = mod.Setup(ctx.clone(mod.Name()))
+	if err != nil {
+		return nil, err
+	}
 	return mod, nil
 	switch t := mod.(type) {
 	default:

@@ -49,17 +49,29 @@ func (l *umac) Reload() {
 	logged = make(map[string]struct{})
 }
 
-func (l *umac) Setup(ctx *core.PluginContext) {
+type UserMacConfig struct {
+	Callback []string
+	OnFail bool
+	OnPass bool
+}
+
+func (l *umac) Setup(ctx *core.PluginContext) error {
 	canCache = ctx.Cache
 	logs = ctx.Logs
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
-	callback = ctx.Section.GetArrayOrEmpty("callback")
+	conf := &UserMacConfig{}
+	err := ctx.SubConfig(conf)
+	if err != nil {
+		return err
+	}
+	callback = conf.Callback
 	if len(callback) > 0 {
-		onFail = ctx.Section.GetTrue("onfail")
-		onPass = ctx.Section.GetTrue("onpass")
+		onFail = conf.OnFail
+		onPass = conf.OnPass
 		doCallback = onFail || onPass
 	}
+	return nil
 }
 
 func (l *umac) Pre(packet *core.ClientPacket) bool {

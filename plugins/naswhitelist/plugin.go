@@ -33,9 +33,19 @@ var (
 func (l *nwl) Reload() {
 }
 
-func (l *nwl) Setup(ctx *core.PluginContext) {
-	array := ctx.Section.GetArrayOrEmpty("whitelist")
+type NasWhitelistConfig struct {
+	Whitelist []string
+}
+
+func (l *nwl) Setup(ctx *core.PluginContext) error {
+	conf := &NasWhitelistConfig{}
+	err := ctx.SubConfig(conf)
+	if err != nil {
+		return err
+	}
+	array := conf.Whitelist
 	l.startup(array)
+	return nil
 }
 
 func (l *nwl) startup(array []string) {
