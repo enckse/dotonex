@@ -1,10 +1,10 @@
-use crate::constants::{CONFIG_DIR, EAP_USERS, MANIFEST, OUTPUT_DIR};
+use crate::constants::{CONFIG_DIR, EAP_USERS, IS_YAML, MANIFEST, OUTPUT_DIR};
 use std::fs::{copy, create_dir, create_dir_all, remove_file, write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
-use crate::objects::{load_objects, load_vlans, Object, VLAN};
+use crate::objects::{load_objects, load_users, load_vlans, Object, VLAN};
 use chrono::Local;
 use std::collections::HashMap;
 use std::fs;
@@ -155,7 +155,7 @@ pub fn netconf() -> bool {
         match p {
             Ok(path) => {
                 let path_raw = path.path();
-                if path_raw.to_string_lossy().ends_with(".yaml") {
+                if path_raw.to_string_lossy().ends_with(IS_YAML) {
                     paths.push(path_raw);
                 }
             }
@@ -166,7 +166,7 @@ pub fn netconf() -> bool {
         }
     }
     let mut vlan_args: Vec<String> = Vec::new();
-    let vlans = match load_vlans(paths) {
+    let vlans = match load_vlans(&paths) {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
@@ -191,6 +191,13 @@ pub fn netconf() -> bool {
             .to_string(),
     ) {
         Ok(o) => o,
+        Err(e) => {
+            println!("{}", e);
+            return false;
+        }
+    };
+    let all_users = match load_users(&paths) {
+        Ok(u) => u,
         Err(e) => {
             println!("{}", e);
             return false;

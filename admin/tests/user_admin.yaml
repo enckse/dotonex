@@ -1,0 +1,10 @@
+user:
+  vlan: dev
+
+objects:
+  testid:
+    base: testxyz
+    serial: "1"
+    macs:
+      001122334455: login
+      bbbbaaaabbbb: owned

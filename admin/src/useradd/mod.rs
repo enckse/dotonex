@@ -81,7 +81,7 @@ fn create_user(user_name: &str, input_password: &str) -> Result<bool, io::Error>
     user_file.push_str(".yaml");
     let user_path = Path::new(CONFIG_DIR).join(user_file);
     let mut buffer = File::create(user_path)?;
-    buffer.write(b"")?;
+    buffer.write(b"user:\n  vlan:\n")?;
     let pass_file = Path::new(CONFIG_DIR).join(PASSWORDS);
     let mut file = OpenOptions::new()
         .write(true)

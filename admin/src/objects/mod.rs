@@ -1,9 +1,13 @@
 extern crate yaml_rust;
+use crate::constants::IS_YAML;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use yaml_rust::{Yaml, YamlLoader};
+
+const USER_INDICATOR: &str = "user_";
+const IS_DISABLE: &str = "user is disabled";
 
 pub struct VLAN {
     pub name: String,
@@ -23,26 +27,24 @@ pub struct Object {
     revision: String,
 }
 
+pub struct Assignment {
+    vlan: String,
+    mode: String,
+}
+
 pub struct Device {
     make: String,
     name: String,
     model: String,
     revision: String,
     serial: String,
-    macs: Vec<String>,
-}
-
-pub struct Assignment {
-    vlan: String,
-    mode: String,
-    nodes: Vec<String>,
+    macs: HashMap<String, Assignment>,
 }
 
 pub struct User {
-    default: String,
-    disabled: bool,
+    name: String,
+    default_vlan: String,
     devices: Vec<Device>,
-    assignments: Vec<Assignment>,
 }
 
 impl Object {
@@ -86,7 +88,6 @@ fn optional_field(doc: &Yaml, key: &str) -> String {
 }
 
 fn load_yaml(file: String) -> Yaml {
-    println!("reading: {}", file);
     let mut f = File::open(file).expect("unable to load file");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).expect("unable to read file");
@@ -121,14 +122,14 @@ fn load_vlan(file: String) -> Result<VLAN, String> {
     return Ok(vlan);
 }
 
-pub fn load_vlans(paths: Vec<PathBuf>) -> Result<HashMap<String, VLAN>, String> {
+pub fn load_vlans(paths: &Vec<PathBuf>) -> Result<HashMap<String, VLAN>, String> {
     let mut vlans: HashMap<String, VLAN> = HashMap::new();
     let mut vlan_nums: HashSet<i64> = HashSet::new();
     for p in paths {
         match p.file_name() {
             Some(n) => {
-                println!("{}", n.to_string_lossy());
                 if n.to_string_lossy().starts_with("vlan_") {
+                    println!("vlan: {}", n.to_string_lossy());
                     let v = load_vlan(p.to_string_lossy().to_string())?;
                     if vlans.contains_key(&v.name) {
                         return Err(format!("vlan redefined {}", v.name));
@@ -170,4 +171,52 @@ pub fn load_objects(file: String) -> Result<HashMap<String, Object>, String> {
         None => {}
     }
     Ok(objs)
+}
+
+fn load_user(file: String) -> Result<User, String> {
+    let name = file.replace(USER_INDICATOR, "").replace(IS_YAML, "");
+    let doc = load_yaml(file);
+    let user_def = &doc["user"];
+    let default_vlan = user_def["vlan"]
+        .as_str()
+        .expect("default vlan required")
+        .to_string();
+    let disabled = match user_def["disabled"].as_bool() {
+        Some(b) => b,
+        None => false,
+    };
+    if disabled {
+        return Err(IS_DISABLE.to_string());
+    }
+    Err(IS_DISABLE.to_string())
+}
+
+pub fn load_users(paths: &Vec<PathBuf>) -> Result<HashMap<String, User>, String> {
+    let mut users: HashMap<String, User> = HashMap::new();
+    for p in paths {
+        match p.file_name() {
+            Some(n) => {
+                if n.to_string_lossy().starts_with(USER_INDICATOR) {
+                    println!("user: {}", n.to_string_lossy());
+                    let u = match load_user(p.to_string_lossy().to_string()) {
+                        Ok(def) => Ok(def),
+                        Err(e) => {
+                            if e == IS_DISABLE {
+                                println!("^^^ disabled ^^^");
+                                continue;
+                            } else {
+                                Err(e)
+                            }
+                        }
+                    }?;
+                    if users.contains_key(&u.name) {
+                        return Err(format!("user redefined {}", u.name));
+                    }
+                    users.insert(u.name.to_owned(), u);
+                }
+            }
+            None => continue,
+        }
+    }
+    Ok(users)
 }

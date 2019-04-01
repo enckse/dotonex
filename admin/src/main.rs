@@ -10,6 +10,7 @@ mod constants {
     pub const OUTPUT_DIR: &str = "bin/";
     pub const MANIFEST: &str = "manifest";
     pub const EAP_USERS: &str = "eap_users";
+    pub const IS_YAML: &str = ".yaml";
     pub fn random_string(length: usize) -> String {
         return rand::thread_rng()
             .sample_iter(&Alphanumeric)
