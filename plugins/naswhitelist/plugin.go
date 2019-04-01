@@ -7,7 +7,7 @@ import (
 
 	. "layeh.com/radius/rfc2865"
 	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/preyaml"
+	"voidedtech.com/goutils/yaml"
 	"voidedtech.com/radiucal/core"
 )
 
@@ -42,8 +42,7 @@ type NasWhitelistConfig struct {
 
 func (l *nwl) Setup(ctx *core.PluginContext) error {
 	conf := &NasWhitelistConfig{}
-	c, d := ctx.SetupBackingConfig()
-	err := preyaml.UnmarshalBytes(c, d, conf)
+	err := yaml.UnmarshalBytes(ctx.Backing, conf)
 	if err != nil {
 		return err
 	}

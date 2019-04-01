@@ -2,7 +2,7 @@ package core
 
 import (
 	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/preyaml"
+	"voidedtech.com/goutils/yaml"
 )
 
 // Configuration is the configuration definition
@@ -28,7 +28,7 @@ type Configuration struct {
 
 // Dump writes debug information about the configuration
 func (c *Configuration) Dump() {
-	config, err := preyaml.MarshalToBytes(c)
+	config, err := yaml.MarshalToBytes(c)
 	if err == nil {
 		logger.WriteDebug("configuration (mem/raw)", string(config), string(c.backing))
 	} else {

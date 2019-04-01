@@ -14,7 +14,7 @@ import (
 
 	"layeh.com/radius"
 	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/preyaml"
+	"voidedtech.com/goutils/yaml"
 	"voidedtech.com/radiucal/core"
 	"voidedtech.com/radiucal/server"
 )
@@ -148,9 +148,8 @@ func main() {
 	if err != nil {
 		logger.Fatal("unable to load config", err)
 	}
-	d := &preyaml.Directives{}
 	conf := &core.Configuration{}
-	err = preyaml.UnmarshalBytes(b, d, conf)
+	err = yaml.UnmarshalBytes(b, conf)
 	if err != nil {
 		logger.Fatal("unable to parse config", err)
 	}

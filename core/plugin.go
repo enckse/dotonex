@@ -11,7 +11,6 @@ import (
 
 	"layeh.com/radius/debug"
 	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/preyaml"
 )
 
 const (
@@ -41,6 +40,8 @@ type PluginContext struct {
 	Instance string
 	// Enable caching
 	Cache bool
+	// Backing configuration data
+	Backing []byte
 }
 
 type Module interface {
@@ -73,6 +74,7 @@ func NewPluginContext(config *Configuration) *PluginContext {
 	p := &PluginContext{}
 	p.Cache = config.Cache
 	p.config = config
+	p.Backing = config.backing
 	return p
 }
 
@@ -83,12 +85,12 @@ func (p *PluginContext) clone(moduleName string) *PluginContext {
 	n.Instance = p.Instance
 	n.Cache = p.Cache
 	n.config = p.config
+	n.Backing = p.Backing
 	return n
 }
 
-func (p *PluginContext) SetupBackingConfig() ([]byte, *preyaml.Directives) {
-	d := &preyaml.Directives{}
-	return p.config.backing, d
+func (p *PluginContext) GetBackingConfig() []byte {
+	return p.config.backing
 }
 
 type requestDump struct {
