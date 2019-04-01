@@ -1,5 +1,11 @@
 package core
 
+import (
+	"voidedtech.com/goutils/logger"
+	"voidedtech.com/goutils/preyaml"
+)
+
+// Configuration is the configuration definition
 type Configuration struct {
 	Debug      bool
 	Cache      bool
@@ -18,6 +24,15 @@ type Configuration struct {
 		Postauth   []string
 	}
 	backing []byte
+}
+
+func (c *Configuration) Dump() {
+	config, err := preyaml.MarshalToBytes(c)
+	if err == nil {
+		logger.WriteDebug("configuration (mem/raw)", string(config), string(c.backing))
+	} else {
+		logger.WriteError("unable to read yaml configuration", err)
+	}
 }
 
 func defaultString(given, dflt string) string {

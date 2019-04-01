@@ -162,12 +162,7 @@ func main() {
 	logOpts.Instance = *instance
 	logger.ConfigureLogging(logOpts)
 	if debug {
-		yaml, err := preyaml.MarshalToBytes(conf)
-		if err == nil {
-			logger.WriteDebug("configuration", string(yaml))
-		} else {
-			logger.WriteError("unable to display running config", err)
-		}
+		conf.Dump()
 	}
 	var to int = 1814
 	if !conf.Accounting {
