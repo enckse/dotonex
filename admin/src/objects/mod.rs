@@ -33,11 +33,8 @@ pub struct Assignment {
 }
 
 pub struct Device {
-    make: String,
-    name: String,
-    model: String,
-    revision: String,
     serial: String,
+    name: String,
     macs: HashMap<String, Assignment>,
 }
 
@@ -45,14 +42,6 @@ pub struct User {
     name: String,
     default_vlan: String,
     devices: Vec<Device>,
-}
-
-impl Object {
-    fn copy_to(&self, device: &mut Device) {
-        device.make = self.make.to_owned();
-        device.model = self.model.to_owned();
-        device.revision = self.revision.to_owned();
-    }
 }
 
 impl VLAN {
@@ -187,6 +176,33 @@ fn load_user(file: String) -> Result<User, String> {
     };
     if disabled {
         return Err(IS_DISABLE.to_string());
+    }
+    let objects = &doc["objects"].as_hash().expect("no object definitions");
+    let mut base = "";
+    let mut serial = "";
+    let mut macs: HashMap<String, Assignment> = HashMap::new();
+    for o in objects.keys() {
+        let key = o.as_str().expect("invalid object id");
+        let obj = objects[o]
+            .as_hash()
+            .expect("object definition is not a hash/dictionary");
+        for obj_key in obj.keys() {
+            let raw_key = obj_key
+                .as_str()
+                .expect("invalid object definition key is not string");
+            match raw_key {
+                "base" => {
+                    base = obj[obj_key].as_str().expect("invalid object base");
+                }
+                "serial" => {
+                    serial = obj[obj_key].as_str().expect("invalid object serial");
+                }
+                "macs" => {}
+                _ => {
+                    return Err(format!("unknown key: {}", raw_key));
+                }
+            }
+        }
     }
     Err(IS_DISABLE.to_string())
 }
