@@ -26,6 +26,7 @@ type Configuration struct {
 	backing []byte
 }
 
+// Dump writes debug information about the configuration
 func (c *Configuration) Dump() {
 	config, err := preyaml.MarshalToBytes(c)
 	if err == nil {
@@ -43,6 +44,7 @@ func defaultString(given, dflt string) string {
 	}
 }
 
+// Defaults will set uninitialized values to default values
 func (c *Configuration) Defaults(backing []byte) {
 	c.Host = defaultString(c.Host, "localhost")
 	c.Dir = defaultString(c.Dir, "/var/lib/radiucal/")
