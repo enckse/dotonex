@@ -1,5 +1,5 @@
 extern crate yaml_rust;
-use crate::constants::IS_YAML;
+use crate::constants::{CONFIG_DIR, IS_YAML};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::prelude::*;
@@ -35,6 +35,7 @@ pub struct Assignment {
 pub struct Device {
     serial: String,
     name: String,
+    base: String,
     macs: HashMap<String, Assignment>,
 }
 
@@ -42,6 +43,96 @@ pub struct User {
     name: String,
     default_vlan: String,
     devices: Vec<Device>,
+}
+
+fn check_lowercase(value: &String) -> bool {
+    let mut valid = true;
+    if value.is_empty() {
+        return false;
+    }
+    for c in value.as_str().chars() {
+        if c >= 'a' && c <= 'z' {
+            continue;
+        }
+        valid = false;
+    }
+    valid
+}
+
+impl Device {
+    fn check(&self) -> Option<&str> {
+        if self.name == "" {
+            return Some("device name is empty");
+        }
+        if self.base == "" {
+            return Some("device base is empty");
+        }
+        if self.serial == "" {
+            return Some("device serial is empty");
+        }
+        let mut has_macs = false;
+        let mut invalid_count = 0;
+        for m in self.macs.keys() {
+            has_macs = true;
+            let mut is_valid = true;
+            if m.len() == 12 {
+                for c in m.as_str().chars() {
+                    if (c >= 'a' && c <= 'f') || (c >= '0' && c <= '9') {
+                        continue;
+                    }
+                    is_valid = false;
+                }
+                if is_valid {
+                    let assign = &self.macs[m];
+                    if !check_lowercase(&assign.mode) {
+                        return Some("invalid mode on mac");
+                    }
+                    if !check_lowercase(&assign.vlan) {
+                        return Some("invalid vlan on mac");
+                    }
+                }
+            } else {
+                is_valid = false;
+            }
+            if !is_valid {
+                println!("{} is an invalid mac...", m);
+                invalid_count += 1
+            }
+        }
+        if invalid_count > 0 {
+            return Some("^^^^^ invalid macs detected ^^^^^");
+        }
+        if !has_macs {
+            return Some("device has no macs");
+        }
+        None
+    }
+}
+
+impl User {
+    fn check(&self) -> Option<&str> {
+        if !check_lowercase(&self.name) {
+            return Some("invalid name (a-z)");
+        }
+        if !check_lowercase(&self.default_vlan) {
+            return Some("invalid vlan (a-z)");
+        }
+        let mut has_dev = false;
+        for d in &self.devices {
+            has_dev = true;
+            let d_check = d.check();
+            match d_check {
+                Some(r) => {
+                    return d_check;
+                }
+                None => {}
+            }
+        }
+        if !has_dev {
+            return Some("no devices");
+        }
+        None
+    }
 }
 
 impl VLAN {
@@ -163,7 +254,11 @@ pub fn load_objects(file: String) -> Result<HashMap<String, Object>, String> {
 }
 
 fn load_user(file: String) -> Result<User, String> {
-    let name = file.replace(USER_INDICATOR, "").replace(IS_YAML, "");
+    let name = file
+        .replace(USER_INDICATOR, "")
+        .replace(IS_YAML, "")
+        .replace(CONFIG_DIR, "")
+        .replace("/", "");
     let doc = load_yaml(file);
     let user_def = &doc["user"];
     let default_vlan = user_def["vlan"]
@@ -177,15 +272,16 @@ fn load_user(file: String) -> Result<User, String> {
     if disabled {
         return Err(IS_DISABLE.to_string());
     }
+    let mut devices: Vec<Device> = Vec::new();
     let objects = &doc["objects"].as_hash().expect("no object definitions");
-    let mut base = "";
-    let mut serial = "";
-    let mut macs: HashMap<String, Assignment> = HashMap::new();
     for o in objects.keys() {
         let key = o.as_str().expect("invalid object id");
         let obj = objects[o]
             .as_hash()
             .expect("object definition is not a hash/dictionary");
+        let mut macs: HashMap<String, Assignment> = HashMap::new();
+        let mut base = "";
+        let mut serial = "";
         for obj_key in obj.keys() {
             let raw_key = obj_key
                 .as_str()
@@ -197,14 +293,75 @@ fn load_user(file: String) -> Result<User, String> {
                 "serial" => {
                     serial = obj[obj_key].as_str().expect("invalid object serial");
                 }
-                "macs" => {}
+                "macs" => {
+                    let mac_objs = obj[obj_key].as_hash().expect("invalid mac set");
+                    for mac_key in mac_objs.keys() {
+                        let mac_value = mac_key.as_str().expect("mac is invalid (not string)");
+                        if macs.contains_key(mac_value) {
+                            return Err(format!("device mac not unique: {}", mac_value));
+                        }
+                        let mut vlan = String::new();
+                        let mut mode = String::new();
+                        let mac_obj = &mac_objs[mac_key];
+                        match mac_obj.as_str() {
+                            Some(v) => {
+                                mode = v.to_string();
+                                vlan = default_vlan.to_string();
+                            }
+                            None => {
+                                let complex_mac = mac_obj
+                                    .as_hash()
+                                    .expect("mac must have a mode or define mode+vlan");
+                                for c_key in complex_mac.keys() {
+                                    let c_obj = complex_mac[c_key]
+                                        .as_str()
+                                        .expect("invalid mac info (not string)");
+                                    match c_key.as_str().expect("invalid mac definition key") {
+                                        "mode" => {
+                                            mode = c_obj.to_string();
+                                        }
+                                        "vlan" => {
+                                            vlan = c_obj.to_string();
+                                        }
+                                        _ => {
+                                            return Err(format!(
+                                                "mac object has unexpected key: {:?}",
+                                                c_key
+                                            ));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        let assigned = Assignment {
+                            mode: mode,
+                            vlan: vlan,
+                        };
+                        macs.insert(mac_value.to_string(), assigned);
+                    }
+                }
                 _ => {
                     return Err(format!("unknown key: {}", raw_key));
                 }
             }
         }
+        let device = Device {
+            macs: macs,
+            name: key.to_owned(),
+            serial: serial.to_string(),
+            base: base.to_string(),
+        };
+        devices.push(device);
     }
-    Err(IS_DISABLE.to_string())
+    let user = User {
+        name: name,
+        default_vlan: default_vlan,
+        devices: devices,
+    };
+    match user.check() {
+        Some(err) => Err(err.to_string()),
+        None => Ok(user),
+    }
 }
 
 pub fn load_users(paths: &Vec<PathBuf>) -> Result<HashMap<String, User>, String> {
