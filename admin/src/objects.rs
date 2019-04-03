@@ -122,7 +122,7 @@ impl User {
             has_dev = true;
             let d_check = d.check();
             match d_check {
-                Some(r) => {
+                Some(_) => {
                     return d_check;
                 }
                 None => {}

@@ -132,7 +132,7 @@ fn create_outputs(vlans: HashMap<String, VLAN>) {
 ",
     )
     .expect("md header failed");
-    let mut vlan_keys: Vec<&str> = vlans.iter().map(|(a, c)| (&a[..])).collect::<Vec<_>>();
+    let mut vlan_keys: Vec<&str> = vlans.iter().map(|(a, _)| (&a[..])).collect::<Vec<_>>();
     vlan_keys.sort();
     for v in vlan_keys {
         let obj = vlans.get(v).expect("unable to internally index vlans");
