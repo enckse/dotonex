@@ -6,7 +6,7 @@ mod constants {
     use rand::distributions::Alphanumeric;
     use rand::Rng;
     pub const CONFIG_DIR: &str = "config";
-    pub const PASSWORDS: &str = "passwords";
+    pub const PASSWORDS: &str = "passwords.yaml";
     pub const OUTPUT_DIR: &str = "bin/";
     pub const MANIFEST: &str = "manifest";
     pub const EAP_USERS: &str = "eap_users";

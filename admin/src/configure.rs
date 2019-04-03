@@ -1,10 +1,12 @@
-use crate::constants::{CONFIG_DIR, EAP_USERS, IS_YAML, MANIFEST, OUTPUT_DIR};
+use crate::constants::{CONFIG_DIR, EAP_USERS, IS_YAML, MANIFEST, OUTPUT_DIR, PASSWORDS};
 use std::fs::{copy, create_dir, create_dir_all, remove_file, write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
-use crate::objects::{load_objects, load_users, load_vlans, Object, User, VLAN};
+use crate::objects::{
+    load_objects, load_passwords, load_users, load_vlans, Object, Password, User, VLAN,
+};
 use chrono::Local;
 use std::collections::HashMap;
 use std::fs;
@@ -148,6 +150,7 @@ fn check_objects(
     vlans: &HashMap<String, VLAN>,
     objects: &HashMap<String, Object>,
     users: &HashMap<String, User>,
+    passes: &HashMap<String, Password>,
 ) -> bool {
     for v in vlans.keys() {
         let vlan_obj = &vlans[v];
@@ -163,6 +166,10 @@ fn check_objects(
         let user_obj = &users[u];
         if !vlans.contains_key(&user_obj.default_vlan) {
             println!("{} has invalid default vlan: {}", u, user_obj.default_vlan);
+            return false;
+        }
+        if !passes.contains_key(u) {
+            println!("{} has no password", u);
             return false;
         }
         for d in &user_obj.devices {
@@ -253,7 +260,19 @@ pub fn netconf() -> bool {
             return false;
         }
     };
-    if !check_objects(&vlans, &objs, &all_users) {
+    let user_passes = match load_passwords(
+        Path::new(CONFIG_DIR)
+            .join(PASSWORDS)
+            .to_string_lossy()
+            .to_string(),
+    ) {
+        Ok(o) => o,
+        Err(e) => {
+            println!("{}", e);
+            return false;
+        }
+    };
+    if !check_objects(&vlans, &objs, &all_users, &user_passes) {
         return false;
     }
     create_outputs(vlans);

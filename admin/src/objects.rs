@@ -20,6 +20,10 @@ pub struct VLAN {
     route: String,
 }
 
+pub struct Password {
+    pub pass: String,
+}
+
 pub struct Object {
     pub make: String,
     pub name: String,
@@ -362,6 +366,26 @@ fn load_user(file: String) -> Result<User, String> {
         Some(err) => Err(err.to_string()),
         None => Ok(user),
     }
+}
+
+pub fn load_passwords(file: String) -> Result<HashMap<String, Password>, String> {
+    let doc = load_yaml(file);
+    let mut objs: HashMap<String, Password> = HashMap::new();
+    match doc.as_hash() {
+        Some(hash) => {
+            for o in hash {
+                let name = o.0.as_str().expect("invalid user name").to_string();
+                let pass = o.1.as_str().expect("invalid user password").to_string();
+                let obj = Password { pass: pass };
+                if objs.contains_key(&name) {
+                    return Err(format!("{} already has password", name));
+                }
+                objs.insert(name.to_owned(), obj);
+            }
+        }
+        None => {}
+    }
+    Ok(objs)
 }
 
 pub fn load_users(paths: &Vec<PathBuf>) -> Result<HashMap<String, User>, String> {
