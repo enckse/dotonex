@@ -116,7 +116,7 @@ fn get_file_list(dir: &str) -> std::vec::Vec<String> {
     return file_list;
 }
 
-fn create_outputs(vlans: HashMap<String, VLAN>) {
+fn create_vlan_outputs(vlans: HashMap<String, VLAN>) {
     let out = Path::new(OUTPUT_DIR);
     let mut dot =
         File::create(out.join("segment-diagram.dot")).expect("unable to create dot diagram");
@@ -146,18 +146,58 @@ fn create_outputs(vlans: HashMap<String, VLAN>) {
     dot.write(b"}\n").expect("unable to close dot file");
 }
 
+struct Audit {
+    user: String,
+    vlan: String,
+    mac: String,
+}
+
+struct Whitelist {
+    user: String,
+    mac: String,
+}
+
+struct Eap {
+    user: String,
+    pass: String,
+    vlan: i32,
+    md5: bool,
+}
+
+struct SysInfo {
+    id: String,
+    make: String,
+    model: String,
+    obj_type: String,
+    system_type: String,
+    user: String,
+}
+
+struct Manifest {
+    audit: Vec<Audit>,
+    whitelist: Vec<Whitelist>,
+    eap_users: Vec<Eap>,
+    sys_info: Vec<SysInfo>,
+}
+
 fn check_objects(
     vlans: &HashMap<String, VLAN>,
     objects: &HashMap<String, Object>,
     users: &HashMap<String, User>,
     passes: &HashMap<String, Password>,
-) -> bool {
+) -> Option<Manifest> {
+    let mut manifest = Manifest {
+        audit: Vec::new(),
+        whitelist: Vec::new(),
+        eap_users: Vec::new(),
+        sys_info: Vec::new(),
+    };
     for v in vlans.keys() {
         let vlan_obj = &vlans[v];
         for i in &vlan_obj.initiate {
             if !vlans.contains_key(i) {
                 println!("{} has initiate that is not a vlan: {}", v, i);
-                return false;
+                return None;
             }
         }
     }
@@ -166,16 +206,16 @@ fn check_objects(
         let user_obj = &users[u];
         if !vlans.contains_key(&user_obj.default_vlan) {
             println!("{} has invalid default vlan: {}", u, user_obj.default_vlan);
-            return false;
+            return None;
         }
         if !passes.contains_key(u) {
             println!("{} has no password", u);
-            return false;
+            return None;
         }
         for d in &user_obj.devices {
             if !objects.contains_key(&d.base) {
                 println!("{} -> {} has invalid base: {}", u, d.name, d.base);
-                return false;
+                return None;
             }
             for mac in d.macs.keys() {
                 let a = &d.macs[mac];
@@ -185,14 +225,14 @@ fn check_objects(
                     "owned" => {}
                     _ => {
                         println!("unknown mode for {} -> {}", u, mac);
-                        return false;
+                        return None;
                     }
                 }
                 match tracked_macs.get(mac) {
                     Some(v) => {
                         if &a.mode != v {
                             println!("{} -> {} cannot change type (owned, mab or login)", u, mac);
-                            return false;
+                            return None;
                         }
                     }
                     None => {
@@ -202,7 +242,7 @@ fn check_objects(
             }
         }
     }
-    return true;
+    return Some(manifest);
 }
 
 pub fn netconf() -> bool {
@@ -272,10 +312,13 @@ pub fn netconf() -> bool {
             return false;
         }
     };
-    if !check_objects(&vlans, &objs, &all_users, &user_passes) {
-        return false;
+    match check_objects(&vlans, &objs, &all_users, &user_passes) {
+        Some(m) => {}
+        None => {
+            return false;
+        }
     }
-    create_outputs(vlans);
+    create_vlan_outputs(vlans);
     let output = Command::new("radiucal-admin-legacy")
         .args(vlan_args)
         .status()
