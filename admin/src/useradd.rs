@@ -87,7 +87,7 @@ fn create_user(user_name: &str, input_password: &str) -> Result<bool, io::Error>
         .write(true)
         .append(true)
         .open(pass_file)?;
-    file.write_fmt(format_args!("{},{}\n", user, md4))?;
+    file.write_fmt(format_args!("{}: {}\n", user, md4))?;
     return Ok(true);
 }
 

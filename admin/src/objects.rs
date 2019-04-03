@@ -12,7 +12,7 @@ const IS_DISABLE: &str = "user is disabled";
 pub struct VLAN {
     pub name: String,
     pub number: i64,
-    initiate: Vec<String>,
+    pub initiate: Vec<String>,
     net: String,
     owner: String,
     description: String,
@@ -21,28 +21,28 @@ pub struct VLAN {
 }
 
 pub struct Object {
-    make: String,
-    name: String,
-    model: String,
-    revision: String,
+    pub make: String,
+    pub name: String,
+    pub model: String,
+    pub revision: String,
 }
 
 pub struct Assignment {
-    vlan: String,
-    mode: String,
+    pub vlan: String,
+    pub mode: String,
 }
 
 pub struct Device {
-    serial: String,
-    name: String,
-    base: String,
-    macs: HashMap<String, Assignment>,
+    pub serial: String,
+    pub name: String,
+    pub base: String,
+    pub macs: HashMap<String, Assignment>,
 }
 
 pub struct User {
-    name: String,
-    default_vlan: String,
-    devices: Vec<Device>,
+    pub name: String,
+    pub default_vlan: String,
+    pub devices: Vec<Device>,
 }
 
 fn check_lowercase(value: &String) -> bool {

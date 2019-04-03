@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str;
 extern crate chrono;
-use crate::objects::{load_objects, load_users, load_vlans, Object, VLAN};
+use crate::objects::{load_objects, load_users, load_vlans, Object, User, VLAN};
 use chrono::Local;
 use std::collections::HashMap;
 use std::fs;
@@ -144,7 +144,57 @@ fn create_outputs(vlans: HashMap<String, VLAN>) {
     dot.write(b"}\n").expect("unable to close dot file");
 }
 
-fn check_objects(vlans: &HashMap<String, VLAN>, objects: &HashMap<String, Object>) -> bool {
+fn check_objects(
+    vlans: &HashMap<String, VLAN>,
+    objects: &HashMap<String, Object>,
+    users: &HashMap<String, User>,
+) -> bool {
+    for v in vlans.keys() {
+        let vlan_obj = &vlans[v];
+        for i in &vlan_obj.initiate {
+            if !vlans.contains_key(i) {
+                println!("{} has initiate that is not a vlan: {}", v, i);
+                return false;
+            }
+        }
+    }
+    let mut tracked_macs: HashMap<String, String> = HashMap::new();
+    for u in users.keys() {
+        let user_obj = &users[u];
+        if !vlans.contains_key(&user_obj.default_vlan) {
+            println!("{} has invalid default vlan: {}", u, user_obj.default_vlan);
+            return false;
+        }
+        for d in &user_obj.devices {
+            if !objects.contains_key(&d.base) {
+                println!("{} -> {} has invalid base: {}", u, d.name, d.base);
+                return false;
+            }
+            for mac in d.macs.keys() {
+                let a = &d.macs[mac];
+                match a.mode.as_str() {
+                    "mab" => {}
+                    "login" => {}
+                    "owned" => {}
+                    _ => {
+                        println!("unknown mode for {} -> {}", u, mac);
+                        return false;
+                    }
+                }
+                match tracked_macs.get(mac) {
+                    Some(v) => {
+                        if &a.mode != v {
+                            println!("{} -> {} cannot change type (owned, mab or login)", u, mac);
+                            return false;
+                        }
+                    }
+                    None => {
+                        tracked_macs.insert(mac.to_string(), a.mode.to_owned());
+                    }
+                }
+            }
+        }
+    }
     return true;
 }
 
@@ -203,7 +253,7 @@ pub fn netconf() -> bool {
             return false;
         }
     };
-    if !check_objects(&vlans, &objs) {
+    if !check_objects(&vlans, &objs, &all_users) {
         return false;
     }
     create_outputs(vlans);
