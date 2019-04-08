@@ -290,12 +290,22 @@ fn load_user(file: String) -> Result<User, String> {
             let raw_key = obj_key
                 .as_str()
                 .expect("invalid object definition key is not string");
+            let mut add_vlans: Vec<String> = Vec::new();
+            let mut add_macs: HashMap<String, String> = HashMap::new();
             match raw_key {
                 "base" => {
                     base = obj[obj_key].as_str().expect("invalid object base");
                 }
                 "serial" => {
                     serial = obj[obj_key].as_str().expect("invalid object serial");
+                }
+                "vlans" => {
+                    for v in obj[obj_key]
+                        .as_vec()
+                        .expect("vlan setting must be an array")
+                    {
+                        add_vlans.push(v.as_str().expect("vlan must be a string").to_string());
+                    }
                 }
                 "macs" => {
                     let mac_objs = obj[obj_key].as_hash().expect("invalid mac set");
@@ -304,48 +314,37 @@ fn load_user(file: String) -> Result<User, String> {
                         if macs.contains_key(mac_value) {
                             return Err(format!("device mac not unique: {}", mac_value));
                         }
-                        let mut vlan = String::new();
                         let mut mode = String::new();
                         let mac_obj = &mac_objs[mac_key];
                         match mac_obj.as_str() {
                             Some(v) => {
                                 mode = v.to_string();
-                                vlan = default_vlan.to_string();
                             }
                             None => {
-                                let complex_mac = mac_obj
-                                    .as_hash()
-                                    .expect("mac must have a mode or define mode+vlan");
-                                for c_key in complex_mac.keys() {
-                                    let c_obj = complex_mac[c_key]
-                                        .as_str()
-                                        .expect("invalid mac info (not string)");
-                                    match c_key.as_str().expect("invalid mac definition key") {
-                                        "mode" => {
-                                            mode = c_obj.to_string();
-                                        }
-                                        "vlan" => {
-                                            vlan = c_obj.to_string();
-                                        }
-                                        _ => {
-                                            return Err(format!(
-                                                "mac object has unexpected key: {:?}",
-                                                c_key
-                                            ));
-                                        }
-                                    }
-                                }
+                                return Err(format!("invalid mac object definition {}", mac_value));
                             }
                         }
-                        let assigned = Assignment {
-                            mode: mode,
-                            vlan: vlan,
-                        };
-                        macs.insert(mac_value.to_string(), assigned);
+                        if add_macs.contains_key(mac_value) {
+                            return Err(format!("mac {} is defined multiple times", mac_value));
+                        }
+                        add_macs.insert(mac_value.to_owned(), mode);
                     }
                 }
                 _ => {
                     return Err(format!("unknown key: {}", raw_key));
+                }
+            }
+            if add_vlans.len() == 0 {
+                add_vlans.push(default_vlan.to_owned());
+            }
+            for v in add_vlans {
+                for m in add_macs.keys() {
+                    let mode = add_macs.get(m).expect("mode missing, internal error");
+                    let assigned = Assignment {
+                        mode: mode.to_string(),
+                        vlan: v.to_owned(),
+                    };
+                    macs.insert(m.to_string(), assigned);
                 }
             }
         }

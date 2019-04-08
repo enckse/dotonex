@@ -7,4 +7,4 @@ objects:
     serial: "1"
     macs:
       "001122334455": login
-      "bbbbaaaabbbb": {vlan: prod, mode: owned}
+      "bbbbaaaabbbb": owned
