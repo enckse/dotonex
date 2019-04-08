@@ -52,7 +52,6 @@ type network struct {
 }
 
 type outputs struct {
-	audits     []string
 	manifest   []string
 	eap        map[string]string
 	eapKeys    []string
@@ -72,7 +71,6 @@ func (o *outputs) trackLine(lineType, line string) {
 func createOutputs(o *outputs, name, pass string, v *assignment, vlans map[int]string, isMAB, defaultUser bool) {
 	vlan := vlans[v.vlan]
 	m := v.mac
-	audit := fmt.Sprintf("%s,%s,%s", name, vlan, m)
 	fqdn := name
 	if !defaultUser {
 		fqdn = fmt.Sprintf("%s.%s", vlan, name)
@@ -105,9 +103,6 @@ radius_accept_attr=81:s:%d
 	if defaultUser {
 		return
 	}
-	// audit doesn't support default because default is just a special normal user
-	o.trackLine("audit", audit)
-	o.audits = append(o.audits, audit)
 }
 
 func (o *outputs) eapWrite() {
@@ -227,9 +222,7 @@ func (n *network) process() {
 				logger.Fatal(fmt.Sprintf("%s does not have a password", s.user), nil)
 			}
 			for _, o := range s.objects {
-				if o.objectType == ownType {
-					output.audits = append(output.audits, fmt.Sprintf("%s,n/a,%s", s.user, o.mac))
-				} else {
+				if o.objectType != ownType {
 					isMAB := o.objectType == mabType
 					userGen := []bool{false}
 					defVLAN := invalidVLAN
@@ -250,7 +243,6 @@ func (n *network) process() {
 			}
 		}
 		logger.WriteInfo("checks completed")
-		writeFile("audit.csv", output.audits)
 		writeFile("manifest", output.manifest)
 		writeContent("sysinfo.csv", output.systemInfo())
 		output.eapWrite()

@@ -14,6 +14,9 @@ use std::fs::File;
 use std::io::prelude::*;
 
 const HASHED: &str = "last";
+const MAB_MODE: &str = "mab";
+const LOGIN_MODE: &str = "login";
+const OWN_MODE: &str = "owned";
 
 fn kill(pid: &str, signal: &str) -> bool {
     let output = Command::new("kill")
@@ -180,6 +183,22 @@ struct Manifest {
     sys_info: Vec<SysInfo>,
 }
 
+impl Manifest {
+    fn audits(&self, out: &Path) {
+        let mut v = Vec::new();
+        for a in &self.audit {
+            v.push(format!("{},{},{}\n", a.user, a.vlan, a.mac));
+        }
+        v.sort();
+        let mut audits = File::create(out.join("audit.csv")).expect("unable to create audit csv");
+        for a in v {
+            audits
+                .write(a.as_bytes())
+                .expect("unable to write audit entry");
+        }
+    }
+}
+
 fn check_objects(
     vlans: &HashMap<String, VLAN>,
     objects: &HashMap<String, Object>,
@@ -219,15 +238,28 @@ fn check_objects(
             }
             for mac in d.macs.keys() {
                 let a = &d.macs[mac];
+                let mut audit_vlan = String::new();
                 match a.mode.as_str() {
-                    "mab" => {}
-                    "login" => {}
-                    "owned" => {}
+                    MAB_MODE => {
+                        audit_vlan.push_str(&a.vlan);
+                    }
+                    LOGIN_MODE => {
+                        audit_vlan.push_str(&a.vlan);
+                    }
+                    OWN_MODE => {
+                        audit_vlan = "n/a".to_string();
+                    }
                     _ => {
                         println!("unknown mode for {} -> {}", u, mac);
                         return None;
                     }
                 }
+                let mut audit = Audit {
+                    user: u.to_string(),
+                    mac: mac.to_string(),
+                    vlan: audit_vlan.to_string(),
+                };
+                manifest.audit.push(audit);
                 match tracked_macs.get(mac) {
                     Some(v) => {
                         if &a.mode != v {
@@ -313,7 +345,10 @@ pub fn netconf() -> bool {
         }
     };
     match check_objects(&vlans, &objs, &all_users, &user_passes) {
-        Some(m) => {}
+        Some(m) => {
+            let out = Path::new(OUTPUT_DIR);
+            m.audits(out);
+        }
         None => {
             return false;
         }
