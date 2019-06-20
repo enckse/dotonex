@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -18,6 +19,7 @@ const (
 	userFile     = "user_"
 	vlanFile     = "vlan_"
 	luaExtension = ".lua"
+	configDir    = "config/"
 )
 
 type assignment struct {
@@ -38,7 +40,7 @@ type VLAN struct {
 	file     string
 	number   int
 	name     string
-	initiate string
+	initiate []string
 	route    string
 	net      string
 	owner    string
@@ -66,7 +68,7 @@ type outputs struct {
 	sysCols    map[string]struct{}
 }
 
-func (n *network) Segment(num int, name, initiate, route, net, owner, desc, group string) {
+func (n *network) Segment(num int, name string, initiate []string, route, net, owner, desc, group string) {
 	if num < 0 || num > 4096 || strings.TrimSpace(name) == "" {
 		logger.Fatal(fmt.Sprintf("invalid vlan definition: name or number is invalid (%s or %d)", name, num), nil)
 	}
@@ -143,7 +145,7 @@ func (o *outputs) eapWrite() {
 		track[k] = struct{}{}
 		content = append(content, o.eap[k])
 	}
-	writeContent(eapUsers, content)
+	writeContent("eap_users", content)
 }
 
 func writeFile(file string, values []string) {
@@ -154,7 +156,7 @@ func writeFile(file string, values []string) {
 
 func writeContent(file string, lines []string) {
 	content := strings.Join(lines, "\n")
-	err := ioutil.WriteFile(filepath.Join(outputDir, file), []byte(content), 0644)
+	err := ioutil.WriteFile(filepath.Join("bin/", file), []byte(content), 0644)
 	die(err)
 }
 
@@ -194,8 +196,8 @@ func vlanReports(vlans []*VLAN) {
 		if vlan.route != "none" {
 			diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\" [color=red]", vlan.name, vlan.route))
 		}
-		if vlan.initiate != "" {
-			for _, o := range strings.Split(vlan.initiate, " ") {
+		if len(vlan.initiate) > 0 {
+			for _, o := range vlan.initiate {
 				diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\"", vlan.name, o))
 			}
 		}
@@ -303,7 +305,7 @@ func (n *network) process() {
 		}
 		logger.WriteInfo("checks completed")
 		writeFile("audit.csv", output.audits)
-		writeFile(manifest, output.manifest)
+		writeFile("manifest", output.manifest)
 		writeContent("sysinfo.csv", output.systemInfo())
 		vlanReports(n.vlans)
 		output.eapWrite()
@@ -338,7 +340,7 @@ func fileToScript(fileName string) string {
 
 func getScript(fileName string) string {
 	include := ""
-	p := filepath.Join(userDir, includesFile)
+	p := filepath.Join(configDir, includesFile)
 	if opsys.PathExists(p) {
 		include = fileToScript(p)
 	}
@@ -381,7 +383,7 @@ func (n *network) addSystem(s *Systems) {
 }
 
 func netconfRun() {
-	f, err := ioutil.ReadDir(userDir)
+	f, err := ioutil.ReadDir(configDir)
 	die(err)
 	net := &network{}
 	net.mab = make(map[string]struct{})
@@ -391,7 +393,7 @@ func netconfRun() {
 	for _, file := range f {
 		name := file.Name()
 		if (strings.HasPrefix(name, userFile) || strings.HasPrefix(name, vlanFile)) && strings.HasSuffix(name, luaExtension) {
-			path := filepath.Join(userDir, name)
+			path := filepath.Join(configDir, name)
 			if opsys.PathExists(path) {
 				logger.WriteInfo("reading", name)
 				if strings.HasPrefix(name, userFile) {
@@ -416,7 +418,7 @@ func netconfRun() {
 
 func readPasses() map[string]string {
 	userPasses := make(map[string]string)
-	path := filepath.Join(userDir, passwordFile)
+	path := filepath.Join(configDir, "passwords")
 	data, err := ioutil.ReadFile(path)
 	die(err)
 	tracked := make(map[string]string)
@@ -455,4 +457,26 @@ func checkMAC(mac string) {
 		}
 	}
 	logger.Fatal(fmt.Sprintf("invalid mac detected: %s", mac), nil)
+}
+
+func die(err error) {
+	dieNow("unrecoverable error", err, err != nil)
+}
+
+func dieNow(message string, err error, now bool) {
+	messaged := false
+	if err != nil {
+		messaged = true
+		logger.WriteError(message, err)
+	}
+	if now {
+		if !messaged {
+			logger.WriteWarn(message)
+		}
+		os.Exit(1)
+	}
+}
+
+func main() {
+	netconfRun()
 }
