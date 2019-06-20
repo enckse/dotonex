@@ -150,7 +150,7 @@ object:Assigned(<VLAN_NUMBER>)
 `, user)
 	ioutil.WriteFile(filepath.Join(userDir, fmt.Sprintf("user_%s.lua", user)), []byte(script), 0644)
 	fmt.Println(fmt.Sprintf("%s was created with password: %s", user, p))
-	opsys.RunBashCommand(fmt.Sprintf("echo '%s,%s' >> %s/passwords", user, h, userDir))
+	bashCommand(fmt.Sprintf("echo '%s,%s' >> %s/passwords", user, h, userDir), false)
 }
 
 func main() {

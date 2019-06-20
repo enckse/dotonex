@@ -22,15 +22,21 @@ const (
 	manBin   = outputDir + manifest
 )
 
+func bashCommand(command string, canDie bool) {
+	_, err := opsys.RunCommand("bash", "-c", command)
+	if canDie {
+		die(err)
+	}
+}
+
 func runCommand(command string) {
-	_, err := opsys.RunBashCommand(command)
-	die(err)
+	bashCommand(command, true)
 }
 
 func signal() {
 	logger.WriteInfo("signal apps")
-	opsys.RunBashCommand("kill -HUP $(pidof hostapd)")
-	opsys.RunBashCommand("kill -2 $(pidof radiucal)")
+	bashCommand("kill -HUP $(pidof hostapd)", false)
+	bashCommand("kill -2 $(pidof radiucal)", false)
 }
 
 func setup() {
