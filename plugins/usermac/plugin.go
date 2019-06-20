@@ -13,6 +13,7 @@ import (
 	. "layeh.com/radius/rfc2865"
 	"voidedtech.com/goutils/logger"
 	"voidedtech.com/goutils/opsys"
+	"voidedtech.com/goutils/yaml"
 	"voidedtech.com/radiucal/core"
 )
 
@@ -49,17 +50,31 @@ func (l *umac) Reload() {
 	logged = make(map[string]struct{})
 }
 
-func (l *umac) Setup(ctx *core.PluginContext) {
+type UserMacConfig struct {
+	UserMac struct {
+		Callback []string
+		OnFail   bool
+		OnPass   bool
+	}
+}
+
+func (l *umac) Setup(ctx *core.PluginContext) error {
 	canCache = ctx.Cache
 	logs = ctx.Logs
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
-	callback = ctx.Section.GetArrayOrEmpty("callback")
+	conf := &UserMacConfig{}
+	err := yaml.UnmarshalBytes(ctx.Backing, conf)
+	if err != nil {
+		return err
+	}
+	callback = conf.UserMac.Callback
 	if len(callback) > 0 {
-		onFail = ctx.Section.GetTrue("onfail")
-		onPass = ctx.Section.GetTrue("onpass")
+		onFail = conf.UserMac.OnFail
+		onPass = conf.UserMac.OnPass
 		doCallback = onFail || onPass
 	}
+	return nil
 }
 
 func (l *umac) Pre(packet *core.ClientPacket) bool {

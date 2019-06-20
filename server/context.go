@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"layeh.com/radius"
-	"voidedtech.com/goutils/config"
 	"voidedtech.com/goutils/logger"
 	"voidedtech.com/goutils/opsys"
 	"voidedtech.com/radiucal/core"
@@ -185,8 +184,8 @@ func checkAuthMods(modules []core.Module, packet *core.ClientPacket, fxn authChe
 	return failure
 }
 
-func (ctx *Context) FromConfig(libPath string, c *config.Config) {
-	ctx.noReject = c.GetTrue("noreject")
+func (ctx *Context) FromConfig(libPath string, c *core.Configuration) {
+	ctx.noReject = c.NoReject
 	secrets := filepath.Join(libPath, "secrets")
 	ctx.parseSecrets(secrets)
 	ctx.secrets = make(map[string][]byte)
@@ -194,7 +193,7 @@ func (ctx *Context) FromConfig(libPath string, c *config.Config) {
 	if opsys.PathExists(secrets) {
 		mappings, err := parseSecretMappings(secrets)
 		if err != nil {
-			panic("invalid client secret mappings")
+			logger.Fatal("invalid client secret mappings", err)
 		}
 		for k, v := range mappings {
 			ctx.secrets[k] = []byte(v)

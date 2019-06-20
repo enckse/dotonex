@@ -15,10 +15,12 @@ import (
 	"strings"
 	"unicode/utf16"
 
+	math "math/rand"
+	"time"
+
 	"golang.org/x/crypto/md4"
 	"voidedtech.com/goutils/logger"
 	"voidedtech.com/goutils/opsys"
-	"voidedtech.com/goutils/random"
 )
 
 const (
@@ -39,6 +41,8 @@ const (
 	// input args
 	userArg = "user"
 	passArg = "pass"
+	// List of alphanumeric chars
+	alphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 )
 
 type inputArgs struct {
@@ -90,8 +94,8 @@ func utf16le(s string) []byte {
 func getPass(param *inputArgs) (string, string) {
 	pass := param.pass
 	if len(pass) == 0 {
-		random.SeedTime()
-		pass = random.RandomString(64)
+		math.Seed(time.Now().UnixNano())
+		pass = randomString(64)
 	}
 	h := md4.New()
 	h.Write(utf16le(pass))
@@ -225,3 +229,17 @@ func encrypt(args *inputArgs) {
 	err = ioutil.WriteFile(userPassEnc, ciphertext, 0644)
 	die(err)
 }
+
+func randomString(length int) string {
+	if length <= 0 {
+		return ""
+	}
+	alphaNum := []rune(alphaNumeric)
+	b := make([]rune, length)
+	runes := len(alphaNum)
+	for i := range b {
+		b[i] = alphaNum[math.Intn(runes)]
+	}
+	return string(b)
+}
+

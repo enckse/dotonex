@@ -5,5 +5,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b // indirect
 	layeh.com/gopher-luar v1.0.4 // indirect
 	layeh.com/radius v0.0.0-20190118135028-0f678f039617
-	voidedtech.com/goutils v2.0.1+incompatible
+	voidedtech.com/goutils v3.1.0+incompatible
 )

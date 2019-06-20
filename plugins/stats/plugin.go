@@ -46,10 +46,11 @@ func (s *stats) Reload() {
 	info = make(map[string]*modedata)
 }
 
-func (s *stats) Setup(ctx *core.PluginContext) {
+func (s *stats) Setup(ctx *core.PluginContext) error {
 	dir = ctx.Logs
 	instance = ctx.Instance
 	modes = core.DisabledModes(s, ctx)
+	return nil
 }
 
 func (s *stats) Post(packet *core.ClientPacket) bool {
