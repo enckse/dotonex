@@ -20,6 +20,7 @@ const (
 )
 
 type definition interface {
+	Segment(int, string, string, string, string, string, string, string)
 	Object(assignType, string, int)
 	Describe(id, key, value string)
 }
@@ -42,8 +43,27 @@ type entity struct {
 	describe bool
 }
 
+type segment struct {
+	Name     string
+	Num      int
+	Initiate string
+	Route    string
+	Net      string
+	Owner    string
+	Desc     string
+	Group    string
+}
+
 func (e *entity) Disabled() {
 	stateDisable = true
+}
+
+func (s *segment) Add() {
+	state.Segment(s.Num, s.Name, s.Initiate, s.Route, s.Net, s.Owner, s.Desc, s.Group)
+}
+
+func (s *segment) Define(num int, name string) *segment {
+	return &segment{Num: num, Name: name}
 }
 
 func (e *entity) Define(typed, id string) *entity {
@@ -112,10 +132,20 @@ func (e *entity) Mabed(vlan int) {
 }
 
 func (e *entity) Own(id string, macs []string) {
+	f := e.fake(id, macs)
+	f.Owned()
+}
+
+func (e *entity) Mab(vlan int, id string, macs []string) {
+	o := e.fake(id, macs)
+	o.Mabed(vlan)
+}
+
+func (e *entity) fake(id string, macs []string) *entity {
 	o := e.Define("n/a", id)
 	o.Macs = macs
 	o.describe = false
-	o.Owned()
+	return o
 }
 
 func buildSystems(path string, s definition) {
@@ -125,7 +155,9 @@ func buildSystems(path string, s definition) {
 	L := lua.NewState()
 	defer L.Close()
 	e := &entity{}
+	seg := &segment{Num: invalidVLAN}
 	L.SetGlobal("network", luar.New(L, e))
+	L.SetGlobal("segments", luar.New(L, seg))
 	script := getScript(path)
 	if err := L.DoString(script); err != nil {
 		logger.WriteWarn(script)

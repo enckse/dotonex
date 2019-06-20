@@ -5,7 +5,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/signal"
@@ -13,8 +12,8 @@ import (
 	"sync"
 
 	"layeh.com/radius"
+	"voidedtech.com/goutils/config"
 	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/yaml"
 	"voidedtech.com/radiucal/core"
 	"voidedtech.com/radiucal/server"
 )
@@ -144,53 +143,57 @@ func main() {
 	var instance = flag.String("instance", "", "Instance name")
 	var debugging = flag.Bool("debug", false, "debugging")
 	flag.Parse()
-	b, err := ioutil.ReadFile(*cfg)
+	conf, err := config.LoadConfig(*cfg, config.NewConfigSettings())
 	if err != nil {
-		logger.Fatal("unable to load config", err)
+		logger.WriteError("unable to load config", err)
+		panic("invalid/unable to load config")
 	}
-	conf := &core.Configuration{}
-	err = yaml.UnmarshalBytes(b, conf)
-	if err != nil {
-		logger.Fatal("unable to parse config", err)
-	}
-	conf.Defaults(b)
-	debug := conf.Debug || *debugging
+	debug := conf.GetTrue("debug") || *debugging
 	logOpts := logger.NewLogOptions()
 	logOpts.Debug = debug
 	logOpts.Info = true
 	logOpts.Instance = *instance
 	logger.ConfigureLogging(logOpts)
-	if debug {
-		conf.Dump()
-	}
+	host := conf.GetStringOrDefault("host", "localhost")
 	var to int = 1814
-	if !conf.Accounting {
-		if conf.To > 0 {
-			to = conf.To
+	accounting := conf.GetTrue("accounting")
+	defaultBind := 1812
+	if accounting {
+		defaultBind = 1813
+	} else {
+		to, err = conf.GetIntOrDefault("to", 1814)
+		if err != nil {
+			logger.WriteError("unable to get bind-to", err)
+			panic("cannot bind to another socket")
 		}
 	}
+	bind, err := conf.GetIntOrDefault("bind", defaultBind)
 	if err != nil {
-		logger.Fatal("unable to bind address", err)
+		logger.WriteError("unable to bind address", err)
+		panic("unable to bind")
 	}
-	addr := fmt.Sprintf("%s:%d", conf.Host, to)
-	err = setup(addr, conf.Bind)
+	addr := fmt.Sprintf("%s:%d", host, to)
+	err = setup(addr, bind)
 	if core.LogError("proxy setup", err) {
 		panic("unable to proceed")
 	}
 
+	lib := conf.GetStringOrDefault("dir", "/var/lib/radiucal/")
 	ctx := &server.Context{Debug: debug}
-	ctx.FromConfig(conf.Dir, conf)
+	ctx.FromConfig(lib, conf)
+	mods := conf.GetArrayOrEmpty("plugins")
 	pCtx := core.NewPluginContext(conf)
-	pCtx.Logs = conf.Log
-	pCtx.Lib = conf.Dir
+	pCtx.Logs = conf.GetStringOrDefault("log", "/var/log/radiucal/")
+	pCtx.Lib = lib
 	pCtx.Instance = *instance
-	pPath := filepath.Join(conf.Dir, "plugins")
-	for _, p := range conf.Plugins {
+	pPath := filepath.Join(lib, "plugins")
+	for _, p := range mods {
 		oPath := filepath.Join(pPath, fmt.Sprintf("%s.rd", p))
 		logger.WriteInfo("loading plugin", p, oPath)
 		obj, err := core.LoadPlugin(oPath, pCtx)
 		if err != nil {
-			logger.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
+			logger.WriteError(fmt.Sprintf("unable to load plugin: %s", p), err)
+			panic("unable to load plugin")
 		}
 		if i, ok := obj.(core.Accounting); ok {
 			ctx.AddAccounting(i)
@@ -218,7 +221,7 @@ func main() {
 		}
 	}()
 
-	if conf.Accounting {
+	if accounting {
 		logger.WriteInfo("accounting mode")
 		account(ctx)
 	} else {

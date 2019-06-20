@@ -7,7 +7,6 @@ import (
 
 	. "layeh.com/radius/rfc2865"
 	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/yaml"
 	"voidedtech.com/radiucal/core"
 )
 
@@ -34,21 +33,9 @@ var (
 func (l *nwl) Reload() {
 }
 
-type NasWhitelistConfig struct {
-	NasWhitelist struct {
-		Whitelist []string
-	}
-}
-
-func (l *nwl) Setup(ctx *core.PluginContext) error {
-	conf := &NasWhitelistConfig{}
-	err := yaml.UnmarshalBytes(ctx.Backing, conf)
-	if err != nil {
-		return err
-	}
-	array := conf.NasWhitelist.Whitelist
+func (l *nwl) Setup(ctx *core.PluginContext) {
+	array := ctx.Section.GetArrayOrEmpty("whitelist")
 	l.startup(array)
-	return nil
 }
 
 func (l *nwl) startup(array []string) {

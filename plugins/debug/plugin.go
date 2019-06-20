@@ -25,9 +25,8 @@ func (t *tracer) Name() string {
 	return "debugger"
 }
 
-func (t *tracer) Setup(ctx *core.PluginContext) error {
+func (t *tracer) Setup(ctx *core.PluginContext) {
 	modes = core.DisabledModes(t, ctx)
-	return nil
 }
 
 func (t *tracer) Pre(packet *core.ClientPacket) bool {

@@ -1,7 +1,5 @@
 bin/
 certs/*
-audit.*
+radiucal.*
 tests/plugins/
 tests/log/
-target/
-**/*.rs.bk

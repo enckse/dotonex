@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"layeh.com/radius/debug"
+	"voidedtech.com/goutils/config"
 	"voidedtech.com/goutils/logger"
 )
 
@@ -34,19 +35,19 @@ type PluginContext struct {
 	Logs string
 	// Location of the general lib directory
 	Lib string
+	// Plugin section (subsection of config)
+	Section *config.Config
 	// Backing config
-	config *Configuration
+	config *config.Config
 	// Instance name
 	Instance string
 	// Enable caching
 	Cache bool
-	// Backing configuration data
-	Backing []byte
 }
 
 type Module interface {
 	Reload()
-	Setup(*PluginContext) error
+	Setup(*PluginContext)
 	Name() string
 }
 
@@ -70,11 +71,10 @@ type Accounting interface {
 	Account(*ClientPacket)
 }
 
-func NewPluginContext(config *Configuration) *PluginContext {
+func NewPluginContext(config *config.Config) *PluginContext {
 	p := &PluginContext{}
-	p.Cache = config.Cache
+	p.Cache = config.GetTrue("cache")
 	p.config = config
-	p.Backing = config.backing
 	return p
 }
 
@@ -85,12 +85,8 @@ func (p *PluginContext) clone(moduleName string) *PluginContext {
 	n.Instance = p.Instance
 	n.Cache = p.Cache
 	n.config = p.config
-	n.Backing = p.Backing
+	n.Section = p.config.GetSection(fmt.Sprintf("[%s]", moduleName))
 	return n
-}
-
-func (p *PluginContext) GetBackingConfig() []byte {
-	return p.config.backing
 }
 
 type requestDump struct {
@@ -121,9 +117,9 @@ func NewFilePath(path, name, instance string) (string, time.Time) {
 	t := time.Now()
 	inst := instance
 	if len(inst) > 0 {
-		inst = fmt.Sprintf("%s.", inst)
+		inst = fmt.Sprintf(".%s", inst)
 	}
-	logPath := filepath.Join(path, fmt.Sprintf("%s%s.%s", inst, name, t.Format("2006-01-02")))
+	logPath := filepath.Join(path, fmt.Sprintf("radiucal%s.%s.%s", inst, name, t.Format("2006-01-02")))
 	return logPath, t
 }
 
@@ -152,32 +148,23 @@ func noopAuth(mode string, packet *ClientPacket, call NoopCall) bool {
 	return true
 }
 
-func isFlagged(list []string, name string) bool {
-	for _, v := range list {
-		if name == v {
-			return true
-		}
-	}
-	return false
-}
-
 func DisabledModes(m Module, ctx *PluginContext) []string {
 	name := m.Name()
-	noAccounting := isFlagged(ctx.config.Disable.Accounting, name)
-	noTracing := isFlagged(ctx.config.Disable.Trace, name)
-	noPreauth := isFlagged(ctx.config.Disable.Preauth, name)
-	noPostauth := isFlagged(ctx.config.Disable.Postauth, name)
+	accounting := ctx.config.GetTrue(fmt.Sprintf("%s_disable_accounting", name))
+	tracing := ctx.config.GetTrue(fmt.Sprintf("%s_disable_trace", name))
+	preauth := ctx.config.GetTrue(fmt.Sprintf("%s_disable_preauth", name))
+	postauth := ctx.config.GetTrue(fmt.Sprintf("%s_disable_postauth", name))
 	var modes []string
-	if noAccounting {
+	if accounting {
 		modes = append(modes, AccountingMode)
 	}
-	if noTracing {
+	if tracing {
 		modes = append(modes, TracingMode)
 	}
-	if noPreauth {
+	if preauth {
 		modes = append(modes, PreAuthMode)
 	}
-	if noPostauth {
+	if postauth {
 		modes = append(modes, PostAuthMode)
 	}
 	return modes
@@ -211,10 +198,7 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("unable to load plugin %s", path))
 	}
-	err = mod.Setup(ctx.clone(mod.Name()))
-	if err != nil {
-		return nil, err
-	}
+	mod.Setup(ctx.clone(mod.Name()))
 	return mod, nil
 	switch t := mod.(type) {
 	default:

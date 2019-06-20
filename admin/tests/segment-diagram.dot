@@ -3,9 +3,9 @@ digraph g {
     node [color=lightblue2, style=filled];
     "dev" [shape="record"]
     "dev" -> "" [color=red]
+    "prod" [shape="record"]
+    "prod" -> "" [color=red]
     "high" [shape="record"]
     "high" -> "" [color=red]
     "high" -> "prod"
-    "prod" [shape="record"]
-    "prod" -> "" [color=red]
 }

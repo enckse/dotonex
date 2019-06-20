@@ -25,11 +25,10 @@ func (l *logger) Name() string {
 func (l *logger) Reload() {
 }
 
-func (l *logger) Setup(ctx *core.PluginContext) error {
+func (l *logger) Setup(ctx *core.PluginContext) {
 	logs = ctx.Logs
 	modes = core.DisabledModes(l, ctx)
 	instance = ctx.Instance
-	return nil
 }
 
 func (l *logger) Pre(packet *core.ClientPacket) bool {

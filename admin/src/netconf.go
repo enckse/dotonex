@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 
 	"voidedtech.com/goutils/logger"
@@ -18,8 +16,8 @@ import (
 const (
 	includesFile = "includes.lua"
 	userFile     = "user_"
+	vlanFile     = "vlan_"
 	luaExtension = ".lua"
-	configDir    = "config/"
 )
 
 type assignment struct {
@@ -37,8 +35,15 @@ type Systems struct {
 }
 
 type VLAN struct {
-	number int
-	name   string
+	file     string
+	number   int
+	name     string
+	initiate string
+	route    string
+	net      string
+	owner    string
+	desc     string
+	group    string
 }
 
 type network struct {
@@ -52,12 +57,29 @@ type network struct {
 }
 
 type outputs struct {
+	audits     []string
 	manifest   []string
 	eap        map[string]string
 	eapKeys    []string
 	trackLines map[string]struct{}
 	sysTrack   map[string]map[string][]string
 	sysCols    map[string]struct{}
+}
+
+func (n *network) Segment(num int, name, initiate, route, net, owner, desc, group string) {
+	if num < 0 || num > 4096 || strings.TrimSpace(name) == "" {
+		logger.Fatal(fmt.Sprintf("invalid vlan definition: name or number is invalid (%s or %d)", name, num), nil)
+	}
+	v := &VLAN{}
+	v.name = name
+	v.initiate = initiate
+	v.route = route
+	v.net = net
+	v.owner = owner
+	v.desc = desc
+	v.group = group
+	v.number = num
+	n.vlans = append(n.vlans, v)
 }
 
 func (o *outputs) trackLine(lineType, line string) {
@@ -71,6 +93,7 @@ func (o *outputs) trackLine(lineType, line string) {
 func createOutputs(o *outputs, name, pass string, v *assignment, vlans map[int]string, isMAB, defaultUser bool) {
 	vlan := vlans[v.vlan]
 	m := v.mac
+	audit := fmt.Sprintf("%s,%s,%s", name, vlan, m)
 	fqdn := name
 	if !defaultUser {
 		fqdn = fmt.Sprintf("%s.%s", vlan, name)
@@ -103,6 +126,9 @@ radius_accept_attr=81:s:%d
 	if defaultUser {
 		return
 	}
+	// audit doesn't support default because default is just a special normal user
+	o.trackLine("audit", audit)
+	o.audits = append(o.audits, audit)
 }
 
 func (o *outputs) eapWrite() {
@@ -117,7 +143,7 @@ func (o *outputs) eapWrite() {
 		track[k] = struct{}{}
 		content = append(content, o.eap[k])
 	}
-	writeContent("eap_users", content)
+	writeContent(eapUsers, content)
 }
 
 func writeFile(file string, values []string) {
@@ -128,7 +154,7 @@ func writeFile(file string, values []string) {
 
 func writeContent(file string, lines []string) {
 	content := strings.Join(lines, "\n")
-	err := ioutil.WriteFile(filepath.Join("bin/", file), []byte(content), 0644)
+	err := ioutil.WriteFile(filepath.Join(outputDir, file), []byte(content), 0644)
 	die(err)
 }
 
@@ -156,6 +182,34 @@ func (s *outputs) add(user string, desc map[string]map[string][]string) {
 			s.sysTrack[k] = cur
 		}
 	}
+}
+
+func vlanReports(vlans []*VLAN) {
+	segments := [][]string{}
+	segments = append(segments, []string{"cell", "segment", "lan", "vlan", "owner", "description"})
+	segments = append(segments, []string{"---", "---", "---", "---", "---", "---"})
+	diagram := []string{"digraph g {", "    size=\"6,6\";", "    node [color=lightblue2, style=filled];"}
+	for _, vlan := range vlans {
+		diagram = append(diagram, fmt.Sprintf("    \"%s\" [shape=\"record\"]", vlan.name))
+		if vlan.route != "none" {
+			diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\" [color=red]", vlan.name, vlan.route))
+		}
+		if vlan.initiate != "" {
+			for _, o := range strings.Split(vlan.initiate, " ") {
+				diagram = append(diagram, fmt.Sprintf("    \"%s\" -> \"%s\"", vlan.name, o))
+			}
+		}
+		entry := []string{vlan.group, vlan.name, vlan.net, fmt.Sprintf("%d", vlan.number), vlan.owner, vlan.desc}
+		segments = append(segments, entry)
+	}
+	diagram = append(diagram, "}")
+	markdown := []string{}
+	for _, line := range segments {
+		l := fmt.Sprintf("| %s |", strings.Join(line, " | "))
+		markdown = append(markdown, l)
+	}
+	writeContent("segment-diagram.dot", diagram)
+	writeContent("segments.md", markdown)
 }
 
 func (output *outputs) systemInfo() []string {
@@ -198,6 +252,9 @@ func (n *network) process() {
 		vlans := make(map[int]string)
 		output := &outputs{}
 		for _, v := range n.vlans {
+			if _, ok := vlans[v.number]; ok {
+				logger.Fatal(fmt.Sprintf("vlan redefined (%d %s)", v.number, v.name), nil)
+			}
 			vlans[v.number] = v.name
 		}
 		for k, _ := range n.refVLAN {
@@ -222,7 +279,9 @@ func (n *network) process() {
 				logger.Fatal(fmt.Sprintf("%s does not have a password", s.user), nil)
 			}
 			for _, o := range s.objects {
-				if o.objectType != ownType {
+				if o.objectType == ownType {
+					output.audits = append(output.audits, fmt.Sprintf("%s,n/a,%s", s.user, o.mac))
+				} else {
 					isMAB := o.objectType == mabType
 					userGen := []bool{false}
 					defVLAN := invalidVLAN
@@ -243,8 +302,10 @@ func (n *network) process() {
 			}
 		}
 		logger.WriteInfo("checks completed")
-		writeFile("manifest", output.manifest)
+		writeFile("audit.csv", output.audits)
+		writeFile(manifest, output.manifest)
 		writeContent("sysinfo.csv", output.systemInfo())
+		vlanReports(n.vlans)
 		output.eapWrite()
 		return
 	}
@@ -277,7 +338,7 @@ func fileToScript(fileName string) string {
 
 func getScript(fileName string) string {
 	include := ""
-	p := filepath.Join(configDir, includesFile)
+	p := filepath.Join(userDir, includesFile)
 	if opsys.PathExists(p) {
 		include = fileToScript(p)
 	}
@@ -319,35 +380,18 @@ func (n *network) addSystem(s *Systems) {
 	n.systems = append(n.systems, s)
 }
 
-func netconfRun(vlans []string) {
-	f, err := ioutil.ReadDir(configDir)
+func netconfRun() {
+	f, err := ioutil.ReadDir(userDir)
 	die(err)
 	net := &network{}
-	for i, v := range vlans {
-		if i == 0 {
-			continue
-		}
-		parts := strings.Split(v, "=")
-		if len(parts) != 2 {
-			logger.WriteWarn("invalid vlan definition", parts...)
-			return
-		}
-		def := &VLAN{}
-		def.name = parts[0]
-		def.number, err = strconv.Atoi(parts[1])
-		if err != nil {
-			logger.Fatal("invalid vlan number given", err)
-		}
-		net.vlans = append(net.vlans, def)
-	}
 	net.mab = make(map[string]struct{})
 	net.own = make(map[string]struct{})
 	net.login = make(map[string]struct{})
 	net.refVLAN = make(map[int]struct{})
 	for _, file := range f {
 		name := file.Name()
-		if (strings.HasPrefix(name, userFile)) && strings.HasSuffix(name, luaExtension) {
-			path := filepath.Join(configDir, name)
+		if (strings.HasPrefix(name, userFile) || strings.HasPrefix(name, vlanFile)) && strings.HasSuffix(name, luaExtension) {
+			path := filepath.Join(userDir, name)
 			if opsys.PathExists(path) {
 				logger.WriteInfo("reading", name)
 				if strings.HasPrefix(name, userFile) {
@@ -356,6 +400,13 @@ func netconfRun(vlans []string) {
 					s.desc = make(map[string]map[string][]string)
 					buildSystems(path, s)
 					net.addSystem(s)
+				} else {
+					n := &network{}
+					buildSystems(path, n)
+					for _, v := range n.vlans {
+						v.file = name
+						net.vlans = append(net.vlans, v)
+					}
 				}
 			}
 		}
@@ -365,7 +416,7 @@ func netconfRun(vlans []string) {
 
 func readPasses() map[string]string {
 	userPasses := make(map[string]string)
-	path := filepath.Join(configDir, "passwords")
+	path := filepath.Join(userDir, passwordFile)
 	data, err := ioutil.ReadFile(path)
 	die(err)
 	tracked := make(map[string]string)
@@ -404,31 +455,4 @@ func checkMAC(mac string) {
 		}
 	}
 	logger.Fatal(fmt.Sprintf("invalid mac detected: %s", mac), nil)
-}
-
-func die(err error) {
-	dieNow("unrecoverable error", err, err != nil)
-}
-
-func dieNow(message string, err error, now bool) {
-	messaged := false
-	if err != nil {
-		messaged = true
-		logger.WriteError(message, err)
-	}
-	if now {
-		if !messaged {
-			logger.WriteWarn(message)
-		}
-		os.Exit(1)
-	}
-}
-
-func main() {
-	if len(os.Args) < 2 {
-		logger.WriteWarn("invalid call, no vlans")
-		return
-	}
-	logger.WriteInfo("vlans", os.Args...)
-	netconfRun(os.Args)
 }
