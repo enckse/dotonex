@@ -242,4 +242,3 @@ func randomString(length int) string {
 	}
 	return string(b)
 }
-
