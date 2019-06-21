@@ -57,7 +57,7 @@ fn update(outdir: PathBuf) -> bool {
         println!("missing manifest file");
         return false;
     }
-    let var_lib = Path::new("/tmp/var/lib/radiucal/");
+    let var_lib = Path::new("/var/lib/radiucal/");
     let var_home = var_lib.join("users");
     if !var_home.exists() {
         create_dir_all(&var_home).expect("unable to make live configs");
