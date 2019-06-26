@@ -4,5 +4,5 @@ test1,,,d1;mabme;2,1,xyz,def;mab;user1;user2,
 test2,,,d2;mabme,1,,def;mab,
 test3,,,mabme,1,,mab,
 testattr,TEST,,2,1,,attr,
-testattr3,,testtest,3,1,,attr,extension information test
+testattr3,,testtest,3,1,,attr,"extension,information test"
 testid,,,1,1,,admin,
