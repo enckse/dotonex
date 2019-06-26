@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -76,7 +77,7 @@ type network struct {
 }
 
 type outputs struct {
-	audits     []string
+	audits     [][]string
 	manifest   []string
 	eap        map[string]string
 	eapKeys    []string
@@ -112,7 +113,8 @@ func (o *outputs) trackLine(lineType, line string) {
 func createOutputs(o *outputs, name, pass string, v *assignment, vlans map[int]string, isMAB, defaultUser bool) {
 	vlan := vlans[v.vlan]
 	m := v.mac
-	audit := fmt.Sprintf("%s,%s,%s", name, vlan, m)
+	objs := []string{name, vlan, m}
+	audit := strings.Join(objs, ",")
 	fqdn := name
 	if !defaultUser {
 		fqdn = fmt.Sprintf("%s.%s", vlan, name)
@@ -147,7 +149,7 @@ radius_accept_attr=81:s:%d
 	}
 	// audit doesn't support default because default is just a special normal user
 	o.trackLine("audit", audit)
-	o.audits = append(o.audits, audit)
+	o.audits = append(o.audits, objs)
 }
 
 func (o *outputs) eapWrite() {
@@ -171,10 +173,14 @@ func writeFile(file string, values []string) {
 	writeContent(file, lines)
 }
 
+func rawWrite(file string, content []byte) {
+	err := ioutil.WriteFile(filepath.Join("bin/", file), content, 0644)
+	die(err)
+}
+
 func writeContent(file string, lines []string) {
 	content := strings.Join(lines, "\n")
-	err := ioutil.WriteFile(filepath.Join("bin/", file), []byte(content), 0644)
-	die(err)
+	rawWrite(file, []byte(content))
 }
 
 func (s *outputs) add(user string, desc map[string]map[string][]string) {
@@ -231,13 +237,43 @@ func vlanReports(vlans []*VLAN) {
 	writeContent("segments.md", markdown)
 }
 
-func (output *outputs) systemInfo() []string {
+func writeCSV(name string, content [][]string, hasHeader bool) {
+	cnt := ""
+	b := bytes.NewBufferString(cnt)
+	w := csv.NewWriter(b)
+	datum := content
+	if hasHeader {
+		datum = datum[1:]
+		err := w.Write(content[0])
+		die(err)
+	}
+
+	for _, r := range datum {
+		err := w.Write(r)
+		die(err)
+	}
+	w.Flush()
+	die(w.Error())
+	lines := strings.Split(strings.TrimSpace(b.String()), "\n")
+	out := []string{}
+	if hasHeader {
+		out = append(out, lines[0])
+		lines = lines[1:]
+	}
+	sort.Strings(lines)
+	for _, l := range lines {
+		out = append(out, l)
+	}
+	rawWrite(fmt.Sprintf("%s.csv", name), []byte(strings.Join(out, "\n")))
+}
+
+func (output *outputs) systemInfo() [][]string {
 	cols := []string{}
 	for k, _ := range output.sysCols {
 		cols = append(cols, k)
 	}
 	sort.Strings(cols)
-	sysinfo := []string{}
+	sysinfo := [][]string{}
 	for k, v := range output.sysTrack {
 		vals := []string{k}
 		for _, c := range cols {
@@ -259,10 +295,9 @@ func (output *outputs) systemInfo() []string {
 			}
 			vals = append(vals, strings.Join(colVals, ";"))
 		}
-		sysinfo = append(sysinfo, strings.Join(vals, ","))
+		sysinfo = append(sysinfo, vals)
 	}
-	sort.Strings(sysinfo)
-	sysinfo = append([]string{strings.Join(cols, ",")}, sysinfo...)
+	sysinfo = append([][]string{cols}, sysinfo...)
 	return sysinfo
 }
 
@@ -299,7 +334,7 @@ func (n *network) process() {
 			}
 			for _, o := range s.objects {
 				if o.objectType == ownType {
-					output.audits = append(output.audits, fmt.Sprintf("%s,n/a,%s", s.user, o.mac))
+					output.audits = append(output.audits, []string{s.user, "n/a", o.mac})
 				} else {
 					isMAB := o.objectType == mabType
 					userGen := []bool{false}
@@ -321,9 +356,9 @@ func (n *network) process() {
 			}
 		}
 		logger.WriteInfo("checks completed")
-		writeFile("audit.csv", output.audits)
+		writeCSV("audit", output.audits, false)
 		writeFile("manifest", output.manifest)
-		writeContent("sysinfo.csv", output.systemInfo())
+		writeCSV("sysinfo", output.systemInfo(), true)
 		vlanReports(n.vlans)
 		output.eapWrite()
 		return
