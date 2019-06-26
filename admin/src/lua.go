@@ -39,6 +39,7 @@ type entity struct {
 	Typed    string
 	Make     string
 	Model    string
+	Verbose  string
 	Revision string
 	describe bool
 }
@@ -106,6 +107,7 @@ func (e *entity) add(vlan int, adding entityAdd) {
 		e.describeItem("make", e.Make)
 		e.describeItem("model", e.Model)
 		e.describeItem("revision", e.Revision)
+		e.describeItem("verbose", strings.Replace(e.Verbose, ",", " ", -1))
 		e.describeItem("objType", e.Typed)
 		e.describeItem(idColumn, e.Id)
 		sysType = "1"
