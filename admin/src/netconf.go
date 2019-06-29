@@ -13,7 +13,6 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
-	"voidedtech.com/goutils/logger"
 	"voidedtech.com/goutils/opsys"
 )
 
@@ -86,9 +85,17 @@ type outputs struct {
 	sysCols    map[string]struct{}
 }
 
+func fatal(message string, err error) {
+	fmt.Println(message)
+	if err != nil {
+		fmt.Println(err)
+	}
+	os.Exit(1)
+}
+
 func (n *network) Segment(num int, name string, initiate []string, route, net, owner, desc, group string) {
 	if num < 0 || num > 4096 || strings.TrimSpace(name) == "" {
-		logger.Fatal(fmt.Sprintf("invalid vlan definition: name or number is invalid (%s or %d)", name, num), nil)
+		fatal(fmt.Sprintf("invalid vlan definition: name or number is invalid (%s or %d)", name, num), nil)
 	}
 	v := &VLAN{}
 	v.name = name
@@ -105,7 +112,7 @@ func (n *network) Segment(num int, name string, initiate []string, route, net, o
 func (o *outputs) trackLine(lineType, line string) {
 	actual := fmt.Sprintf("%s -> %s", lineType, line)
 	if _, ok := o.trackLines[actual]; ok {
-		logger.Fatal(fmt.Sprintf("invalid config, detected duplicate object (%s -> %s)", lineType, line), nil)
+		fatal(fmt.Sprintf("invalid config, detected duplicate object (%s -> %s)", lineType, line), nil)
 	}
 	o.trackLines[actual] = struct{}{}
 }
@@ -307,13 +314,13 @@ func (n *network) process() {
 		output := &outputs{}
 		for _, v := range n.vlans {
 			if _, ok := vlans[v.number]; ok {
-				logger.Fatal(fmt.Sprintf("vlan redefined (%d %s)", v.number, v.name), nil)
+				fatal(fmt.Sprintf("vlan redefined (%d %s)", v.number, v.name), nil)
 			}
 			vlans[v.number] = v.name
 		}
 		for k, _ := range n.refVLAN {
 			if _, ok := vlans[k]; !ok {
-				logger.Fatal(fmt.Sprintf("%d -> unknown VLAN reference", k), nil)
+				fatal(fmt.Sprintf("%d -> unknown VLAN reference", k), nil)
 			}
 		}
 		passes := readPasses()
@@ -330,7 +337,7 @@ func (n *network) process() {
 			output.add(s.user, s.desc)
 			pass, ok := passes[s.user]
 			if !ok {
-				logger.Fatal(fmt.Sprintf("%s does not have a password", s.user), nil)
+				fatal(fmt.Sprintf("%s does not have a password", s.user), nil)
 			}
 			for _, o := range s.objects {
 				if o.objectType == ownType {
@@ -355,7 +362,7 @@ func (n *network) process() {
 				}
 			}
 		}
-		logger.WriteInfo("checks completed")
+		fmt.Println("checks completed")
 		writeCSV("audit", output.audits, false)
 		writeFile("manifest", output.manifest)
 		writeCSV("sysinfo", output.systemInfo(), true)
@@ -363,7 +370,7 @@ func (n *network) process() {
 		output.eapWrite()
 		return
 	}
-	logger.Fatal("invalid network definition (no systems or no vlans)", nil)
+	fatal("invalid network definition (no systems or no vlans)", nil)
 }
 
 func (s *Systems) Object(t assignType, mac string, vlan int) {
@@ -402,7 +409,7 @@ func getScript(fileName string) string {
 
 func isIn(mac string, in map[string]struct{}) {
 	if _, ok := in[mac]; ok {
-		logger.Fatal(fmt.Sprintf("%s must be assigned OR mab'd OR owned", mac), nil)
+		fatal(fmt.Sprintf("%s must be assigned OR mab'd OR owned", mac), nil)
 	}
 }
 
@@ -447,7 +454,7 @@ func netconfRun() {
 		if (strings.HasPrefix(name, userFile) || strings.HasPrefix(name, vlanFile)) && strings.HasSuffix(name, luaExtension) {
 			path := filepath.Join(configDir, name)
 			if opsys.PathExists(path) {
-				logger.WriteInfo("reading", name)
+				fmt.Println(fmt.Sprintf("reading %s", name))
 				if strings.HasPrefix(name, userFile) {
 					s := &Systems{}
 					s.file = name
@@ -484,10 +491,10 @@ func readPasses() map[string]string {
 		u := record[0]
 		p := record[1]
 		if _, ok := userPasses[u]; ok {
-			logger.Fatal(fmt.Sprintf("user %s already has defined password", u), nil)
+			fatal(fmt.Sprintf("user %s already has defined password", u), nil)
 		}
 		if _, ok := tracked[p]; ok {
-			logger.Fatal(fmt.Sprintf("%s password is not unique", u), nil)
+			fatal(fmt.Sprintf("%s password is not unique", u), nil)
 		}
 		userPasses[u] = p
 	}
@@ -508,7 +515,7 @@ func checkMAC(mac string) {
 			return
 		}
 	}
-	logger.Fatal(fmt.Sprintf("invalid mac detected: %s", mac), nil)
+	fatal(fmt.Sprintf("invalid mac detected: %s", mac), nil)
 }
 
 func die(err error) {
@@ -519,11 +526,11 @@ func dieNow(message string, err error, now bool) {
 	messaged := false
 	if err != nil {
 		messaged = true
-		logger.WriteError(message, err)
+		fmt.Println(fmt.Sprintf("%s (%v)", message, err))
 	}
 	if now {
 		if !messaged {
-			logger.WriteWarn(message)
+			fmt.Println(message)
 		}
 		os.Exit(1)
 	}
@@ -660,7 +667,7 @@ func buildSystems(path string, s definition) {
 	L.SetGlobal("segments", luar.New(L, seg))
 	script := getScript(path)
 	if err := L.DoString(script); err != nil {
-		logger.WriteWarn(script)
+		fmt.Println(script)
 		die(err)
 	}
 }

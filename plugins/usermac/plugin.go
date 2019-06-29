@@ -11,10 +11,9 @@ import (
 	"time"
 
 	. "layeh.com/radius/rfc2865"
-	"voidedtech.com/goutils/logger"
 	"voidedtech.com/goutils/opsys"
-	"voidedtech.com/goutils/yaml"
 	"voidedtech.com/radiucal/core"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type umac struct {
@@ -64,7 +63,7 @@ func (l *umac) Setup(ctx *core.PluginContext) error {
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
 	conf := &UserMacConfig{}
-	err := yaml.UnmarshalBytes(ctx.Backing, conf)
+	err := yaml.Unmarshal(ctx.Backing, conf)
 	if err != nil {
 		return err
 	}
@@ -107,7 +106,7 @@ func checkUserMac(p *core.ClientPacket) error {
 	good, ok := cache[fqdn]
 	lock.Unlock()
 	if canCache && ok {
-		logger.WriteDebug("object is preauthed", fqdn)
+		core.WriteDebug("object is preauthed", fqdn)
 		go mark(good, username, calling, p, true)
 		if good {
 			return nil
@@ -115,7 +114,7 @@ func checkUserMac(p *core.ClientPacket) error {
 			return errors.New(fmt.Sprintf("%s is blacklisted", fqdn))
 		}
 	} else {
-		logger.WriteDebug("not preauthed", fqdn)
+		core.WriteDebug("not preauthed", fqdn)
 	}
 	path := filepath.Join(db, fqdn)
 	success := true
@@ -173,7 +172,7 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 		reportFail := !success && onFail
 		reportPass := success && onPass
 		if reportFail || reportPass {
-			logger.WriteDebug("perform callback", callback...)
+			core.WriteDebug("perform callback", callback...)
 			args := callback[1:]
 			opts := &opsys.RunOptions{}
 			opts.Stdin = append(opts.Stdin, fmt.Sprintf("%s -> %s", result, msg))

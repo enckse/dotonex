@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"layeh.com/radius"
-	"voidedtech.com/goutils/logger"
 	"voidedtech.com/goutils/opsys"
 	"voidedtech.com/radiucal/core"
 )
@@ -123,7 +122,7 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 			if receiving {
 				err := ctx.checkSecret(packet)
 				if err != nil {
-					logger.WriteError("invalid radius secret", err)
+					core.WriteError("invalid radius secret", err)
 					valid = badSecretCode
 				}
 			}
@@ -179,7 +178,7 @@ func checkAuthMods(modules []core.Module, packet *core.ClientPacket, fxn authChe
 			continue
 		}
 		failure = true
-		logger.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
+		core.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
 	}
 	return failure
 }
@@ -193,7 +192,7 @@ func (ctx *Context) FromConfig(libPath string, c *core.Configuration) {
 	if opsys.PathExists(secrets) {
 		mappings, err := parseSecretMappings(secrets)
 		if err != nil {
-			logger.Fatal("invalid client secret mappings", err)
+			core.Fatal("invalid client secret mappings", err)
 		}
 		for k, v := range mappings {
 			ctx.secrets[k] = []byte(v)
@@ -267,11 +266,11 @@ func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, er
 
 func (ctx *Context) DebugDump() {
 	if ctx.Debug {
-		logger.WriteDebug("secret", string(ctx.secret))
+		core.WriteDebug("secret", string(ctx.secret))
 		if len(ctx.secrets) > 0 {
-			logger.WriteDebug("client mappings")
+			core.WriteDebug("client mappings")
 			for k, v := range ctx.secrets {
-				logger.WriteDebug(k, string(v))
+				core.WriteDebug(k, string(v))
 			}
 		}
 	}
@@ -279,9 +278,9 @@ func (ctx *Context) DebugDump() {
 
 func (ctx *Context) Reload() {
 	if ctx.module {
-		logger.WriteInfo("reloading")
+		core.WriteInfo("reloading")
 		for _, m := range ctx.modules {
-			logger.WriteDebug("reloading module", m.Name())
+			core.WriteDebug("reloading module", m.Name())
 			m.Reload()
 		}
 	}
@@ -308,7 +307,7 @@ func (ctx *Context) checkSecret(p *core.ClientPacket) error {
 		}
 		ip = h
 		good := false
-		logger.WriteInfo(ip)
+		core.WriteInfo(ip)
 		for k, v := range ctx.secrets {
 			if strings.HasPrefix(ip, k) || k == allKey {
 				if bytes.Equal(v, inSecret) {
@@ -359,16 +358,16 @@ func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr, 
 				p = p.Response(radius.CodeAccessReject)
 				rej, err := p.Encode()
 				if err == nil {
-					logger.WriteDebug("rejecting client")
+					core.WriteDebug("rejecting client")
 					write(rej)
 				} else {
 					if ctx.Debug {
-						logger.WriteError("unable to encode rejection", err)
+						core.WriteError("unable to encode rejection", err)
 					}
 				}
 			} else {
 				if ctx.Debug && packet.Error != nil {
-					logger.WriteError("unable to parse packets", packet.Error)
+					core.WriteError("unable to parse packets", packet.Error)
 				}
 			}
 		}

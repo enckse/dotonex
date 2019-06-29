@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"layeh.com/radius/debug"
-	"voidedtech.com/goutils/logger"
 )
 
 const (
@@ -191,7 +190,7 @@ func newFile(path, name, instance string, appending bool) (*os.File, time.Time) 
 	logPath, t := NewFilePath(path, name, instance)
 	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0660)
 	if err != nil {
-		logger.WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
+		WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
 		return nil, t
 	}
 	return f, t

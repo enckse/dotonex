@@ -1,9 +1,6 @@
 package core
 
-import (
-	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/yaml"
-)
+import yaml "gopkg.in/yaml.v2"
 
 // Configuration is the configuration definition
 type Configuration struct {
@@ -28,11 +25,11 @@ type Configuration struct {
 
 // Dump writes debug information about the configuration
 func (c *Configuration) Dump() {
-	config, err := yaml.MarshalToBytes(c)
+	config, err := yaml.Marshal(c)
 	if err == nil {
-		logger.WriteDebug("configuration (mem/raw)", string(config), string(c.backing))
+		WriteDebug("configuration (mem/raw)", string(config), string(c.backing))
 	} else {
-		logger.WriteError("unable to read yaml configuration", err)
+		WriteError("unable to read yaml configuration", err)
 	}
 }
 

@@ -6,9 +6,8 @@ import (
 	"sync"
 
 	. "layeh.com/radius/rfc2865"
-	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/yaml"
 	"voidedtech.com/radiucal/core"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -42,7 +41,7 @@ type NasWhitelistConfig struct {
 
 func (l *nwl) Setup(ctx *core.PluginContext) error {
 	conf := &NasWhitelistConfig{}
-	err := yaml.UnmarshalBytes(ctx.Backing, conf)
+	err := yaml.Unmarshal(ctx.Backing, conf)
 	if err != nil {
 		return err
 	}
@@ -62,7 +61,7 @@ func (l *nwl) startup(array []string) {
 		for _, ip := range array {
 			ipSplit := len(strings.Split(ip, "."))
 			if ipSplit > 4 {
-				logger.WriteWarn("invalid ip", ip)
+				core.WriteWarn("invalid ip", ip)
 				continue
 			}
 			enabled = true
@@ -79,7 +78,7 @@ func (l *nwl) startup(array []string) {
 			whitelist[ip] = isBlacklist
 		}
 
-		logger.WriteDebug("ips (ordered)", order...)
+		core.WriteDebug("ips (ordered)", order...)
 	}
 }
 
@@ -109,7 +108,7 @@ func (l *nwl) Pre(packet *core.ClientPacket) bool {
 	for _, k := range order {
 		v, ok := whitelist[k]
 		if !ok {
-			logger.WriteWarn("internal error")
+			core.WriteWarn("internal error")
 			return false
 		}
 		match := false

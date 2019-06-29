@@ -13,10 +13,9 @@ import (
 	"sync"
 
 	"layeh.com/radius"
-	"voidedtech.com/goutils/logger"
-	"voidedtech.com/goutils/yaml"
 	"voidedtech.com/radiucal/core"
 	"voidedtech.com/radiucal/server"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var vers = "master"
@@ -83,18 +82,18 @@ func checkAuth(name string, fxn server.AuthorizePacket, ctx *server.Context, b [
 		proxy.WriteToUDP(buffer, client)
 	})
 	if !auth {
-		logger.WriteDebug("client failed auth check", name)
+		core.WriteDebug("client failed auth check", name)
 	}
 	return auth
 }
 
 func runProxy(ctx *server.Context) {
 	if ctx.Debug {
-		logger.WriteInfo("=============WARNING==================")
-		logger.WriteInfo("debugging is enabled!")
-		logger.WriteInfo("dumps from debugging may contain secrets")
-		logger.WriteInfo("do NOT share debugging dumps")
-		logger.WriteInfo("=============WARNING==================")
+		core.WriteInfo("=============WARNING==================")
+		core.WriteInfo("debugging is enabled!")
+		core.WriteInfo("dumps from debugging may contain secrets")
+		core.WriteInfo("do NOT share debugging dumps")
+		core.WriteInfo("=============WARNING==================")
 		ctx.DebugDump()
 	}
 	var buffer [radius.MaxPacketLength]byte
@@ -139,27 +138,27 @@ func account(ctx *server.Context) {
 }
 
 func main() {
-	logger.WriteInfo(fmt.Sprintf("radiucal (%s)", vers))
+	core.WriteInfo(fmt.Sprintf("radiucal (%s)", vers))
 	var cfg = flag.String("config", "/etc/radiucal/radiucal.conf", "Configuration file")
 	var instance = flag.String("instance", "", "Instance name")
 	var debugging = flag.Bool("debug", false, "debugging")
 	flag.Parse()
 	b, err := ioutil.ReadFile(*cfg)
 	if err != nil {
-		logger.Fatal("unable to load config", err)
+		core.Fatal("unable to load config", err)
 	}
 	conf := &core.Configuration{}
-	err = yaml.UnmarshalBytes(b, conf)
+	err = yaml.Unmarshal(b, conf)
 	if err != nil {
-		logger.Fatal("unable to parse config", err)
+		core.Fatal("unable to parse config", err)
 	}
 	conf.Defaults(b)
 	debug := conf.Debug || *debugging
-	logOpts := logger.NewLogOptions()
+	logOpts := core.NewLogOptions()
 	logOpts.Debug = debug
 	logOpts.Info = true
 	logOpts.Instance = *instance
-	logger.ConfigureLogging(logOpts)
+	core.ConfigureLogging(logOpts)
 	if debug {
 		conf.Dump()
 	}
@@ -170,7 +169,7 @@ func main() {
 		}
 	}
 	if err != nil {
-		logger.Fatal("unable to bind address", err)
+		core.Fatal("unable to bind address", err)
 	}
 	addr := fmt.Sprintf("%s:%d", conf.Host, to)
 	err = setup(addr, conf.Bind)
@@ -187,10 +186,10 @@ func main() {
 	pPath := filepath.Join(conf.Dir, "plugins")
 	for _, p := range conf.Plugins {
 		oPath := filepath.Join(pPath, fmt.Sprintf("%s.rd", p))
-		logger.WriteInfo("loading plugin", p, oPath)
+		core.WriteInfo("loading plugin", p, oPath)
 		obj, err := core.LoadPlugin(oPath, pCtx)
 		if err != nil {
-			logger.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
+			core.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
 		}
 		if i, ok := obj.(core.Accounting); ok {
 			ctx.AddAccounting(i)
@@ -219,7 +218,7 @@ func main() {
 	}()
 
 	if conf.Accounting {
-		logger.WriteInfo("accounting mode")
+		core.WriteInfo("accounting mode")
 		account(ctx)
 	} else {
 		runProxy(ctx)
