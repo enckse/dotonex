@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
+	yaml "gopkg.in/yaml.v2"
 	. "layeh.com/radius/rfc2865"
 	"voidedtech.com/goutils/opsys"
 	"voidedtech.com/radiucal/core"
-	yaml "gopkg.in/yaml.v2"
 )
 
 type umac struct {

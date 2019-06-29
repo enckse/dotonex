@@ -12,10 +12,10 @@ import (
 	"path/filepath"
 	"sync"
 
+	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/core"
 	"voidedtech.com/radiucal/server"
-	yaml "gopkg.in/yaml.v2"
 )
 
 var vers = "master"
