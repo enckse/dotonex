@@ -15,10 +15,11 @@ ETC_CERTS    := $(ETC)certs/
 SUPPORT      := supporting/
 SYSD         := /lib/systemd/system/
 TMPD         := /usr/lib/tmpfiles.d/
+ADMIN        := admin
 
-.PHONY: admin
+.PHONY: $(ADMIN)
 
-all: clean modules radiucal admin test format
+all: clean modules radiucal $(ADMIN) test format
 
 modules: $(PLUGINS)
 
@@ -27,8 +28,11 @@ $(PLUGINS):
 
 test: utests integrate
 
-admin:
-	cd admin && make FLAGS="$(FLAGS)"
+$(ADMIN):
+	go build -o $(BIN)radiucal-legacy $(FLAGS) admin.go
+	cd $(ADMIN) && cargo build --release
+	cp $(ADMIN)/target/release/radiucal-admin $(BIN)
+	cd $(ADMIN)/tests && make
 
 utests:
 	for f in $(shell find . -type f -name "*_test.go" -exec dirname {} \;); do go test -v $$f; done
