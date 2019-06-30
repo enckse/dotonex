@@ -17,8 +17,6 @@ SYSD         := /lib/systemd/system/
 TMPD         := /usr/lib/tmpfiles.d/
 ADMIN        := admin
 
-.PHONY: $(ADMIN)
-
 all: clean modules radiucal $(ADMIN) test format
 
 modules: $(PLUGINS)
@@ -30,9 +28,9 @@ test: utests integrate
 
 $(ADMIN):
 	go build -o $(BIN)radiucal-legacy $(FLAGS) admin.go
-	cd $(ADMIN) && cargo build --release
-	cp $(ADMIN)/target/release/radiucal-admin $(BIN)
-	cd $(ADMIN)/tests && make
+	cargo build --release
+	cp target/release/radiucal-admin $(BIN)
+	cd $(TST)$(ADMIN) && make
 
 utests:
 	for f in $(shell find . -type f -name "*_test.go" -exec dirname {} \;); do go test -v $$f; done
