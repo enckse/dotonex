@@ -117,7 +117,7 @@ pub fn netconf() -> bool {
     return output.success();
 }
 
-pub fn all(client: bool) -> bool {
+pub fn all(server: bool) -> bool {
     println!("updating networking configuration");
     let outdir = Path::new(OUTPUT_DIR);
     if !outdir.exists() {
@@ -131,7 +131,6 @@ pub fn all(client: bool) -> bool {
     if !netconf() {
         return false;
     }
-    let server = !client;
     let date = Local::now().format(".radius.%Y-%m-%d").to_string();
     if server {
         println!("checking for daily operations");

@@ -30,7 +30,7 @@ fn main() {
         println!("no command given");
         return;
     }
-    let mut client = false;
+    let mut server = false;
     let mut pass = String::new();
     let mut user = String::new();
     let command = args[1].to_string();
@@ -63,8 +63,8 @@ fn main() {
                 "pass" => {
                     pass = parts[1].to_string();
                 }
-                "client" => {
-                    client = parts[1] == "true";
+                "server" => {
+                    server = parts[1] == "true";
                 }
                 _ => println!("unknown parameter: {}", parts[0]),
             }
@@ -86,7 +86,7 @@ fn main() {
             valid = decrypt_file(&pass);
         }
         "configure" => {
-            valid = all(client);
+            valid = all(server);
         }
         "netconf" => {
             valid = netconf();
