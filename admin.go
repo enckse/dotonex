@@ -397,10 +397,17 @@ func fileToScript(fileName string) string {
 }
 
 func getScript(fileName string) string {
-	include := ""
-	p := filepath.Join(configDir, includesFile)
-	if opsys.PathExists(p) {
-		include = fileToScript(p)
+	include := "-- included"
+	options, err := ioutil.ReadDir(configDir)
+	if err != nil {
+		fatal("unable to search for inclusions", err)
+	}
+	for _, opt := range options {
+		n := opt.Name()
+		if strings.HasSuffix(n, includesFile) {
+			cnt := fileToScript(filepath.Join(configDir, n))
+			include = fmt.Sprintf("%s\n%s", include, cnt)
+		}
 	}
 	script := fileToScript(fileName)
 	return fmt.Sprintf("%s\n%s", include, script)
