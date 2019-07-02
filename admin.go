@@ -555,7 +555,6 @@ type entity struct {
 	Model    string
 	XAttr    []string
 	Revision string
-	describe bool
 }
 
 type segment struct {
@@ -582,7 +581,7 @@ func (s *segment) Define(num int, name string) *segment {
 }
 
 func (e *entity) Define(typed, id string) *entity {
-	return &entity{Id: id, Typed: typed, describe: true}
+	return &entity{Id: id, Typed: typed}
 }
 
 func (e *entity) Assign(vlan int, entities []*entity) {
@@ -605,17 +604,12 @@ func (e *entity) add(vlan int, adding entityAdd) {
 	for _, m := range e.Macs {
 		adding(m)
 	}
-	sysType := "0"
-	if e.describe {
-		e.describeItem("make", e.Make)
-		e.describeItem("model", e.Model)
-		e.describeItem("revision", e.Revision)
-		e.describeItem("xattr", strings.Join(e.XAttr, ";"))
-		e.describeItem("objType", e.Typed)
-		e.describeItem(idColumn, e.Id)
-		sysType = "1"
-	}
-	state.Describe(e.Id, "system_type", sysType)
+	e.describeItem("make", e.Make)
+	e.describeItem("model", e.Model)
+	e.describeItem("revision", e.Revision)
+	e.describeItem("xattr", strings.Join(e.XAttr, ";"))
+	e.describeItem("objType", e.Typed)
+	e.describeItem(idColumn, e.Id)
 }
 
 func (e *entity) Assigned(vlan int) {
