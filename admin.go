@@ -36,7 +36,6 @@ type assignType int
 var (
 	state        definition
 	stateDisable = false
-	flagged      = ""
 )
 
 type assignment struct {
@@ -586,14 +585,6 @@ func (e *entity) Define(typed, id string) *entity {
 	return &entity{Id: id, Typed: typed, describe: true}
 }
 
-func (e *entity) Tag(value string) {
-	flagged = value
-}
-
-func (e *entity) Untag() {
-	flagged = ""
-}
-
 func (e *entity) Assign(vlan int, entities []*entity) {
 	for _, entity := range entities {
 		entity.Assigned(vlan)
@@ -615,9 +606,6 @@ func (e *entity) add(vlan int, adding entityAdd) {
 		adding(m)
 	}
 	sysType := "0"
-	if flagged != "" {
-		e.describeItem("tagged", flagged)
-	}
 	if e.describe {
 		e.describeItem("make", e.Make)
 		e.describeItem("model", e.Model)
@@ -658,7 +646,6 @@ func (e *entity) Own(id string, macs []string) {
 func buildSystems(path string, s definition) {
 	state = s
 	stateDisable = false
-	flagged = ""
 	L := lua.NewState()
 	defer L.Close()
 	e := &entity{}
