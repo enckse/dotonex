@@ -636,13 +636,6 @@ func (e *entity) Mabed(vlan int) {
 	})
 }
 
-func (e *entity) Own(id string, macs []string) {
-	o := e.Define("n/a", id)
-	o.Macs = macs
-	o.describe = false
-	o.Owned()
-}
-
 func buildSystems(path string, s definition) {
 	state = s
 	stateDisable = false
