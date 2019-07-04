@@ -119,7 +119,7 @@ func checkUserMac(p *core.ClientPacket) error {
 	path := filepath.Join(db, fqdn)
 	success := true
 	var failure error
-	res := opsys.PathExists(path)
+	res := core.PathExists(path)
 	lock.Lock()
 	cache[fqdn] = res
 	lock.Unlock()

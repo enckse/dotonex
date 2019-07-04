@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"layeh.com/radius"
-	"voidedtech.com/goutils/opsys"
 	"voidedtech.com/radiucal/core"
 )
 
@@ -189,7 +188,7 @@ func (ctx *Context) FromConfig(libPath string, c *core.Configuration) {
 	ctx.parseSecrets(secrets)
 	ctx.secrets = make(map[string][]byte)
 	secrets = filepath.Join(libPath, "clients")
-	if opsys.PathExists(secrets) {
+	if core.PathExists(secrets) {
 		mappings, err := parseSecretMappings(secrets)
 		if err != nil {
 			core.Fatal("invalid client secret mappings", err)
@@ -230,7 +229,7 @@ func parseSecretFile(secretFile string) (string, error) {
 }
 
 func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
-	if opsys.PathNotExists(secretFile) {
+	if !core.PathExists(secretFile) {
 		return nil, errors.New("no secrets file")
 	}
 	f, err := os.Open(secretFile)
