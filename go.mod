@@ -6,5 +6,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.2
 	layeh.com/gopher-luar v1.0.4 // indirect
 	layeh.com/radius v0.0.0-20190118135028-0f678f039617
-	voidedtech.com/goutils v4.0.1+incompatible
 )

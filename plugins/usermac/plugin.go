@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -12,7 +13,6 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	. "layeh.com/radius/rfc2865"
-	"voidedtech.com/goutils/opsys"
 	"voidedtech.com/radiucal/core"
 )
 
@@ -174,9 +174,24 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 		if reportFail || reportPass {
 			core.WriteDebug("perform callback", callback...)
 			args := callback[1:]
-			opts := &opsys.RunOptions{}
-			opts.Stdin = append(opts.Stdin, fmt.Sprintf("%s -> %s", result, msg))
-			opsys.RunCommandWithOptions(opts, callback[0], args...)
+			cmd := exec.Command(callback[0], args...)
+			stdin, err := cmd.StdinPipe()
+			if err == nil {
+				err = cmd.Start()
+				if err == nil {
+					stdin.Write([]byte(fmt.Sprintf("%s -> %s", result, msg)))
+					stdin.Close()
+					err = cmd.Wait()
+					if err != nil {
+						core.WriteError("callback error", err)
+					}
+				} else {
+					core.WriteError("unable to start callback", err)
+					stdin.Close()
+				}
+			} else {
+				core.WriteError("unable to execute callback (stdin)", err)
+			}
 		}
 	}
 	formatLog(f, t, result, msg)
