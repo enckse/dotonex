@@ -13,7 +13,7 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
-	"voidedtech.com/goutils/opsys"
+	"voidedtech.com/radiucal/core"
 )
 
 const (
@@ -459,7 +459,7 @@ func netconfRun() {
 		name := file.Name()
 		if (strings.HasPrefix(name, userFile) || strings.HasPrefix(name, vlanFile)) && strings.HasSuffix(name, luaExtension) {
 			path := filepath.Join(configDir, name)
-			if opsys.PathExists(path) {
+			if core.PathExists(path) {
 				fmt.Println(fmt.Sprintf("reading %s", name))
 				if strings.HasPrefix(name, userFile) {
 					s := &Systems{}
