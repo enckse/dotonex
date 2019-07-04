@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	yaml "gopkg.in/yaml.v2"
 	. "layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/core"
 )
@@ -33,11 +31,6 @@ var (
 	logs     string
 	Plugin   umac
 	instance string
-	// Function callback on failed/passed
-	doCallback bool
-	callback   []string
-	onFail     bool
-	onPass     bool
 )
 
 func (l *umac) Reload() {
@@ -49,30 +42,11 @@ func (l *umac) Reload() {
 	logged = make(map[string]struct{})
 }
 
-type UserMacConfig struct {
-	UserMac struct {
-		Callback []string
-		OnFail   bool
-		OnPass   bool
-	}
-}
-
 func (l *umac) Setup(ctx *core.PluginContext) error {
 	canCache = ctx.Cache
 	logs = ctx.Logs
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
-	conf := &UserMacConfig{}
-	err := yaml.Unmarshal(ctx.Backing, conf)
-	if err != nil {
-		return err
-	}
-	callback = conf.UserMac.Callback
-	if len(callback) > 0 {
-		onFail = conf.UserMac.OnFail
-		onPass = conf.UserMac.OnPass
-		doCallback = onFail || onPass
-	}
 	return nil
 }
 
@@ -168,31 +142,5 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 		result = "failed"
 	}
 	msg := fmt.Sprintf("%s (mac:%s) (nas:%s,ip:%s,port:%d)", user, calling, nas, nasip, nasport)
-	if doCallback && !cached {
-		reportFail := !success && onFail
-		reportPass := success && onPass
-		if reportFail || reportPass {
-			core.WriteDebug("perform callback", callback...)
-			args := callback[1:]
-			cmd := exec.Command(callback[0], args...)
-			stdin, err := cmd.StdinPipe()
-			if err == nil {
-				err = cmd.Start()
-				if err == nil {
-					stdin.Write([]byte(fmt.Sprintf("%s -> %s", result, msg)))
-					stdin.Close()
-					err = cmd.Wait()
-					if err != nil {
-						core.WriteError("callback error", err)
-					}
-				} else {
-					core.WriteError("unable to start callback", err)
-					stdin.Close()
-				}
-			} else {
-				core.WriteError("unable to execute callback (stdin)", err)
-			}
-		}
-	}
 	formatLog(f, t, result, msg)
 }
