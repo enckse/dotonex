@@ -55,7 +55,7 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		if core.Disabled(mode, modes) {
 			return
 		}
-		f, t := core.DatedAppendFile(logs, mode, instance)
+		f, t := core.DatedAppendFile(logs, fmt.Sprintf("%s_logger", mode), instance)
 		if f == nil {
 			return
 		}
