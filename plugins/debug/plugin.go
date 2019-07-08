@@ -31,10 +31,12 @@ func (t *tracer) Setup(ctx *core.PluginContext) error {
 }
 
 func (t *tracer) Pre(packet *core.ClientPacket) bool {
+	dump(core.PreAuthMode, core.NoTrace, packet)
 	return core.NoopPre(packet, dump)
 }
 
 func (t *tracer) Post(packet *core.ClientPacket) bool {
+	dump(core.PostAuthMode, core.NoTrace, packet)
 	return core.NoopPost(packet, dump)
 }
 
