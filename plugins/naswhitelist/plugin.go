@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	yaml "gopkg.in/yaml.v2"
-	. "layeh.com/radius/rfc2865"
+	"layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/core"
 )
 
@@ -86,7 +86,7 @@ func (l *nwl) Pre(packet *core.ClientPacket) bool {
 	if !enabled {
 		return true
 	}
-	nasipraw := NASIPAddress_Get(packet.Packet)
+	nasipraw := rfc2865.NASIPAddress_Get(packet.Packet)
 	nasip := noIP
 	if nasipraw == nil {
 		if packet.ClientAddr != nil {

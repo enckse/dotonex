@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	. "layeh.com/radius/rfc2865"
+	"layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/core"
 )
 
@@ -65,11 +65,11 @@ func clean(in string) string {
 }
 
 func checkUserMac(p *core.ClientPacket) error {
-	username, err := UserName_LookupString(p.Packet)
+	username, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
 	}
-	calling, err := CallingStationID_LookupString(p.Packet)
+	calling, err := rfc2865.CallingStationID_LookupString(p.Packet)
 	if err != nil {
 		return err
 	}
@@ -113,11 +113,11 @@ func formatLog(f *os.File, t time.Time, indicator, message string) {
 }
 
 func mark(success bool, user, calling string, p *core.ClientPacket, cached bool) {
-	nas := clean(NASIdentifier_GetString(p.Packet))
+	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
 	}
-	nasipraw := NASIPAddress_Get(p.Packet)
+	nasipraw := rfc2865.NASIPAddress_Get(p.Packet)
 	nasip := "noip"
 	if nasipraw == nil {
 		if p.ClientAddr != nil {
@@ -129,7 +129,7 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 	} else {
 		nasip = nasipraw.String()
 	}
-	nasport := NASPort_Get(p.Packet)
+	nasport := rfc2865.NASPort_Get(p.Packet)
 	fileLock.Lock()
 	defer fileLock.Unlock()
 	f, t := core.DatedAppendFile(logs, "audit", instance)
