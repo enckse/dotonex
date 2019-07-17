@@ -2,7 +2,7 @@ BIN          := bin/
 TST          := tests/
 PLUGIN       := plugins/
 SRC          := $(shell find . -type f -name "*.go")
-PLUGINS      := log stats debug usermac naswhitelist
+PLUGINS      := log stats debug usermac naswhitelist access
 VERSION      := DEVELOP
 CMN_FLAGS    :=  -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 FLAGS        := $(CMN_FLAGS)pie
