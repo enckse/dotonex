@@ -101,8 +101,8 @@ func (p *PluginContext) GetBackingConfig() []byte {
 }
 
 type requestDump struct {
-	data  *ClientPacket
-	mode  string
+	data *ClientPacket
+	mode string
 }
 
 func NewRequestDump(packet *ClientPacket, mode string) *requestDump {
@@ -129,7 +129,7 @@ func (packet *requestDump) DumpPacket(header string) []string {
 }
 
 func DatedAppendFile(path, name, instance string) (*os.File, time.Time) {
-       return newFile(path, name, instance, true)
+	return newFile(path, name, instance, true)
 }
 
 func NewFilePath(path, name, instance string) (string, time.Time) {

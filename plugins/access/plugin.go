@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	Plugin   access
-	modes    []string
+	Plugin access
+	modes  []string
 )
 
 type access struct {
