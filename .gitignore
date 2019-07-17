@@ -3,4 +3,5 @@ certs/*
 radiucal.*
 tests/plugins/
 tests/log/
+plugins/**/tests/
 target/
