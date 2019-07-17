@@ -71,11 +71,11 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		}
 		username, err := rfc2865.UserName_LookupString(packet.Packet)
 		if err != nil {
-			return
+			username = ""
 		}
 		calling, err := rfc2865.CallingStationID_LookupString(packet.Packet)
 		if err != nil {
-			return
+			calling = ""
 		}
 		defer f.Close()
 		f.Write([]byte(fmt.Sprintf("Info -> %s %d (%s)\n", mode, int(objType), t)))
