@@ -3,7 +3,10 @@ TST          := tests/
 PLUGIN       := plugins/
 SRC          := $(shell find . -type f -name "*.go")
 PLUGINS      := log stats debug usermac naswhitelist access
-VERSION      := DEVELOP
+VERSION      := $(BUILD_VERSION)
+ifeq ($(VERSION),)
+	VERSION  := DEVELOP
+endif
 CMN_FLAGS    :=  -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 FLAGS        := $(CMN_FLAGS)pie
 PLUGIN_FLAGS := $(CMN_FLAGS)plugin
