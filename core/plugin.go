@@ -192,7 +192,7 @@ func newFile(path, instance string, appending bool) *os.File {
 	t := time.Now()
 	inst := instance
 	if len(inst) == 0 {
-		inst = "default"
+		inst = fmt.Sprintf("default.%d", t.UnixNano())
 	}
 	logPath := filepath.Join(path, fmt.Sprintf("%s.%s", inst, t.Format("2006-01-02")))
 	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0660)

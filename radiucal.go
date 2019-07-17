@@ -221,7 +221,7 @@ func main() {
 
 	bufTime := conf.LogBuffer
 	if bufTime == 0 {
-		bufTime = 30
+		bufTime = 10
 	}
 
 	logBuffer := time.Duration(bufTime) * time.Second
