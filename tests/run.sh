@@ -30,11 +30,24 @@ echo "killing..."
 pkill radiucal
 pkill harness
 
-COMPARE="results stats"
+COMPARE="results stats logger access"
 cat ${LOGS}audit* | cut -d " " -f 2- > bin/results.log
 rm -f bin/stats.log
+rm -f bin/logger.log
+rm -f bin/access.log
+
 for f in $(echo "acct.stats.accounting stats.trace stats.preauth stats.postauth"); do
     cat ${LOGS}${f}.* | grep -v -E "^(first|last)" >> bin/stats.log
+done
+
+for o in logger access; do
+    for f in $(ls $LOGS | grep "$o" | sort); do
+        cat ${LOGS}$f | sed "s/^  //g" | cut -d " " -f 1,3 | \
+            sed "s/^Access/ Access/g" | \
+            sed "s/^UDPAddr/ UDPAddr/g" | \
+            sed "s/^Id/ Id/g" | \
+            cut -d " " -f 1,2 | sort >> bin/$o.log
+    done
 done
 
 for d in $(echo $COMPARE); do
@@ -52,6 +65,7 @@ else
     echo "invalid count"
     exit 1
 fi
+
 _checks() {
     cnt=$(cat $OUT | grep "$1" | wc -l)
     if [ $cnt -ne $2 ]; then

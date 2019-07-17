@@ -55,7 +55,7 @@ func keyValWrite(f io.Writer, key, val string) {
 	if len(val) == 0 {
 		return
 	}
-	f.Write([]byte(fmt.Sprintf("  %s: %s\n", key, val)))
+	f.Write([]byte(fmt.Sprintf("  %s => %s\n", key, val)))
 }
 
 func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
@@ -78,10 +78,10 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 			return
 		}
 		defer f.Close()
-		f.Write([]byte(fmt.Sprintf("id -> %s %d (%s)\n", mode, int(objType), t)))
+		f.Write([]byte(fmt.Sprintf("Info -> %s %d (%s)\n", mode, int(objType), t)))
 		keyValWrite(f, "Code", packet.Packet.Code.String())
-		keyValWrite(f, "Identifier", strconv.Itoa(int(packet.Packet.Identifier)))
-		keyValWrite(f, "UserName", username)
-		keyValWrite(f, "Calling", calling)
+		keyValWrite(f, "Id", strconv.Itoa(int(packet.Packet.Identifier)))
+		keyValWrite(f, "User-Name", username)
+		keyValWrite(f, "Calling-Station-Id", calling)
 	}()
 }
