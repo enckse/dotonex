@@ -2,7 +2,7 @@ BIN          := bin/
 TST          := tests/
 PLUGIN       := plugins/
 SRC          := $(shell find . -type f -name "*.go")
-PLUGINS      := log stats debug usermac naswhitelist access
+PLUGINS      := $(shell ls $(PLUGIN))
 VERSION      := $(BUILD_VERSION)
 ifeq ($(VERSION),)
 	VERSION  := DEVELOP
