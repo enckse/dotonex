@@ -5,8 +5,15 @@ import (
 	"sync"
 	"time"
 
+	yaml "gopkg.in/yaml.v2"
 	"voidedtech.com/radiucal/core"
 )
+
+type StatsConfig struct {
+	Stats struct {
+		Flush int
+	}
+}
 
 type modedata struct {
 	first time.Time
@@ -30,6 +37,8 @@ var (
 	info     map[string]*modedata = make(map[string]*modedata)
 	modes    []string
 	instance string
+	flush    int
+	flushIdx int
 )
 
 type stats struct {
@@ -46,6 +55,15 @@ func (s *stats) Reload() {
 }
 
 func (s *stats) Setup(ctx *core.PluginContext) error {
+	conf := &StatsConfig{}
+	err := yaml.Unmarshal(ctx.Backing, conf)
+	if err != nil {
+		return err
+	}
+	flush = conf.Stats.Flush
+	if flush < 0 {
+		flush = 0
+	}
 	instance = ctx.Instance
 	modes = core.DisabledModes(s, ctx)
 	return nil
@@ -82,6 +100,11 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		m, _ := info[key]
 		m.last = t
 		m.count++
-		core.LogPluginMessages(&Plugin, m.Stats())
+		if flush == 0 || flushIdx > flush {
+			flushIdx = 0
+			core.LogPluginMessages(&Plugin, m.Stats())
+		} else {
+			flushIdx += 1
+		}
 	}()
 }
