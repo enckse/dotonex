@@ -207,10 +207,6 @@ func main() {
 		ctx.AddModule(obj)
 	}
 
-	pluginFilter := make(map[string]struct{})
-	for _, v := range conf.LogFilter {
-		pluginFilter[v] = struct{}{}
-	}
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
@@ -219,7 +215,7 @@ func main() {
 			clients = make(map[string]*connection)
 			clientLock.Unlock()
 			ctx.Reload()
-			core.WritePluginMessages(pCtx.Logs, pCtx.Instance, pluginFilter)
+			core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
 		}
 	}()
 
@@ -235,7 +231,7 @@ func main() {
 			if ctx.Debug {
 				core.WriteDebug("flushing logs")
 			}
-			core.WritePluginMessages(pCtx.Logs, pCtx.Instance, pluginFilter)
+			core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
 		}
 	}()
 
@@ -245,5 +241,4 @@ func main() {
 	} else {
 		runProxy(ctx)
 	}
-	core.WritePluginMessages(pCtx.Logs, pCtx.Instance, pluginFilter)
 }

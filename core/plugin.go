@@ -24,7 +24,7 @@ const (
 
 var (
 	pluginLock *sync.Mutex = new(sync.Mutex)
-	pluginLogs             = make(map[string][]string)
+	pluginLogs             = []string{}
 )
 
 type TraceType int
@@ -236,48 +236,29 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	}
 }
 
-func WritePluginMessages(path, instance string, disabled map[string]struct{}) {
+func WritePluginMessages(path, instance string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
-	var messages [][]byte
-	for k, v := range pluginLogs {
-		if _, ok := disabled[k]; ok {
-			continue
-		}
-		for _, m := range v {
-			messages = append(messages, []byte(m))
-		}
-	}
 	var f *os.File
-	cancel := false
-	if len(messages) == 0 {
-		cancel = true
-	} else {
-		f = newFile(path, instance, true)
-		if f == nil {
-			cancel = true
-		}
-	}
-	pluginLogs = make(map[string][]string)
-	if cancel {
+	if len(pluginLogs) == 0 {
 		return
 	}
-	for _, m := range messages {
-		f.Write(m)
+	f = newFile(path, instance, true)
+	if f == nil {
+		return
 	}
+	for _, m := range pluginLogs {
+		f.Write([]byte(m))
+	}
+	pluginLogs = pluginLogs[:0]
 }
 
 func LogPluginMessages(mod Module, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
 	name := mod.Name()
-	existing, ok := pluginLogs[name]
-	if !ok {
-		existing = []string{}
-	}
 	t := time.Now().Format("2006-01-02T15:04:05")
 	for _, m := range messages {
-		existing = append(existing, fmt.Sprintf("%s [%s] %s\n", t, name, m))
+		pluginLogs = append(pluginLogs, fmt.Sprintf("%s [%s] %s\n", t, name, m))
 	}
-	pluginLogs[name] = existing
 }
