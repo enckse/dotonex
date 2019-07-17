@@ -37,8 +37,8 @@ func testDebug(t *testing.T, hostAddr string) {
 	tm := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	write(b, "testmode", core.TraceRequest, p, tm)
 	expect := &logTrace{}
-	expect.Write([]byte("tracetype: 1\n"))
-	expect.Write([]byte("Mode = testmode (2009-11-10 23:00:00 +0000 UTC)\n"))
+	expect.Write([]byte("tracetype = 1\n"))
+	expect.Write([]byte("Mode = testmode\n"))
 	if len(hostAddr) > 0 {
 		expect.Write([]byte("UDPAddr = " + hostAddr + "\n"))
 	}
@@ -47,7 +47,9 @@ func testDebug(t *testing.T, hostAddr string) {
 	expected := strings.TrimSpace(expect.data.String())
 	actual := strings.TrimSpace(b.data.String())
 	if actual != expected {
+		log.Println("actual:")
 		log.Println(actual)
+		log.Println("expect:")
 		log.Println(expected)
 		t.Error("actual != expected dump")
 	}

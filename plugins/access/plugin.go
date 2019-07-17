@@ -48,7 +48,7 @@ func keyValWrite(messages []string, key, val string) []string {
 	if len(val) == 0 {
 		return messages
 	}
-	return append(messages, fmt.Sprintf("  %s => %s", key, val))
+	return append(messages, fmt.Sprintf("  %s = %s", key, val))
 }
 
 func (l *access) write(mode string, objType core.TraceType, packet *core.ClientPacket) {
@@ -65,11 +65,11 @@ func (l *access) write(mode string, objType core.TraceType, packet *core.ClientP
 			calling = ""
 		}
 		var messages []string
-		messages = append(messages, fmt.Sprintf("Info -> %s %d", mode, int(objType)))
+		messages = append(messages, fmt.Sprintf("Info = %s %d", mode, int(objType)))
 		messages = keyValWrite(messages, "Code", packet.Packet.Code.String())
 		messages = keyValWrite(messages, "Id", strconv.Itoa(int(packet.Packet.Identifier)))
 		messages = keyValWrite(messages, "User-Name", username)
 		messages = keyValWrite(messages, "Calling-Station-Id", calling)
-		core.LogPluginMessage(l, messages)
+		core.LogPluginMessages(l, messages)
 	}()
 }

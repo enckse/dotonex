@@ -1,12 +1,14 @@
 package core
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"plugin"
+	"strings"
 	"sync"
 	"time"
 
@@ -101,21 +103,29 @@ func (p *PluginContext) GetBackingConfig() []byte {
 type requestDump struct {
 	data  *ClientPacket
 	mode  string
-	stamp time.Time
 }
 
-func NewRequestDump(packet *ClientPacket, mode string, timestamp time.Time) *requestDump {
-	return &requestDump{data: packet, mode: mode, stamp: timestamp}
+func NewRequestDump(packet *ClientPacket, mode string) *requestDump {
+	return &requestDump{data: packet, mode: mode}
 }
 
-func (packet *requestDump) DumpPacket(w io.Writer) {
-	io.WriteString(w, fmt.Sprintf(fmt.Sprintf("Mode = %s (%s)\n", packet.mode, packet.stamp)))
+func (packet *requestDump) DumpPacket(header string) []string {
+	var w bytes.Buffer
+	io.WriteString(&w, fmt.Sprintf(fmt.Sprintf("Mode = %s\n", packet.mode)))
 	if packet.data.ClientAddr != nil {
-		io.WriteString(w, fmt.Sprintf("UDPAddr = %s\n", packet.data.ClientAddr.String()))
+		io.WriteString(&w, fmt.Sprintf("UDPAddr = %s\n", packet.data.ClientAddr.String()))
 	}
 	conf := &debug.Config{}
 	conf.Dictionary = debug.IncludedDictionary
-	debug.Dump(w, conf, packet.data.Packet)
+	debug.Dump(&w, conf, packet.data.Packet)
+	results := []string{header}
+	for _, m := range strings.Split(w.String(), "\n") {
+		if len(m) == 0 {
+			continue
+		}
+		results = append(results, m)
+	}
+	return results
 }
 
 func DatedAppendFile(path, name, instance string) (*os.File, time.Time) {
@@ -264,7 +274,7 @@ func WritePluginMessages(path, instance string, disabled map[string]struct{}) {
 	}
 }
 
-func LogPluginMessage(mod Module, messages []string) {
+func LogPluginMessages(mod Module, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
 	name := mod.Name()

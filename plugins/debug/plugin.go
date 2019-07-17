@@ -71,7 +71,8 @@ func dump(mode string, objType core.TraceType, packet *core.ClientPacket) {
 }
 
 func write(tracing io.Writer, mode string, objType core.TraceType, packet *core.ClientPacket, t time.Time) {
-	dump := core.NewRequestDump(packet, mode, t)
-	tracing.Write([]byte(fmt.Sprintf("tracetype: %d\n", objType)))
-	dump.DumpPacket(tracing)
+	dump := core.NewRequestDump(packet, mode)
+	for _, m := range dump.DumpPacket(fmt.Sprintf("tracetype = %d", objType)) {
+		tracing.Write([]byte(fmt.Sprintf("%s\n", m)))
+	}
 }
