@@ -36,11 +36,7 @@ COMPARE="stats logger access usermac"
 rm -f bin/stats.log
 rm -f bin/logger.log
 rm -f bin/access.log
-rm -f bin/usermac
-
-for f in $(echo "acct.stats.accounting stats.trace stats.preauth stats.postauth"); do
-    cat ${LOGS}${f}.* | grep -v -E "^(first|last)" >> bin/stats.log
-done
+rm -f bin/usermac.log
 
 _getaux() {
     for f in $(ls $LOGS | grep "auxiliary" | sort); do
@@ -48,6 +44,7 @@ _getaux() {
     done
 }
 
+_getaux "stats" | cut -d " " -f 3- | grep -v -E "^(first|last)" | tr '\n' '=' | sed "s/=count/\ncount/g" | sed "s/=/ /g" | sort > bin/stats.log 
 _getaux "usermac" | cut -d " " -f 3- > bin/usermac.log
 for o in access logger; do
     _getaux $o | \

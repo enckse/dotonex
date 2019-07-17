@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"sync"
 	"time"
 
@@ -16,17 +15,17 @@ type modedata struct {
 	count int
 }
 
-func (m *modedata) String() string {
-	return fmt.Sprintf("first: %s\nlast: %s\ncount: %d\nname: %s\n",
-		m.first.Format("2006-01-02T15:04:05"),
-		m.last.Format("2006-01-02T15:04:05"),
-		m.count,
-		m.name)
+func (m *modedata) Stats() []string {
+	return []string{
+		fmt.Sprintf("first: %s", m.first.Format("2006-01-02T15:04:05")),
+		fmt.Sprintf("last: %s", m.last.Format("2006-01-02T15:04:05")),
+		fmt.Sprintf("count: %d", m.count),
+		fmt.Sprintf("name: %s", m.name),
+	}
 }
 
 var (
 	lock     *sync.Mutex = new(sync.Mutex)
-	dir      string
 	Plugin   stats
 	info     map[string]*modedata = make(map[string]*modedata)
 	modes    []string
@@ -47,7 +46,6 @@ func (s *stats) Reload() {
 }
 
 func (s *stats) Setup(ctx *core.PluginContext) error {
-	dir = ctx.Logs
 	instance = ctx.Instance
 	modes = core.DisabledModes(s, ctx)
 	return nil
@@ -77,13 +75,13 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 			return
 		}
 		key := fmt.Sprintf("%s.%d", mode, int(objType))
-		f, t := core.NewFilePath(dir, fmt.Sprintf("stats.%s", key), instance)
+		t := time.Now()
 		if _, ok := info[key]; !ok {
 			info[key] = &modedata{first: t, count: 0, name: key}
 		}
 		m, _ := info[key]
 		m.last = t
 		m.count++
-		ioutil.WriteFile(f, []byte(m.String()), 0644)
+		core.LogPluginMessages(&Plugin, m.Stats())
 	}()
 }
