@@ -39,7 +39,7 @@ rm -f bin/access.log
 rm -f bin/usermac.log
 
 _getaux() {
-    for f in $(ls $LOGS | grep "auxiliary" | sort); do
+    for f in $(ls $LOGS | sort); do
         cat ${LOGS}$f | grep "\[$1\]"
     done
 }

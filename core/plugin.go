@@ -128,16 +128,6 @@ func (packet *requestDump) DumpPacket(header string) []string {
 	return results
 }
 
-func newFilePath(path, name, instance string) string {
-	t := time.Now()
-	inst := instance
-	if len(inst) > 0 {
-		inst = fmt.Sprintf("%s.", inst)
-	}
-	logPath := filepath.Join(path, fmt.Sprintf("%s%s.%s", inst, name, t.Format("2006-01-02")))
-	return logPath
-}
-
 func Disabled(mode string, modes []string) bool {
 	if len(modes) == 0 {
 		return false
@@ -194,12 +184,17 @@ func DisabledModes(m Module, ctx *PluginContext) []string {
 	return modes
 }
 
-func newFile(path, name, instance string, appending bool) *os.File {
+func newFile(path, instance string, appending bool) *os.File {
 	flags := os.O_RDWR | os.O_CREATE
 	if appending {
 		flags = flags | os.O_APPEND
 	}
-	logPath := newFilePath(path, name, instance)
+	t := time.Now()
+	inst := instance
+	if len(inst) == 0 {
+		inst = "default"
+	}
+	logPath := filepath.Join(path, fmt.Sprintf("%s.%s", inst, t.Format("2006-01-02")))
 	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0660)
 	if err != nil {
 		WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
@@ -258,7 +253,7 @@ func WritePluginMessages(path, instance string, disabled map[string]struct{}) {
 	if len(messages) == 0 {
 		cancel = true
 	} else {
-		f = newFile(path, "auxiliary", instance, true)
+		f = newFile(path, instance, true)
 		if f == nil {
 			cancel = true
 		}
