@@ -29,19 +29,19 @@ func (l *access) Setup(ctx *core.PluginContext) error {
 }
 
 func (l *access) Pre(packet *core.ClientPacket) bool {
-	return core.NoopPre(packet, l.write)
+	return core.NoopPre(packet, write)
 }
 
 func (l *access) Post(packet *core.ClientPacket) bool {
-	return core.NoopPost(packet, l.write)
+	return core.NoopPost(packet, write)
 }
 
 func (l *access) Trace(t core.TraceType, packet *core.ClientPacket) {
-	l.write(core.TracingMode, t, packet)
+	write(core.TracingMode, t, packet)
 }
 
 func (l *access) Account(packet *core.ClientPacket) {
-	l.write(core.AccountingMode, core.NoTrace, packet)
+	write(core.AccountingMode, core.NoTrace, packet)
 }
 
 func keyValWrite(messages []string, key, val string) []string {
@@ -51,7 +51,7 @@ func keyValWrite(messages []string, key, val string) []string {
 	return append(messages, fmt.Sprintf("  %s = %s", key, val))
 }
 
-func (l *access) write(mode string, objType core.TraceType, packet *core.ClientPacket) {
+func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	go func() {
 		if core.Disabled(mode, modes) {
 			return
@@ -70,6 +70,6 @@ func (l *access) write(mode string, objType core.TraceType, packet *core.ClientP
 		messages = keyValWrite(messages, "Id", strconv.Itoa(int(packet.Packet.Identifier)))
 		messages = keyValWrite(messages, "User-Name", username)
 		messages = keyValWrite(messages, "Calling-Station-Id", calling)
-		core.LogPluginMessages(l, messages)
+		core.LogPluginMessages(&Plugin, messages)
 	}()
 }

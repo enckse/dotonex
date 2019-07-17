@@ -128,10 +128,6 @@ func (packet *requestDump) DumpPacket(header string) []string {
 	return results
 }
 
-func DatedAppendFile(path, name, instance string) (*os.File, time.Time) {
-	return newFile(path, name, instance, true)
-}
-
 func NewFilePath(path, name, instance string) (string, time.Time) {
 	t := time.Now()
 	inst := instance

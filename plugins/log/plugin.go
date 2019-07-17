@@ -29,28 +29,28 @@ func (l *logger) Setup(ctx *core.PluginContext) error {
 }
 
 func (l *logger) Pre(packet *core.ClientPacket) bool {
-	return core.NoopPre(packet, l.write)
+	return core.NoopPre(packet, write)
 }
 
 func (l *logger) Post(packet *core.ClientPacket) bool {
-	return core.NoopPost(packet, l.write)
+	return core.NoopPost(packet, write)
 }
 
 func (l *logger) Trace(t core.TraceType, packet *core.ClientPacket) {
-	l.write(core.TracingMode, t, packet)
+	write(core.TracingMode, t, packet)
 }
 
 func (l *logger) Account(packet *core.ClientPacket) {
-	l.write(core.AccountingMode, core.NoTrace, packet)
+	write(core.AccountingMode, core.NoTrace, packet)
 }
 
-func (l *logger) write(mode string, objType core.TraceType, packet *core.ClientPacket) {
+func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	go func() {
 		if core.Disabled(mode, modes) {
 			return
 		}
 		dump := core.NewRequestDump(packet, mode)
 		messages := dump.DumpPacket(fmt.Sprintf("id = %s %d", mode, int(objType)))
-		core.LogPluginMessages(l, messages)
+		core.LogPluginMessages(&Plugin, messages)
 	}()
 }

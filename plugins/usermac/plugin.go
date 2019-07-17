@@ -4,11 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
 	"layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/core"
@@ -22,13 +20,10 @@ func (l *umac) Name() string {
 }
 
 var (
-	cache    map[string]bool     = make(map[string]bool)
-	lock     *sync.Mutex         = new(sync.Mutex)
-	fileLock *sync.Mutex         = new(sync.Mutex)
-	logged   map[string]struct{} = make(map[string]struct{})
+	cache    map[string]bool = make(map[string]bool)
+	lock     *sync.Mutex     = new(sync.Mutex)
 	canCache bool
 	db       string
-	logs     string
 	Plugin   umac
 	instance string
 )
@@ -36,15 +31,11 @@ var (
 func (l *umac) Reload() {
 	lock.Lock()
 	defer lock.Unlock()
-	fileLock.Lock()
-	defer fileLock.Unlock()
 	cache = make(map[string]bool)
-	logged = make(map[string]struct{})
 }
 
 func (l *umac) Setup(ctx *core.PluginContext) error {
 	canCache = ctx.Cache
-	logs = ctx.Logs
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
 	return nil
@@ -105,13 +96,6 @@ func checkUserMac(p *core.ClientPacket) error {
 	return failure
 }
 
-func formatLog(f *os.File, t time.Time, indicator, message string) {
-	l := fmt.Sprintf("%s [%s] %s\n", t.Format("2006-01-02T15:04:05"), strings.ToUpper(indicator), message)
-	if _, ok := logged[l]; !ok {
-		f.Write([]byte(l))
-	}
-}
-
 func mark(success bool, user, calling string, p *core.ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
@@ -130,17 +114,10 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 		nasip = nasipraw.String()
 	}
 	nasport := rfc2865.NASPort_Get(p.Packet)
-	fileLock.Lock()
-	defer fileLock.Unlock()
-	f, t := core.DatedAppendFile(logs, "audit", instance)
-	if f == nil {
-		return
-	}
-	defer f.Close()
-	result := "passed"
+	result := "PASSED"
 	if !success {
-		result = "failed"
+		result = "FAILED"
 	}
-	msg := fmt.Sprintf("%s (mac:%s) (nas:%s,ip:%s,port:%d)", user, calling, nas, nasip, nasport)
-	formatLog(f, t, result, msg)
+	l := fmt.Sprintf("%s %s (mac:%s) (nas:%s,ip:%s,port:%d)", result, user, calling, nas, nasip, nasport)
+	core.LogPluginMessages(&Plugin, []string{l})
 }

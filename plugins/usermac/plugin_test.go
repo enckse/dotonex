@@ -53,7 +53,6 @@ func newTestSet(t *testing.T, user, mac string, valid bool) (*core.ClientPacket,
 
 func setupUserMac() *umac {
 	canCache = true
-	logs = "./tests/"
 	db = "./tests/"
 	m := &umac{}
 	m.Reload()

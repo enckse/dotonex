@@ -32,29 +32,32 @@ sleep 1
 pkill radiucal
 pkill harness
 
-COMPARE="results stats logger access"
-cat ${LOGS}audit* | cut -d " " -f 2- > bin/results.log
+COMPARE="stats logger access usermac"
 rm -f bin/stats.log
 rm -f bin/logger.log
 rm -f bin/access.log
+rm -f bin/usermac
 
 for f in $(echo "acct.stats.accounting stats.trace stats.preauth stats.postauth"); do
     cat ${LOGS}${f}.* | grep -v -E "^(first|last)" >> bin/stats.log
 done
 
-_catlogs() {
+_getaux() {
     for f in $(ls $LOGS | grep "auxiliary" | sort); do
-        cat ${LOGS}$f | grep "\[$1\]" | cut -d " " -f 3- | \
-            sed "s/^  //g" | cut -d " " -f 1,3 | \
-            sed "s/^Access/ Access/g" | \
-            sed "s/^UDPAddr/ UDPAddr/g" | \
-            sed "s/^Id/ Id/g" | \
-            cut -d " " -f 1,2 
+        cat ${LOGS}$f | grep "\[$1\]"
     done
 }
 
+_getaux "usermac" | cut -d " " -f 3- > bin/usermac.log
 for o in access logger; do
-    _catlogs $o | sort >> bin/$o.log
+    _getaux $o | \
+        cut -d " " -f 3- | \
+        sed "s/^  //g" | cut -d " " -f 1,3 | \
+        sed "s/^Access/ Access/g" | \
+        sed "s/^UDPAddr/ UDPAddr/g" | \
+        sed "s/^Id/ Id/g" | \
+        cut -d " " -f 1,2 | \
+        sort >> bin/$o.log
 done
 
 for d in $(echo $COMPARE); do
