@@ -19,6 +19,9 @@ SUPPORT      := supporting/
 SYSD         := /lib/systemd/system/
 TMPD         := /usr/lib/tmpfiles.d/
 ADMIN        := admin
+UTESTS       := $(shell find . -type f -name "*_test.go" -exec dirname {} \;)
+
+.PHONY: $(UTESTS)
 
 all: clean modules radiucal $(ADMIN) test format
 
@@ -35,8 +38,10 @@ $(ADMIN):
 	cp target/release/radiucal-admin $(BIN)
 	cd $(TST)$(ADMIN) && make
 
-utests:
-	for f in $(shell find . -type f -name "*_test.go" -exec dirname {} \;); do go test -v $$f; done
+utests: $(UTESTS)
+
+$(UTESTS):
+	go test -v $@/*.go
 
 integrate: harness $(TEST_CONFS)
 

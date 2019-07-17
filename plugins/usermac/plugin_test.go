@@ -53,8 +53,6 @@ func newTestSet(t *testing.T, user, mac string, valid bool) (*core.ClientPacket,
 
 func setupUserMac() *umac {
 	canCache = true
-	doCallback = false
-	callback = []string{}
 	logs = "./tests/"
 	db = "./tests/"
 	m := &umac{}
@@ -71,16 +69,5 @@ func TestUserMacCache(t *testing.T) {
 		ErrorIfNotPre(t, m, pg, "")
 		ErrorIfNotPre(t, m, pb, first)
 		first = "failed preauth: test 112233445568"
-	}
-}
-
-func TestUserMacCallback(t *testing.T) {
-	p, m := newTestSet(t, "test", "11-22-33-44-55-66", true)
-	newTestSet(t, "test", "12-22-33-44-55-66", false)
-	canCache = false
-	callback = []string{"echo"}
-	doCallback = true
-	if !m.Pre(p) {
-		t.Error("should have authed")
 	}
 }
