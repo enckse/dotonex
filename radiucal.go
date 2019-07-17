@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"sync"
+	"time"
 
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
@@ -214,6 +215,26 @@ func main() {
 			clients = make(map[string]*connection)
 			clientLock.Unlock()
 			ctx.Reload()
+		}
+	}()
+
+	bufTime := conf.LogBuffer
+	if bufTime == 0 {
+		bufTime = 30
+	}
+	logBuffer := time.Duration(bufTime) * time.Second
+	pluginFilter := make(map[string]struct{})
+	for _, v := range conf.LogFilter {
+		pluginFilter[v] = struct{}{}
+	}
+
+	go func() {
+		for {
+			time.Sleep(logBuffer)
+			if ctx.Debug {
+				core.WriteDebug("flushing logs")
+			}
+			core.WritePluginMessages(pCtx.Logs, pCtx.Instance, pluginFilter)
 		}
 	}()
 

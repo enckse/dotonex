@@ -14,6 +14,8 @@ type Configuration struct {
 	NoReject   bool
 	Log        string
 	Plugins    []string
+	LogBuffer  int
+	LogFilter  []string
 	Disable    struct {
 		Accounting []string
 		Preauth    []string

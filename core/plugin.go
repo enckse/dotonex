@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"plugin"
+	"sync"
 	"time"
 
 	"layeh.com/radius/debug"
@@ -17,6 +18,11 @@ const (
 	TracingMode    = "trace"
 	PreAuthMode    = "preauth"
 	PostAuthMode   = "postauth"
+)
+
+var (
+	pluginLock *sync.Mutex = new(sync.Mutex)
+	pluginLogs             = make(map[string][]string)
 )
 
 type TraceType int
@@ -227,4 +233,38 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	case PostAuth:
 		return t.(PostAuth), nil
 	}
+}
+
+func WritePluginMessages(path, instance string, disabled map[string]struct{}) {
+	pluginLock.Lock()
+	defer pluginLock.Unlock()
+	var messages [][]byte
+	for k, v := range pluginLogs {
+		if _, ok := disabled[k]; ok {
+			continue
+		}
+		for _, m := range v {
+			messages = append(messages, []byte(m))
+		}
+	}
+	pluginLogs = make(map[string][]string)
+	if len(messages) == 0 {
+		return
+	}
+	f, _ := newFile(path, "verbose", instance, true)
+	for _, m := range messages {
+		f.Write(m)
+	}
+}
+
+func LogPluginMessage(mod Module, message string) {
+	pluginLock.Lock()
+	defer pluginLock.Unlock()
+	name := mod.Name()
+	existing, ok := pluginLogs[name]
+	if !ok {
+		existing = []string{}
+	}
+	t := time.Now().Format("2006-01-02T15:04:05")
+	pluginLogs[name] = append(existing, fmt.Sprintf("%s [%s] %s", t, name, message))
 }
