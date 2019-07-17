@@ -27,6 +27,8 @@ echo "re-running..."
 bin/harness
 sleep 1
 echo "killing..."
+pkill --signal 2 radiucal
+sleep 1
 pkill radiucal
 pkill harness
 
@@ -40,14 +42,19 @@ for f in $(echo "acct.stats.accounting stats.trace stats.preauth stats.postauth"
     cat ${LOGS}${f}.* | grep -v -E "^(first|last)" >> bin/stats.log
 done
 
-for o in logger access; do
-    for f in $(ls $LOGS | grep "$o" | sort); do
-        cat ${LOGS}$f | sed "s/^  //g" | cut -d " " -f 1,3 | \
+_catlogs() {
+    for f in $(ls $LOGS | grep "auxiliary" | sort); do
+        cat ${LOGS}$f | grep "[$1]" | cut -d " " -f 3- | \
+            sed "s/^  //g" | cut -d " " -f 1,3 | \
             sed "s/^Access/ Access/g" | \
             sed "s/^UDPAddr/ UDPAddr/g" | \
             sed "s/^Id/ Id/g" | \
-            cut -d " " -f 1,2 | sort >> bin/$o.log
+            cut -d " " -f 1,2 
     done
+}
+
+for o in access logger; do
+    _catlogs $o | sort >> bin/$o.log
 done
 
 for d in $(echo $COMPARE); do

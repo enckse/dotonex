@@ -119,7 +119,7 @@ func (packet *requestDump) DumpPacket(w io.Writer) {
 }
 
 func DatedAppendFile(path, name, instance string) (*os.File, time.Time) {
-	return newFile(path, name, instance, true)
+       return newFile(path, name, instance, true)
 }
 
 func NewFilePath(path, name, instance string) (string, time.Time) {
@@ -247,17 +247,24 @@ func WritePluginMessages(path, instance string, disabled map[string]struct{}) {
 			messages = append(messages, []byte(m))
 		}
 	}
-	pluginLogs = make(map[string][]string)
+	cancel := false
 	if len(messages) == 0 {
+		cancel = true
+	}
+	f, _ := newFile(path, "auxiliary", instance, true)
+	if f == nil {
+		cancel = true
+	}
+	pluginLogs = make(map[string][]string)
+	if cancel {
 		return
 	}
-	f, _ := newFile(path, "verbose", instance, true)
 	for _, m := range messages {
 		f.Write(m)
 	}
 }
 
-func LogPluginMessage(mod Module, message string) {
+func LogPluginMessage(mod Module, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
 	name := mod.Name()
@@ -266,5 +273,8 @@ func LogPluginMessage(mod Module, message string) {
 		existing = []string{}
 	}
 	t := time.Now().Format("2006-01-02T15:04:05")
-	pluginLogs[name] = append(existing, fmt.Sprintf("%s [%s] %s", t, name, message))
+	for _, m := range messages {
+		existing = append(existing, fmt.Sprintf("%s [%s] %s\n", t, name, m))
+	}
+	pluginLogs[name] = existing
 }

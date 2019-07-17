@@ -2,20 +2,15 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"strconv"
-	"sync"
 
 	"layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/core"
 )
 
 var (
-	lock     *sync.Mutex = new(sync.Mutex)
-	logs     string
 	Plugin   access
 	modes    []string
-	instance string
 )
 
 type access struct {
@@ -29,44 +24,36 @@ func (l *access) Reload() {
 }
 
 func (l *access) Setup(ctx *core.PluginContext) error {
-	logs = ctx.Logs
 	modes = core.DisabledModes(l, ctx)
-	instance = ctx.Instance
 	return nil
 }
 
 func (l *access) Pre(packet *core.ClientPacket) bool {
-	return core.NoopPre(packet, write)
+	return core.NoopPre(packet, l.write)
 }
 
 func (l *access) Post(packet *core.ClientPacket) bool {
-	return core.NoopPost(packet, write)
+	return core.NoopPost(packet, l.write)
 }
 
 func (l *access) Trace(t core.TraceType, packet *core.ClientPacket) {
-	write(core.TracingMode, t, packet)
+	l.write(core.TracingMode, t, packet)
 }
 
 func (l *access) Account(packet *core.ClientPacket) {
-	write(core.AccountingMode, core.NoTrace, packet)
+	l.write(core.AccountingMode, core.NoTrace, packet)
 }
 
-func keyValWrite(f io.Writer, key, val string) {
+func keyValWrite(messages []string, key, val string) []string {
 	if len(val) == 0 {
-		return
+		return messages
 	}
-	f.Write([]byte(fmt.Sprintf("  %s => %s\n", key, val)))
+	return append(messages, fmt.Sprintf("  %s => %s", key, val))
 }
 
-func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
+func (l *access) write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	go func() {
-		lock.Lock()
-		defer lock.Unlock()
 		if core.Disabled(mode, modes) {
-			return
-		}
-		f, t := core.DatedAppendFile(logs, "access", instance)
-		if f == nil {
 			return
 		}
 		username, err := rfc2865.UserName_LookupString(packet.Packet)
@@ -77,11 +64,12 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		if err != nil {
 			calling = ""
 		}
-		defer f.Close()
-		f.Write([]byte(fmt.Sprintf("Info -> %s %d (%s)\n", mode, int(objType), t)))
-		keyValWrite(f, "Code", packet.Packet.Code.String())
-		keyValWrite(f, "Id", strconv.Itoa(int(packet.Packet.Identifier)))
-		keyValWrite(f, "User-Name", username)
-		keyValWrite(f, "Calling-Station-Id", calling)
+		var messages []string
+		messages = append(messages, fmt.Sprintf("Info -> %s %d", mode, int(objType)))
+		messages = keyValWrite(messages, "Code", packet.Packet.Code.String())
+		messages = keyValWrite(messages, "Id", strconv.Itoa(int(packet.Packet.Identifier)))
+		messages = keyValWrite(messages, "User-Name", username)
+		messages = keyValWrite(messages, "Calling-Station-Id", calling)
+		core.LogPluginMessage(l, messages)
 	}()
 }
