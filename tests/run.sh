@@ -58,7 +58,7 @@ for o in access logger; do
 done
 
 for d in $(echo $COMPARE); do
-    diff --color -u tests/expected.$CONF.$d.log bin/$d.log
+    diff --color -w -u tests/expected.$CONF.$d.log bin/$d.log
     if [ $? -ne 0 ]; then
         echo "integration test failed ($d $1)"
         exit 1
