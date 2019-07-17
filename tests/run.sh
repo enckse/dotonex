@@ -44,7 +44,7 @@ done
 
 _catlogs() {
     for f in $(ls $LOGS | grep "auxiliary" | sort); do
-        cat ${LOGS}$f | grep "[$1]" | cut -d " " -f 3- | \
+        cat ${LOGS}$f | grep "\[$1\]" | cut -d " " -f 3- | \
             sed "s/^  //g" | cut -d " " -f 1,3 | \
             sed "s/^Access/ Access/g" | \
             sed "s/^UDPAddr/ UDPAddr/g" | \
@@ -60,7 +60,7 @@ done
 for d in $(echo $COMPARE); do
     diff --color -u tests/expected.$CONF.$d.log bin/$d.log
     if [ $? -ne 0 ]; then
-        echo "integration test failed ($d)"
+        echo "integration test failed ($d $1)"
         exit 1
     fi
 done
