@@ -256,7 +256,7 @@ func WritePluginMessages(path, instance string) {
 func LogPluginMessages(mod Module, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
-	name := mod.Name()
+	name := strings.ToUpper(mod.Name())
 	t := time.Now().Format("2006-01-02T15:04:05")
 	for _, m := range messages {
 		pluginLogs = append(pluginLogs, fmt.Sprintf("%s [%s] %s\n", t, name, m))

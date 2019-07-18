@@ -98,7 +98,7 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		if flush == 0 || flushIdx > flush {
 			flushIdx = 0
 			kv := core.KeyValueStore{}
-			kv.Add("Stats", t.Format(timeFormat))
+			kv.Add("Time", t.Format(timeFormat))
 			kv.Add("First", m.first.Format(timeFormat))
 			kv.Add("Last", m.first.Format(timeFormat))
 			kv.Add("Count", fmt.Sprintf("%d", m.count))
