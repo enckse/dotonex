@@ -219,12 +219,7 @@ func main() {
 		}
 	}()
 
-	bufTime := conf.LogBuffer
-	if bufTime == 0 {
-		bufTime = 10
-	}
-
-	logBuffer := time.Duration(bufTime) * time.Second
+	logBuffer := time.Duration(conf.LogBuffer) * time.Second
 	go func() {
 		for {
 			time.Sleep(logBuffer)

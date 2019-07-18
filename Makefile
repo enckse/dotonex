@@ -19,7 +19,7 @@ SUPPORT      := supporting/
 SYSD         := /lib/systemd/system/
 TMPD         := /usr/lib/tmpfiles.d/
 ADMIN        := admin
-UTESTS       := $(shell find . -type f -name "*_test.go" -exec dirname {} \;)
+UTESTS       := $(shell find . -type f -name "*_test.go")
 
 .PHONY: $(UTESTS)
 
@@ -41,7 +41,7 @@ $(ADMIN):
 utests: $(UTESTS)
 
 $(UTESTS):
-	go test -v $@/*.go
+	go test -v $(shell dirname $@)/*.go
 
 integrate: harness $(TEST_CONFS)
 

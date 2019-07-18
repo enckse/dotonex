@@ -54,5 +54,8 @@ func (c *Configuration) Defaults(backing []byte) {
 			c.Bind = 1812
 		}
 	}
+	if c.LogBuffer <= 0 {
+		c.LogBuffer = 10
+	}
 	c.backing = backing
 }
