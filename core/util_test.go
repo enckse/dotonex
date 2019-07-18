@@ -26,6 +26,13 @@ func TestKeyValueStrings(t *testing.T) {
 	}
 }
 
+func TestKeyValueString(t *testing.T) {
+	c := core.KeyValue{Key: "k", Value: "v"}
+	if c.String() != "k = v" {
+		t.Error("should collapse")
+	}
+}
+
 func TestKeyValueEmpty(t *testing.T) {
 	c := core.KeyValueStore{}
 	c.KeyValues = append(c.KeyValues, core.KeyValue{Key: "key", Value: "val"})

@@ -19,6 +19,10 @@ func (kv *KeyValueStore) Add(key, val string) {
 	kv.KeyValues = append(kv.KeyValues, KeyValue{Key: key, Value: val})
 }
 
+func (kv KeyValue) String() string {
+	return fmt.Sprintf("%s = %s", kv.Key, kv.Value)
+}
+
 func (kv KeyValueStore) Strings() []string {
 	var objs []string
 	offset := ""
@@ -26,7 +30,7 @@ func (kv KeyValueStore) Strings() []string {
 		if kv.DropEmpty && len(k.Value) == 0 {
 			continue
 		}
-		objs = append(objs, fmt.Sprintf("%s%s = %s", offset, k.Key, k.Value))
+		objs = append(objs, fmt.Sprintf("%s%s", offset, k.String()))
 		offset = "  "
 	}
 	return objs

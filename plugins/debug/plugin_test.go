@@ -37,7 +37,7 @@ func testDebug(t *testing.T, hostAddr string) {
 	tm := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	write(b, "testmode", core.TraceRequest, p, tm)
 	expect := &logTrace{}
-	expect.Write([]byte("tracetype = 1\n"))
+	expect.Write([]byte("TraceType = 1\n"))
 	expect.Write([]byte("Mode = testmode\n"))
 	if len(hostAddr) > 0 {
 		expect.Write([]byte("UDPAddr = " + hostAddr + "\n"))

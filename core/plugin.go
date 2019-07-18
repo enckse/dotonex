@@ -109,7 +109,7 @@ func NewRequestDump(packet *ClientPacket, mode string) *requestDump {
 	return &requestDump{data: packet, mode: mode}
 }
 
-func (packet *requestDump) DumpPacket(header string) []string {
+func (packet *requestDump) DumpPacket(kv KeyValue) []string {
 	var w bytes.Buffer
 	io.WriteString(&w, fmt.Sprintf(fmt.Sprintf("Mode = %s\n", packet.mode)))
 	if packet.data.ClientAddr != nil {
@@ -118,7 +118,7 @@ func (packet *requestDump) DumpPacket(header string) []string {
 	conf := &debug.Config{}
 	conf.Dictionary = debug.IncludedDictionary
 	debug.Dump(&w, conf, packet.data.Packet)
-	results := []string{header}
+	results := []string{kv.String()}
 	for _, m := range strings.Split(w.String(), "\n") {
 		if len(m) == 0 {
 			continue
