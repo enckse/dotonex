@@ -9,6 +9,10 @@ import (
 	"voidedtech.com/radiucal/core"
 )
 
+const (
+	timeFormat = "2006-01-02T15:04:05"
+)
+
 type StatsConfig struct {
 	Stats struct {
 		Flush int
@@ -20,15 +24,6 @@ type modedata struct {
 	last  time.Time
 	name  string
 	count int
-}
-
-func (m *modedata) Stats() []string {
-	return []string{
-		fmt.Sprintf("first: %s", m.first.Format("2006-01-02T15:04:05")),
-		fmt.Sprintf("last: %s", m.last.Format("2006-01-02T15:04:05")),
-		fmt.Sprintf("count: %d", m.count),
-		fmt.Sprintf("name: %s", m.name),
-	}
 }
 
 var (
@@ -102,7 +97,13 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		m.count++
 		if flush == 0 || flushIdx > flush {
 			flushIdx = 0
-			core.LogPluginMessages(&Plugin, m.Stats())
+			kv := core.KeyValueStore{}
+			kv.Add("Stats", t.Format(timeFormat))
+			kv.Add("First", m.first.Format(timeFormat))
+			kv.Add("Last", m.first.Format(timeFormat))
+			kv.Add("Count", fmt.Sprintf("%d", m.count))
+			kv.Add("Name", m.name)
+			core.LogPluginMessages(&Plugin, kv.Strings())
 		} else {
 			flushIdx += 1
 		}

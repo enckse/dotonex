@@ -118,6 +118,12 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 	if !success {
 		result = "FAILED"
 	}
-	l := fmt.Sprintf("%s %s (mac:%s) (nas:%s,ip:%s,port:%d)", result, user, calling, nas, nasip, nasport)
-	core.LogPluginMessages(&Plugin, []string{l})
+	kv := core.KeyValueStore{}
+	kv.Add("Result", result)
+	kv.Add("User-Name", user)
+	kv.Add("Calling-Station-Id", calling)
+	kv.Add("NAS-Id", nas)
+	kv.Add("NAS-IPAddress", nasip)
+	kv.Add("NAS-Port", fmt.Sprintf("%d", nasport))
+	core.LogPluginMessages(&Plugin, kv.Strings())
 }
