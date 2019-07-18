@@ -160,8 +160,8 @@ pub fn all(server: bool) -> bool {
     if hash.exists() && prev_hash.exists() {
         let output = Command::new("diff")
             .arg("-u")
-            .arg(hash)
             .arg(prev_hash)
+            .arg(hash)
             .status()
             .expect("diff command failed");
         diffed = !output.success();
