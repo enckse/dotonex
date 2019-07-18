@@ -50,7 +50,7 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 			return
 		}
 		dump := core.NewRequestDump(packet, mode)
-		messages := dump.DumpPacket(fmt.Sprintf("id = %s %d", mode, int(objType)))
+		messages := dump.DumpPacket(fmt.Sprintf("Info = %s %d", mode, int(objType)))
 		core.LogPluginMessages(&Plugin, messages)
 	}()
 }
