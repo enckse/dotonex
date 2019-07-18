@@ -1,7 +1,6 @@
 package core
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 )
@@ -13,19 +12,24 @@ type KeyValue struct {
 
 type KeyValueStore struct {
 	KeyValues []KeyValue
+	DropEmpty bool
 }
 
-func (kv KeyValueStore) String() string {
-	var b bytes.Buffer
+func (kv *KeyValueStore) Add(key, val string) {
+	kv.KeyValues = append(kv.KeyValues, KeyValue{Key: key, Value: val})
+}
+
+func (kv KeyValueStore) Strings() []string {
+	var objs []string
 	offset := ""
-	for idx, k := range kv.KeyValues {
-		if idx > 0 {
-			b.Write([]byte("\n"))
+	for _, k := range kv.KeyValues {
+		if kv.DropEmpty && len(k.Value) == 0 {
+			continue
 		}
-		b.Write([]byte(fmt.Sprintf("%s%s = %s", offset, k.Key, k.Value)))
+		objs = append(objs, fmt.Sprintf("%s%s = %s", offset, k.Key, k.Value))
 		offset = "  "
 	}
-	return b.String()
+	return objs
 }
 
 func PathExists(file string) bool {

@@ -1,21 +1,45 @@
 package core
 
 import (
-	"fmt"
 	"testing"
 
 	"voidedtech.com/radiucal/core"
 )
 
-func TestKeyValueString(t *testing.T) {
+func TestKeyValueStrings(t *testing.T) {
 	c := core.KeyValueStore{}
 	c.KeyValues = append(c.KeyValues, core.KeyValue{Key: "key", Value: "val"})
-	c.KeyValues = append(c.KeyValues, core.KeyValue{Key: "key2", Value: "val2"})
-	expected := `key = val
-  key2 = val2`
-	if expected != c.String() {
-		fmt.Println(expected)
-		fmt.Println(c.String())
-		t.Error("keyvalue output does not match")
+	c.Add("key2", "val2")
+	c.Add("key2", "val3")
+	res := c.Strings()
+	if len(res) != 3 {
+		t.Error("invalid results")
+	}
+	if res[0] != "key = val" {
+		t.Error("invalid first")
+	}
+	if res[1] != "  key2 = val2" {
+		t.Error("invalid mid")
+	}
+	if res[2] != "  key2 = val3" {
+		t.Error("invalid last")
+	}
+}
+
+func TestKeyValueEmpty(t *testing.T) {
+	c := core.KeyValueStore{}
+	c.KeyValues = append(c.KeyValues, core.KeyValue{Key: "key", Value: "val"})
+	c.Add("key2", "val2")
+	c.Add("key2", "")
+	c.DropEmpty = true
+	res := c.Strings()
+	if len(res) != 2 {
+		t.Error("invalid results")
+	}
+	if res[0] != "key = val" {
+		t.Error("invalid first")
+	}
+	if res[1] != "  key2 = val2" {
+		t.Error("invalid mid")
 	}
 }

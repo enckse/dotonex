@@ -44,13 +44,6 @@ func (l *access) Account(packet *core.ClientPacket) {
 	write(core.AccountingMode, core.NoTrace, packet)
 }
 
-func keyValWrite(messages []string, key, val string) []string {
-	if len(val) == 0 {
-		return messages
-	}
-	return append(messages, fmt.Sprintf("  %s = %s", key, val))
-}
-
 func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	go func() {
 		if core.Disabled(mode, modes) {
@@ -64,12 +57,13 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		if err != nil {
 			calling = ""
 		}
-		var messages []string
-		messages = append(messages, fmt.Sprintf("Info = %s %d", mode, int(objType)))
-		messages = keyValWrite(messages, "Code", packet.Packet.Code.String())
-		messages = keyValWrite(messages, "Id", strconv.Itoa(int(packet.Packet.Identifier)))
-		messages = keyValWrite(messages, "User-Name", username)
-		messages = keyValWrite(messages, "Calling-Station-Id", calling)
-		core.LogPluginMessages(&Plugin, messages)
+		kv := core.KeyValueStore{}
+		kv.DropEmpty = true
+		kv.Add("Info", fmt.Sprintf("%s %d", mode, int(objType)))
+		kv.Add("Code", packet.Packet.Code.String())
+		kv.Add("Id", strconv.Itoa(int(packet.Packet.Identifier)))
+		kv.Add("User-Name", username)
+		kv.Add("Calling-Station-Id", calling)
+		core.LogPluginMessages(&Plugin, kv.Strings())
 	}()
 }
