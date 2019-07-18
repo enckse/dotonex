@@ -59,7 +59,7 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		}
 		kv := core.KeyValueStore{}
 		kv.DropEmpty = true
-		kv.Add("Info", fmt.Sprintf("%s %d", mode, int(objType)))
+		kv.Add("Mode", fmt.Sprintf("%s", mode))
 		kv.Add("Code", packet.Packet.Code.String())
 		kv.Add("Id", strconv.Itoa(int(packet.Packet.Identifier)))
 		kv.Add("User-Name", username)
