@@ -404,7 +404,7 @@ func getScript(fileName string) string {
 	}
 	for _, opt := range options {
 		n := opt.Name()
-		if strings.HasSuffix(n, includesFile) {
+		if n == includesFile ||  strings.HasSuffix(n, fmt.Sprintf(".%s", includesFile)) {
 			cnt := fileToScript(filepath.Join(configDir, n))
 			include = fmt.Sprintf("%s\n%s", include, cnt)
 		}
