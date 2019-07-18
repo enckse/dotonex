@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -125,5 +126,6 @@ func mark(success bool, user, calling string, p *core.ClientPacket, cached bool)
 	kv.Add("NAS-Id", nas)
 	kv.Add("NAS-IPAddress", nasip)
 	kv.Add("NAS-Port", fmt.Sprintf("%d", nasport))
+	kv.Add("Id", strconv.Itoa(int(p.Packet.Identifier)))
 	core.LogPluginMessages(&Plugin, kv.Strings())
 }

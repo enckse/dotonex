@@ -47,7 +47,7 @@ _getaux() {
 }
 
 _getaux "stats" | cut -d " " -f 3- | sed "s/^  //g" | grep -v -E "^(Time|First|Last)" | tr '\n' '=' | sed "s/=Count/\nCount/g" | sed "s/=/ /g" | sort > bin/stats.log 
-_getaux "usermac" | cut -d " " -f 3- > bin/usermac.log
+_getaux "usermac" | cut -d " " -f 3- | grep -v "^  Id" > bin/usermac.log
 for o in access logger; do
     _getaux $o | \
         cut -d " " -f 3- | \
