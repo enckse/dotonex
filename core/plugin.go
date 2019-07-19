@@ -25,6 +25,7 @@ const (
 var (
 	pluginLock *sync.Mutex = new(sync.Mutex)
 	pluginLogs             = []string{}
+	pluginLID  int
 )
 
 type TraceType int
@@ -251,14 +252,17 @@ func WritePluginMessages(path, instance string) {
 		f.Write([]byte(m))
 	}
 	pluginLogs = pluginLogs[:0]
+	pluginLID = 0
 }
 
 func LogPluginMessages(mod Module, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
 	name := strings.ToUpper(mod.Name())
-	t := time.Now().Format("2006-01-02T15:04:05")
+	t := time.Now().Format("2006-01-02T15:04:05.000")
+	idx := pluginLID
 	for _, m := range messages {
-		pluginLogs = append(pluginLogs, fmt.Sprintf("%s [%s] %s\n", t, name, m))
+		pluginLogs = append(pluginLogs, fmt.Sprintf("%s [%s] (%d) %s\n", t, name, idx, m))
 	}
+	pluginLID += 1
 }

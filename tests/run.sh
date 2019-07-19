@@ -42,15 +42,14 @@ _getaux() {
     local upper
     upper=$(echo $1 | tr '[:lower:]' '[:upper:]')
     for f in $(ls $LOGS | sort); do
-        cat ${LOGS}$f | grep "\[$upper\]"
+        cat ${LOGS}$f | grep "\[$upper\]" | cut -d " " -f 4-
     done
 }
 
-_getaux "stats" | cut -d " " -f 3- | sed "s/^  //g" | grep -v -E "^(Time|First|Last)" | tr '\n' '=' | sed "s/=Count/\nCount/g" | sed "s/=/ /g" | sort > bin/stats.log 
-_getaux "usermac" | cut -d " " -f 3- | grep -v "^  Id" > bin/usermac.log
+_getaux "stats" | sed "s/^  //g" | grep -v -E "^(Time|First|Last)" | tr '\n' '=' | sed "s/=Count/\nCount/g" | sed "s/=/ /g" | sort > bin/stats.log 
+_getaux "usermac" | grep -v "^  Id" > bin/usermac.log
 for o in access logger; do
     _getaux $o | \
-        cut -d " " -f 3- | \
         sed "s/^  //g" | cut -d " " -f 1,3 | \
         sed "s/^Access/ Access/g" | \
         sed "s/^UDPAddr/ UDPAddr/g" | \
