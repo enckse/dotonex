@@ -6,6 +6,9 @@ PLUGINS      := $(shell ls $(PLUGIN))
 VERSION      := $(BUILD_VERSION)
 ifeq ($(VERSION),)
 	VERSION  := DEVELOP
+	CHECK_RUST := $(VERSION)
+else
+	CHECK_RUST := $(shell cat Cargo.toml | grep "version = " | grep $(VERSION) | cut -d "=" -f 2 | sed 's/"//g' | sed "s/ //g")
 endif
 CMN_FLAGS    :=  -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 FLAGS        := $(CMN_FLAGS)pie
@@ -33,6 +36,9 @@ $(PLUGINS):
 test: utests integrate
 
 $(ADMIN):
+ifneq ($(CHECK_RUST),$(VERSION))
+	$(error "administrative version mismatch $(CHECK_RUST) != $(VERSION)")
+endif
 	go build -o $(BIN)radiucal-legacy $(FLAGS) admin.go
 	cargo build --release
 	cp target/release/radiucal-admin $(BIN)
