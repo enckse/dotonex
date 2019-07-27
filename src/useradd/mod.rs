@@ -39,6 +39,28 @@ fn generate_password(input_password: &str, out_password: &mut String) -> String 
     return md4_hash(&out_password);
 }
 
+// read a username from stdin
+fn read_username() -> Option<String> {
+    let mut input = String::new();
+    let mut user = String::new();;
+    println!("please provide user name:");
+    match io::stdin().read_line(&mut input) {
+        Ok(_) => {
+            user.push_str(&input);
+        }
+        Err(error) => {
+            println!("unable to read stdin: {}", error);
+            return None;
+        }
+    }
+    user = user.trim().to_string();
+    if user == "" {
+        println!("empty username");
+        return None
+    }
+    return Some(user.to_string());
+}
+
 /// get a password as a hashed value
 pub fn get_pass(pass: &str) -> bool {
     let mut out = String::new();
@@ -49,20 +71,16 @@ pub fn get_pass(pass: &str) -> bool {
 
 /// create a new user
 fn create_user(user_name: &str, input_password: &str) -> Result<bool, io::Error> {
-    let mut user = user_name;
-    let mut input = String::new();
+    let mut user = String::new();
+    user.push_str(user_name);
     if user_name == "" {
-        println!("please provide user name:");
-        match io::stdin().read_line(&mut input) {
-            Ok(_) => {
-                user = &input;
+        match read_username() {
+            Some(u) => {
+                user = u;
             }
-            Err(error) => return Err(error),
-        }
-        user = user.trim();
-        if user == "" {
-            println!("empty username");
-            return Ok(false);
+            None => {
+                return Ok(false);
+            }
         }
     }
     for c in user.chars() {
@@ -77,7 +95,7 @@ fn create_user(user_name: &str, input_password: &str) -> Result<bool, io::Error>
     println!("username: {}\npassword: {}\nmd4 hash: {}", user, out, md4);
     let mut user_file = String::new();
     user_file.push_str("user_");
-    user_file.push_str(user);
+    user_file.push_str(&user.to_string());
     user_file.push_str(".yaml");
     let user_path = Path::new(CONFIG_DIR).join(user_file);
     let mut buffer = File::create(user_path)?;
