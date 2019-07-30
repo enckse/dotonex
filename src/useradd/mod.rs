@@ -8,6 +8,7 @@ use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::prelude::*;
 use std::path::Path;
+use std::process::Command;
 
 /// Process a password into a digest hash output
 fn process<D: Digest + Default>(value: &str) -> String {
@@ -33,7 +34,9 @@ fn md4_hash(value: &str) -> String {
 fn generate_password(out_password: &mut String) -> String {
     let pass: String = random_string(64);
     out_password.push_str(&pass);
-    return md4_hash(&out_password);
+    let md4 = md4_hash(&out_password);
+    println!("password: {}\nmd4 hash: {}", out_password, md4);
+    return md4;
 }
 
 // read a username from stdin
@@ -61,8 +64,7 @@ fn read_username() -> Option<String> {
 /// get a password as a hashed value
 pub fn get_pass() -> bool {
     let mut out = String::new();
-    let md4 = generate_password(&mut out);
-    println!("password: {}\nmd4 hash: {}", out, md4);
+    generate_password(&mut out);
     return true;
 }
 
@@ -78,8 +80,8 @@ fn create_user() -> Result<bool, io::Error> {
                 return Ok(false);
             }
             let mut out = String::new();
+            println!("username: {}\n", user);
             let md4 = generate_password(&mut out);
-            println!("username: {}\npassword: {}\nmd4 hash: {}", user, out, md4);
             let mut user_file = String::new();
             user_file.push_str("user_");
             user_file.push_str(&user.to_string());
@@ -87,7 +89,7 @@ fn create_user() -> Result<bool, io::Error> {
             let user_path = Path::new(CONFIG_DIR).join(user_file);
             let mut buffer = File::create(user_path)?;
             buffer.write(b"")?;
-            return add_pass(user, md4);
+            return add_pass(user, md4, false);
         }
         None => {
             return Ok(false);
@@ -95,8 +97,23 @@ fn create_user() -> Result<bool, io::Error> {
     }
 }
 
-fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
+fn add_pass(user: String, md4: String, replace: bool) -> Result<bool, io::Error> {
     let pass_file = Path::new(CONFIG_DIR).join(PASSWORDS);
+    if replace {
+        if pass_file.exists() {
+            let output = Command::new("sed")
+                .arg("-i")
+                .arg(format!("s/^{},.*$/{},{}/g", user, user, md4))
+                .arg(pass_file)
+                .status()
+                .expect("unable to run command");
+            let success = output.success();
+            if !success {
+                println!("unable to update password for {}", user);
+            }
+            return Ok(success);
+        }
+    }
     let mut file = OpenOptions::new()
         .write(true)
         .append(true)
@@ -132,7 +149,7 @@ pub fn passwd(pass: &str) -> bool {
             let mut out = String::new();
             let md4 = generate_password(&mut out);
             if decrypt_file(&pass) {
-                match add_pass(u, md4) {
+                match add_pass(u, md4, true) {
                     Ok(ok) => {
                         if ok {
                             if encrypt_file(&pass) {
