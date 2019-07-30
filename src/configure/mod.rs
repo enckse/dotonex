@@ -111,9 +111,9 @@ fn get_file_list(dir: &str) -> std::vec::Vec<String> {
 }
 
 pub fn netconf() -> bool {
-    let output = Command::new("radiucal-legacy")
+    let output = Command::new("radiucal-lua-bridge")
         .status()
-        .expect("legacy command failed");
+        .expect("lua-bridge command failed");
     return output.success();
 }
 

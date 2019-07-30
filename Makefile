@@ -39,7 +39,7 @@ $(ADMIN):
 ifneq ($(CHECK_RUST),$(VERSION))
 	$(error "administrative version mismatch $(CHECK_RUST) != $(VERSION)")
 endif
-	go build -o $(BIN)radiucal-legacy $(FLAGS) admin.go
+	go build -o $(BIN)radiucal-lua-bridge $(FLAGS) admin.go
 	cargo build --release
 	cp target/release/radiucal-admin $(BIN)
 	cd $(TST)$(ADMIN) && make
