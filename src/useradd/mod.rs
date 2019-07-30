@@ -1,6 +1,7 @@
 use md4::{Digest, Md4};
 extern crate rand;
 use crate::constants::{random_string, CONFIG_DIR, PASSWORDS};
+use crate::encrypt::{decrypt_file, encrypt_file};
 use encoding::all::UTF_16LE;
 use encoding::{EncoderTrap, Encoding};
 use std::fs::{File, OpenOptions};
@@ -29,14 +30,14 @@ fn md4_hash(value: &str) -> String {
 }
 
 /// use or generate a password
-pub fn generate_password(out_password: &mut String) -> String {
+fn generate_password(out_password: &mut String) -> String {
     let pass: String = random_string(64);
     out_password.push_str(&pass);
     return md4_hash(&out_password);
 }
 
 // read a username from stdin
-pub fn read_username() -> Option<String> {
+fn read_username() -> Option<String> {
     let mut input = String::new();
     let mut user = String::new();;
     println!("please provide user name:");
@@ -94,7 +95,7 @@ fn create_user() -> Result<bool, io::Error> {
     }
 }
 
-pub fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
+fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
     let pass_file = Path::new(CONFIG_DIR).join(PASSWORDS);
     let mut file = OpenOptions::new()
         .write(true)
@@ -104,15 +105,52 @@ pub fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
     return Ok(true);
 }
 
-pub fn new_user() -> bool {
+pub fn new_user(pass: &str) -> bool {
+    if !decrypt_file(pass) {
+        return false;
+    }
     let status = create_user();
     match status {
         Ok(n) => {
-            return n;
+            if n {
+                return encrypt_file(pass);
+            } else {
+                return n;
+            }
         }
         Err(error) => {
             println!("{}", error);
             return false;
         }
     }
+}
+
+pub fn passwd(pass: &str) -> bool {
+    let mut valid = false;
+    match read_username() {
+        Some(u) => {
+            let mut out = String::new();
+            let md4 = generate_password(&mut out);
+            if decrypt_file(&pass) {
+                match add_pass(u, md4) {
+                    Ok(ok) => {
+                        if ok {
+                            if encrypt_file(&pass) {
+                                valid = true;
+                            }
+                        } else {
+                            println!("unable to set password");
+                        }
+                    }
+                    Err(e) => {
+                        println!("error adding password {}", e);
+                    }
+                }
+            }
+        }
+        None => {
+            println!("invalid username");
+        }
+    }
+    valid
 }
