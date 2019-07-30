@@ -20,7 +20,7 @@ mod constants {
 use crate::configure::{all, netconf};
 use crate::constants::CONFIG_DIR;
 use crate::encrypt::{decrypt_file, encrypt_file};
-use crate::useradd::{get_pass, new_user};
+use crate::useradd::{add_pass, generate_password, get_pass, new_user, read_username};
 use std::env;
 use std::path::Path;
 
@@ -79,6 +79,31 @@ fn main() {
         "pwd" => {
             valid = get_pass(&pass);
         }
+        "changepwd" => match read_username() {
+            Some(u) => {
+                let mut out = String::new();
+                let md4 = generate_password("", &mut out);
+                if decrypt_file(&pass) {
+                    match add_pass(u, md4) {
+                        Ok(ok) => {
+                            if ok {
+                                if encrypt_file(&pass) {
+                                    valid = true;
+                                }
+                            } else {
+                                println!("unable to set password");
+                            }
+                        }
+                        Err(e) => {
+                            println!("error adding password {}", e);
+                        }
+                    }
+                }
+            }
+            None => {
+                println!("invalid username");
+            }
+        },
         "enc" => {
             valid = encrypt_file(&pass);
         }

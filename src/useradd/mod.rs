@@ -29,7 +29,7 @@ fn md4_hash(value: &str) -> String {
 }
 
 /// use or generate a password
-fn generate_password(input_password: &str, out_password: &mut String) -> String {
+pub fn generate_password(input_password: &str, out_password: &mut String) -> String {
     if input_password == "" {
         let pass: String = random_string(64);
         out_password.push_str(&pass);
@@ -40,7 +40,7 @@ fn generate_password(input_password: &str, out_password: &mut String) -> String 
 }
 
 // read a username from stdin
-fn read_username() -> Option<String> {
+pub fn read_username() -> Option<String> {
     let mut input = String::new();
     let mut user = String::new();;
     println!("please provide user name:");
@@ -56,7 +56,7 @@ fn read_username() -> Option<String> {
     user = user.trim().to_string();
     if user == "" {
         println!("empty username");
-        return None
+        return None;
     }
     return Some(user.to_string());
 }
@@ -100,6 +100,10 @@ fn create_user(user_name: &str, input_password: &str) -> Result<bool, io::Error>
     let user_path = Path::new(CONFIG_DIR).join(user_file);
     let mut buffer = File::create(user_path)?;
     buffer.write(b"")?;
+    return add_pass(user, md4);
+}
+
+pub fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
     let pass_file = Path::new(CONFIG_DIR).join(PASSWORDS);
     let mut file = OpenOptions::new()
         .write(true)
