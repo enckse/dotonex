@@ -29,13 +29,9 @@ fn md4_hash(value: &str) -> String {
 }
 
 /// use or generate a password
-pub fn generate_password(input_password: &str, out_password: &mut String) -> String {
-    if input_password == "" {
-        let pass: String = random_string(64);
-        out_password.push_str(&pass);
-    } else {
-        out_password.push_str(input_password);
-    }
+pub fn generate_password(out_password: &mut String) -> String {
+    let pass: String = random_string(64);
+    out_password.push_str(&pass);
     return md4_hash(&out_password);
 }
 
@@ -62,45 +58,40 @@ pub fn read_username() -> Option<String> {
 }
 
 /// get a password as a hashed value
-pub fn get_pass(pass: &str) -> bool {
+pub fn get_pass() -> bool {
     let mut out = String::new();
-    let md4 = generate_password(pass, &mut out);
+    let md4 = generate_password(&mut out);
     println!("password: {}\nmd4 hash: {}", out, md4);
     return true;
 }
 
 /// create a new user
-fn create_user(user_name: &str, input_password: &str) -> Result<bool, io::Error> {
-    let mut user = String::new();
-    user.push_str(user_name);
-    if user_name == "" {
-        match read_username() {
-            Some(u) => {
-                user = u;
-            }
-            None => {
+fn create_user() -> Result<bool, io::Error> {
+    match read_username() {
+        Some(user) => {
+            for c in user.chars() {
+                if c >= 'a' && c <= 'z' {
+                    continue;
+                }
+                println!("invalid user name (a-z): {}", user);
                 return Ok(false);
             }
+            let mut out = String::new();
+            let md4 = generate_password(&mut out);
+            println!("username: {}\npassword: {}\nmd4 hash: {}", user, out, md4);
+            let mut user_file = String::new();
+            user_file.push_str("user_");
+            user_file.push_str(&user.to_string());
+            user_file.push_str(".yaml");
+            let user_path = Path::new(CONFIG_DIR).join(user_file);
+            let mut buffer = File::create(user_path)?;
+            buffer.write(b"")?;
+            return add_pass(user, md4);
+        }
+        None => {
+            return Ok(false);
         }
     }
-    for c in user.chars() {
-        if c >= 'a' && c <= 'z' {
-            continue;
-        }
-        println!("invalid user name (a-z): {}", user);
-        return Ok(false);
-    }
-    let mut out = String::new();
-    let md4 = generate_password(input_password, &mut out);
-    println!("username: {}\npassword: {}\nmd4 hash: {}", user, out, md4);
-    let mut user_file = String::new();
-    user_file.push_str("user_");
-    user_file.push_str(&user.to_string());
-    user_file.push_str(".yaml");
-    let user_path = Path::new(CONFIG_DIR).join(user_file);
-    let mut buffer = File::create(user_path)?;
-    buffer.write(b"")?;
-    return add_pass(user, md4);
 }
 
 pub fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
@@ -113,8 +104,8 @@ pub fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
     return Ok(true);
 }
 
-pub fn new_user(user_name: &str, pass: &str) -> bool {
-    let status = create_user(user_name, pass);
+pub fn new_user() -> bool {
+    let status = create_user();
     match status {
         Ok(n) => {
             return n;

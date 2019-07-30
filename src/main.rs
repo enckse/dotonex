@@ -32,7 +32,6 @@ fn main() {
     }
     let mut server = false;
     let mut pass = String::new();
-    let mut user = String::new();
     let command = args[1].to_string();
     if !Path::new(CONFIG_DIR).exists() {
         println!("config directory missing...");
@@ -57,9 +56,6 @@ fn main() {
             let mut p = String::new();
             p.push_str(&parts[0][2..]);
             match &*p {
-                "user" => {
-                    user = parts[1].to_string();
-                }
                 "pass" => {
                     pass = parts[1].to_string();
                 }
@@ -74,15 +70,15 @@ fn main() {
     let cmd: &str = &*command;
     match cmd {
         "useradd" => {
-            valid = new_user(&user, &pass);
+            valid = new_user();
         }
         "pwd" => {
-            valid = get_pass(&pass);
+            valid = get_pass();
         }
         "changepwd" => match read_username() {
             Some(u) => {
                 let mut out = String::new();
-                let md4 = generate_password("", &mut out);
+                let md4 = generate_password(&mut out);
                 if decrypt_file(&pass) {
                     match add_pass(u, md4) {
                         Ok(ok) => {
