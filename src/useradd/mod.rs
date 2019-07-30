@@ -2,7 +2,7 @@ use md4::{Digest, Md4};
 extern crate rand;
 use crate::constants::{random_string, CONFIG_DIR, PASSWORDS};
 use crate::encrypt::{decrypt_file, encrypt_file};
-use csv::{Reader, Writer};
+use csv::{ReaderBuilder, Writer};
 use encoding::all::UTF_16LE;
 use encoding::{EncoderTrap, Encoding};
 use std::fs::File;
@@ -101,7 +101,10 @@ fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
     let pass_file = Path::new(CONFIG_DIR).join(PASSWORDS);
     let mut records: std::vec::Vec<std::vec::Vec<String>> = std::vec::Vec::new();
     if pass_file.exists() {
-        let mut rdr = Reader::from_path(&pass_file).expect("unable to read pass file");
+        let mut rdr = ReaderBuilder::new()
+            .has_headers(false)
+            .from_path(&pass_file)
+            .expect("unable to read pass file");
         for result in rdr.records() {
             let record = result.expect("invalid csv entry");
             if record.len() != 2 {
