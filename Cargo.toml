@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 md4 = "0.8.0"
+csv = "1.1"
 rand = "0.6.5"
 aes-ctr = "0.3.0"
 chrono = "0.4.6"

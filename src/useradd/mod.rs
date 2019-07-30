@@ -2,13 +2,13 @@ use md4::{Digest, Md4};
 extern crate rand;
 use crate::constants::{random_string, CONFIG_DIR, PASSWORDS};
 use crate::encrypt::{decrypt_file, encrypt_file};
+use csv::{Reader, Writer};
 use encoding::all::UTF_16LE;
 use encoding::{EncoderTrap, Encoding};
-use std::fs::{File, OpenOptions};
+use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::path::Path;
-use std::process::Command;
 
 /// Process a password into a digest hash output
 fn process<D: Digest + Default>(value: &str) -> String {
@@ -89,7 +89,7 @@ fn create_user() -> Result<bool, io::Error> {
             let user_path = Path::new(CONFIG_DIR).join(user_file);
             let mut buffer = File::create(user_path)?;
             buffer.write(b"")?;
-            return add_pass(user, md4, false);
+            return add_pass(user, md4);
         }
         None => {
             return Ok(false);
@@ -97,28 +97,31 @@ fn create_user() -> Result<bool, io::Error> {
     }
 }
 
-fn add_pass(user: String, md4: String, replace: bool) -> Result<bool, io::Error> {
+fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
     let pass_file = Path::new(CONFIG_DIR).join(PASSWORDS);
-    if replace {
-        if pass_file.exists() {
-            let output = Command::new("sed")
-                .arg("-i")
-                .arg(format!("s/^{},.*$/{},{}/g", user, user, md4))
-                .arg(pass_file)
-                .status()
-                .expect("unable to run command");
-            let success = output.success();
-            if !success {
-                println!("unable to update password for {}", user);
+    let mut records: std::vec::Vec<std::vec::Vec<String>> = std::vec::Vec::new();
+    if pass_file.exists() {
+        let mut rdr = Reader::from_path(&pass_file).expect("unable to read pass file");
+        for result in rdr.records() {
+            let record = result.expect("invalid csv entry");
+            if record.len() != 2 {
+                println!("invalid record {:?}", record);
+                return Ok(false);
             }
-            return Ok(success);
+            let r_user = record.get(0).expect("no user field found").to_owned();
+            let r_pass = record.get(1).expect("no password field found").to_owned();
+            if r_user == user {
+                continue;
+            }
+            records.push(vec![r_user, r_pass]);
         }
     }
-    let mut file = OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open(pass_file)?;
-    file.write_fmt(format_args!("{},{}\n", user, md4))?;
+    records.push(vec![user, md4]);
+    let mut wtr = Writer::from_path(&pass_file).expect("unable to write pass file");
+    for r in records {
+        wtr.write_record(r).expect("unable to write record to csv");
+    }
+    wtr.flush().expect("unable to save file");
     return Ok(true);
 }
 
@@ -149,7 +152,7 @@ pub fn passwd(pass: &str) -> bool {
             let mut out = String::new();
             let md4 = generate_password(&mut out);
             if decrypt_file(&pass) {
-                match add_pass(u, md4, true) {
+                match add_pass(u, md4) {
                     Ok(ok) => {
                         if ok {
                             if encrypt_file(&pass) {
