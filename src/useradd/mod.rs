@@ -88,7 +88,7 @@ fn create_user() -> Result<bool, io::Error> {
             user_file.push_str(".lua");
             let user_path = Path::new(CONFIG_DIR).join(user_file);
             let mut buffer = File::create(user_path)?;
-            buffer.write(b"")?;
+            buffer.write(format!("-- {}", user).as_bytes())?;
             return add_pass(user, md4);
         }
         None => {
