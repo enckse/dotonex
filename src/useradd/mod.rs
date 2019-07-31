@@ -85,7 +85,7 @@ fn create_user() -> Result<bool, io::Error> {
             let mut user_file = String::new();
             user_file.push_str("user_");
             user_file.push_str(&user.to_string());
-            user_file.push_str(".yaml");
+            user_file.push_str(".lua");
             let user_path = Path::new(CONFIG_DIR).join(user_file);
             let mut buffer = File::create(user_path)?;
             buffer.write(b"")?;
