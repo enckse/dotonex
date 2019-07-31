@@ -73,7 +73,7 @@ fn create_user() -> Result<bool, io::Error> {
     match read_username() {
         Some(user) => {
             for c in user.chars() {
-                if c >= 'a' && c <= 'z' {
+                if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')  {
                     continue;
                 }
                 println!("invalid user name (a-z): {}", user);
