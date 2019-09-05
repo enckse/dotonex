@@ -14,9 +14,10 @@ fn get_pass_file() -> String {
     return file;
 }
 
+
 fn encrypt_decrypt(pass: &str, decrypt: bool) -> bool {
-    let mut in_file: String;
-    let mut out_file: String;
+    let in_file: String;
+    let out_file: String;
     if decrypt {
         in_file = get_pass_file();
         out_file = PASSWORDS.to_string();
@@ -30,7 +31,7 @@ fn encrypt_decrypt(pass: &str, decrypt: bool) -> bool {
     match fs::read(ifile) {
         Ok(data) => {
             let mut use_data: std::vec::Vec<u8>;
-            let mut nonce_data: std::vec::Vec<u8>;
+            let nonce_data: std::vec::Vec<u8>;
             if decrypt {
                 nonce_data = data[0..NONCE_SIZE].to_vec();
                 use_data = data[NONCE_SIZE..].to_vec();

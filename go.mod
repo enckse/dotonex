@@ -6,3 +6,5 @@ require (
 	layeh.com/gopher-luar v1.0.7 // indirect
 	layeh.com/radius v0.0.0-20190322222518-890bc1058917
 )
+
+go 1.13
