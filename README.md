@@ -93,7 +93,11 @@ run (with a socket listening to be proxied to, e.g. hostapd)
 
 ## administration
 
-see tooling [here](https://github.com/epiphyte/devtools/)
+using the administrative tooling
+
+```
+./bin/radiucal-admin <command>
+```
 
 ## debugging
 
