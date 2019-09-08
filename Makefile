@@ -1,7 +1,6 @@
 BIN          := bin/
 TST          := tests/
 PLUGIN       := plugins/
-SRC          := $(shell find . -type f -name "*.go")
 PLUGINS      := $(shell ls $(PLUGIN))
 VERSION      := $(BUILD_VERSION)
 ifeq ($(VERSION),)
@@ -64,8 +63,7 @@ radiucal:
 	go build -o $(BIN)radiucal $(FLAGS) radiucal.go
 
 format:
-	@echo $(SRC)
-	exit $(shell goimports -l $(SRC) | wc -l)
+	goformatter
 
 setup:
 	rm -rf $(BIN)

@@ -30,12 +30,15 @@ type writeBack func([]byte)
 
 type authingMode int
 
+// ReasonCode for authorization state
 type ReasonCode int
 
+// AuthorizePacket handles determining whether a packet is authorized to continue
 type AuthorizePacket func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, ReasonCode)
 
 type authCheck func(core.Module, *core.ClientPacket) bool
 
+// Context is the server's operating context
 type Context struct {
 	Debug     bool
 	secret    []byte
@@ -54,35 +57,42 @@ type Context struct {
 	module   bool
 }
 
+// AddTrace adds a tracing check to the context
 func (ctx *Context) AddTrace(t core.Tracing) {
 	ctx.trace = true
 	ctx.traces = append(ctx.traces, t)
 }
 
+// AddPreAuth adds a pre-authorization check to the context
 func (ctx *Context) AddPreAuth(p core.PreAuth) {
 	ctx.preauth = true
 	ctx.preauths = append(ctx.preauths, p)
 }
 
+// AddPostAuth adds a post-authorization check to the context
 func (ctx *Context) AddPostAuth(p core.PostAuth) {
 	ctx.postauth = true
 	ctx.postauths = append(ctx.postauths, p)
 }
 
+// AddModule adds a general model to the context
 func (ctx *Context) AddModule(m core.Module) {
 	ctx.module = true
 	ctx.modules = append(ctx.modules, m)
 }
 
+// AddAccounting adds an accounting check to the context
 func (ctx *Context) AddAccounting(a core.Accounting) {
 	ctx.acct = true
 	ctx.accts = append(ctx.accts, a)
 }
 
+// PostAuthorize performs packet post-authorization (after radius check)
 func PostAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*core.ClientPacket, ReasonCode) {
 	return ctx.doAuthing(b, addr, postMode)
 }
 
+// PreAuthorize performs a packet pre-check (before radius check)
 func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*core.ClientPacket, ReasonCode) {
 	return ctx.doAuthing(b, addr, preMode)
 }
@@ -164,9 +174,8 @@ func getAuthChecker(preauthing bool) authCheck {
 	return func(m core.Module, p *core.ClientPacket) bool {
 		if preauthing {
 			return m.(core.PreAuth).Pre(p)
-		} else {
-			return m.(core.PostAuth).Post(p)
 		}
+		return m.(core.PostAuth).Post(p)
 	}
 }
 
@@ -182,6 +191,7 @@ func checkAuthMods(modules []core.Module, packet *core.ClientPacket, fxn authChe
 	return failure
 }
 
+// FromConfig parses config data into a Context object
 func (ctx *Context) FromConfig(libPath string, c *core.Configuration) {
 	ctx.noReject = c.NoReject
 	secrets := filepath.Join(libPath, "secrets")
@@ -223,9 +233,8 @@ func parseSecretFile(secretFile string) (string, error) {
 	s, err := parseSecretFromFile(secretFile, false)
 	if err != nil {
 		return "", err
-	} else {
-		return s[localKey], nil
 	}
+	return s[localKey], nil
 }
 
 func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
@@ -263,6 +272,7 @@ func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, er
 	return lines, nil
 }
 
+// DebugDump dumps context information for debugging
 func (ctx *Context) DebugDump() {
 	if ctx.Debug {
 		core.WriteDebug("secret", string(ctx.secret))
@@ -275,6 +285,7 @@ func (ctx *Context) DebugDump() {
 	}
 }
 
+// Reload performs a context (server) reload
 func (ctx *Context) Reload() {
 	if ctx.module {
 		core.WriteInfo("reloading")
@@ -289,9 +300,8 @@ func (ctx *Context) checkSecret(p *core.ClientPacket) error {
 	var inSecret []byte
 	if p == nil || p.Packet == nil {
 		return errors.New("no packet information")
-	} else {
-		inSecret = p.Packet.Secret
 	}
+	inSecret = p.Packet.Secret
 	if inSecret == nil {
 		return errors.New("no secret input")
 	}
@@ -334,6 +344,7 @@ func (ctx *Context) packet(p *core.ClientPacket) {
 	}
 }
 
+// Account is responsible for performing all accounting module operations
 func (ctx *Context) Account(packet *core.ClientPacket) {
 	ctx.packet(packet)
 	if packet.Error != nil {
@@ -347,6 +358,7 @@ func (ctx *Context) Account(packet *core.ClientPacket) {
 	}
 }
 
+// HandleAuth handles the actual authorization checks (e.g. pre, post, trace, etc.)
 func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
 	packet, authCode := fxn(ctx, b, addr)
 	authed := authCode == successCode

@@ -24,8 +24,8 @@ var vers = "master"
 var (
 	proxy         *net.UDPConn
 	serverAddress *net.UDPAddr
-	clients       map[string]*connection = make(map[string]*connection)
-	clientLock    *sync.Mutex            = new(sync.Mutex)
+	clients                   = make(map[string]*connection)
+	clientLock    *sync.Mutex = new(sync.Mutex)
 )
 
 type connection struct {
@@ -36,11 +36,11 @@ type connection struct {
 func newConnection(srv, cli *net.UDPAddr) *connection {
 	conn := new(connection)
 	conn.client = cli
-	serverUdp, err := net.DialUDP("udp", nil, srv)
+	serverUDP, err := net.DialUDP("udp", nil, srv)
 	if core.LogError("dial udp", err) {
 		return nil
 	}
-	conn.server = serverUdp
+	conn.server = serverUDP
 	return conn
 }
 
@@ -49,11 +49,11 @@ func setup(hostport string, port int) error {
 	if err != nil {
 		return err
 	}
-	proxyUdp, err := net.ListenUDP("udp", proxyAddr)
+	proxyUDP, err := net.ListenUDP("udp", proxyAddr)
 	if err != nil {
 		return err
 	}
-	proxy = proxyUdp
+	proxy = proxyUDP
 	serverAddr, err := net.ResolveUDPAddr("udp", hostport)
 	if err != nil {
 		return err
@@ -163,7 +163,7 @@ func main() {
 	if debug {
 		conf.Dump()
 	}
-	var to int = 1814
+	to := 1814
 	if !conf.Accounting {
 		if conf.To > 0 {
 			to = conf.To
@@ -210,7 +210,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
-		for _ = range c {
+		for range c {
 			clientLock.Lock()
 			clients = make(map[string]*connection)
 			clientLock.Unlock()

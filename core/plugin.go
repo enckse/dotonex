@@ -2,7 +2,6 @@ package core
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -16,10 +15,14 @@ import (
 )
 
 const (
+	// AccountingMode for accounting
 	AccountingMode = "accounting"
-	TracingMode    = "trace"
-	PreAuthMode    = "preauth"
-	PostAuthMode   = "postauth"
+	// TracingMode for tracing
+	TracingMode = "trace"
+	// PreAuthMode for pre-auth
+	PreAuthMode = "preauth"
+	// PostAuthMode for post-auth
+	PostAuthMode = "postauth"
 )
 
 var (
@@ -28,15 +31,20 @@ var (
 	pluginLID  int
 )
 
+// TraceType indicates how to trace a request
 type TraceType int
 
+// NoopCall represents module calls that perform no operation (mocks)
 type NoopCall func(string, TraceType, *ClientPacket)
 
 const (
-	NoTrace      TraceType = iota
+	// NoTrace indicates no tracing to occur
+	NoTrace TraceType = iota
+	// TraceRequest indicate to trace the request
 	TraceRequest TraceType = iota
 )
 
+// PluginContext is the context given to a plugin module
 type PluginContext struct {
 	// Location of logs directory
 	Logs string
@@ -52,32 +60,38 @@ type PluginContext struct {
 	Backing []byte
 }
 
+// Module represents a plugin module for packet checking
 type Module interface {
 	Reload()
 	Setup(*PluginContext) error
 	Name() string
 }
 
+// PreAuth represents the interface required to pre-authorize a packet
 type PreAuth interface {
 	Module
 	Pre(*ClientPacket) bool
 }
 
+// PostAuth represents the interface required to post-authorize a packet
 type PostAuth interface {
 	Module
 	Post(*ClientPacket) bool
 }
 
+// Tracing represents the interface required to trace requests
 type Tracing interface {
 	Module
 	Trace(TraceType, *ClientPacket)
 }
 
+// Accounting represents the interface required to handle accounting
 type Accounting interface {
 	Module
 	Account(*ClientPacket)
 }
 
+// NewPluginContext prepares a context from a configuration
 func NewPluginContext(config *Configuration) *PluginContext {
 	p := &PluginContext{}
 	p.Cache = config.Cache
@@ -97,20 +111,24 @@ func (p *PluginContext) clone(moduleName string) *PluginContext {
 	return n
 }
 
+// GetBackingConfig returns the corresponding backing config of the context
 func (p *PluginContext) GetBackingConfig() []byte {
 	return p.config.backing
 }
 
-type requestDump struct {
+// RequestDump represents the interfaces available to log/dump a request
+type RequestDump struct {
 	data *ClientPacket
 	mode string
 }
 
-func NewRequestDump(packet *ClientPacket, mode string) *requestDump {
-	return &requestDump{data: packet, mode: mode}
+// NewRequestDump prepares a packet request for dumping
+func NewRequestDump(packet *ClientPacket, mode string) *RequestDump {
+	return &RequestDump{data: packet, mode: mode}
 }
 
-func (packet *requestDump) DumpPacket(kv KeyValue) []string {
+// DumpPacket dumps packet information to a string array of outputs
+func (packet *RequestDump) DumpPacket(kv KeyValue) []string {
 	var w bytes.Buffer
 	io.WriteString(&w, fmt.Sprintf(fmt.Sprintf("Mode = %s\n", packet.mode)))
 	if packet.data.ClientAddr != nil {
@@ -129,6 +147,7 @@ func (packet *requestDump) DumpPacket(kv KeyValue) []string {
 	return results
 }
 
+// Disabled indicates if a given mode is disabled
 func Disabled(mode string, modes []string) bool {
 	if len(modes) == 0 {
 		return false
@@ -141,10 +160,12 @@ func Disabled(mode string, modes []string) bool {
 	return false
 }
 
+// NoopPost is a no-operation post authorization call
 func NoopPost(packet *ClientPacket, call NoopCall) bool {
 	return noopAuth(PostAuthMode, packet, call)
 }
 
+// NoopPre is a no-operation pre authorization call
 func NoopPre(packet *ClientPacket, call NoopCall) bool {
 	return noopAuth(PreAuthMode, packet, call)
 }
@@ -163,6 +184,7 @@ func isFlagged(list []string, name string) bool {
 	return false
 }
 
+// DisabledModes returns the modes disable for module
 func DisabledModes(m Module, ctx *PluginContext) []string {
 	name := m.Name()
 	noAccounting := isFlagged(ctx.config.Disable.Accounting, name)
@@ -204,6 +226,7 @@ func newFile(path, instance string, appending bool) *os.File {
 	return f
 }
 
+// LoadPlugin loads a plugin from the file system and into the system
 func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	p, err := plugin.Open(path)
 	if err != nil {
@@ -216,7 +239,7 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	var mod Module
 	mod, ok := v.(Module)
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("unable to load plugin %s", path))
+		return nil, fmt.Errorf("unable to load plugin %s", path)
 	}
 	err = mod.Setup(ctx.clone(mod.Name()))
 	if err != nil {
@@ -225,7 +248,7 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	return mod, nil
 	switch t := mod.(type) {
 	default:
-		return nil, errors.New(fmt.Sprintf("unknown type: %T", t))
+		return nil, fmt.Errorf("unknown type: %T", t)
 	case Accounting:
 		return t.(Accounting), nil
 	case PreAuth:
@@ -237,6 +260,7 @@ func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
 	}
 }
 
+// WritePluginMessages supports writing plugin messages to disk
 func WritePluginMessages(path, instance string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
@@ -248,6 +272,7 @@ func WritePluginMessages(path, instance string) {
 	if f == nil {
 		return
 	}
+	defer f.Close()
 	for _, m := range pluginLogs {
 		f.Write([]byte(m))
 	}
@@ -255,6 +280,7 @@ func WritePluginMessages(path, instance string) {
 	pluginLID = 0
 }
 
+// LogPluginMessages adds messages to the plugin log queue
 func LogPluginMessages(mod Module, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
@@ -264,5 +290,5 @@ func LogPluginMessages(mod Module, messages []string) {
 	for _, m := range messages {
 		pluginLogs = append(pluginLogs, fmt.Sprintf("%s [%s] (%d) %s\n", t, name, idx, m))
 	}
-	pluginLID += 1
+	pluginLID++
 }

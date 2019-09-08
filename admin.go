@@ -44,6 +44,7 @@ type assignment struct {
 	vlan       int
 }
 
+// Systems represents system definitions
 type Systems struct {
 	definition
 	file    string
@@ -52,6 +53,7 @@ type Systems struct {
 	desc    map[string]map[string][]string
 }
 
+// VLAN represents actual VLAN definitions
 type VLAN struct {
 	file     string
 	number   int
@@ -92,6 +94,7 @@ func fatal(message string, err error) {
 	os.Exit(1)
 }
 
+// Segment defines a new segment (VLAN)
 func (n *network) Segment(num int, name string, initiate []string, route, net, owner, desc, group string) {
 	if num < 0 || num > 4096 || strings.TrimSpace(name) == "" {
 		fatal(fmt.Sprintf("invalid vlan definition: name or number is invalid (%s or %d)", name, num), nil)
@@ -189,17 +192,17 @@ func writeContent(file string, lines []string) {
 	rawWrite(file, []byte(content))
 }
 
-func (s *outputs) add(user string, desc map[string]map[string][]string) {
-	for k, _ := range desc {
+func (o *outputs) add(user string, desc map[string]map[string][]string) {
+	for k := range desc {
 		values := desc[k]
 		values["user"] = []string{user}
 		for a, val := range values {
-			cur, ok := s.sysTrack[k]
+			cur, ok := o.sysTrack[k]
 			if !ok {
 				cur = make(map[string][]string)
 			}
-			if _, ok := s.sysCols[a]; !ok {
-				s.sysCols[a] = struct{}{}
+			if _, ok := o.sysCols[a]; !ok {
+				o.sysCols[a] = struct{}{}
 			}
 			exist, ok := cur[a]
 			if ok {
@@ -210,7 +213,7 @@ func (s *outputs) add(user string, desc map[string]map[string][]string) {
 			} else {
 				cur[a] = val
 			}
-			s.sysTrack[k] = cur
+			o.sysTrack[k] = cur
 		}
 	}
 }
@@ -273,14 +276,14 @@ func writeCSV(name string, content [][]string, hasHeader bool) {
 	rawWrite(fmt.Sprintf("%s.csv", name), []byte(strings.Join(out, "\n")))
 }
 
-func (output *outputs) systemInfo() [][]string {
+func (o *outputs) systemInfo() [][]string {
 	cols := []string{}
-	for k, _ := range output.sysCols {
+	for k := range o.sysCols {
 		cols = append(cols, k)
 	}
 	sort.Strings(cols)
 	sysinfo := [][]string{}
-	for k, v := range output.sysTrack {
+	for k, v := range o.sysTrack {
 		vals := []string{k}
 		for _, c := range cols {
 			if c == idColumn {
@@ -317,7 +320,7 @@ func (n *network) process() {
 			}
 			vlans[v.number] = v.name
 		}
-		for k, _ := range n.refVLAN {
+		for k := range n.refVLAN {
 			if _, ok := vlans[k]; !ok {
 				fatal(fmt.Sprintf("%d -> unknown VLAN reference", k), nil)
 			}
