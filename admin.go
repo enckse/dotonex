@@ -375,6 +375,7 @@ func (n *network) process() {
 	fatal("invalid network definition (no systems or no vlans)", nil)
 }
 
+// Object defines a new object (system)
 func (s *Systems) Object(t assignType, mac string, vlan int) {
 	checkMAC(mac)
 	o := &assignment{}
@@ -384,6 +385,7 @@ func (s *Systems) Object(t assignType, mac string, vlan int) {
 	s.objects = append(s.objects, o)
 }
 
+// Describe is used to add more to a system
 func (s *Systems) Describe(id, key, value string) {
 	vals := make(map[string][]string)
 	if v, ok := s.desc[id]; ok {
@@ -559,7 +561,7 @@ type entityAdd func(mac string)
 
 type entity struct {
 	Macs     []string
-	Id       string
+	ID       string
 	Typed    string
 	Make     string
 	Model    string
@@ -591,7 +593,7 @@ func (s *segment) Define(num int, name string) *segment {
 }
 
 func (e *entity) Define(typed, id string) *entity {
-	return &entity{Id: id, Typed: typed}
+	return &entity{ID: id, Typed: typed}
 }
 
 func (e *entity) Assign(vlan int, entities []*entity) {
@@ -604,7 +606,7 @@ func (e *entity) describeItem(key, value string) {
 	if strings.TrimSpace(value) == "" {
 		return
 	}
-	state.Describe(e.Id, key, value)
+	state.Describe(e.ID, key, value)
 }
 
 func (e *entity) add(vlan int, adding entityAdd) {
@@ -619,7 +621,7 @@ func (e *entity) add(vlan int, adding entityAdd) {
 	e.describeItem("revision", e.Revision)
 	e.describeItem("xattr", strings.Join(e.XAttr, ";"))
 	e.describeItem("objType", e.Typed)
-	e.describeItem(idColumn, e.Id)
+	e.describeItem(idColumn, e.ID)
 }
 
 func (e *entity) Assigned(vlan int) {

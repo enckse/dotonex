@@ -23,9 +23,10 @@ func (l *nwl) Name() string {
 }
 
 var (
+	// Plugin represents the system instance of the module
 	Plugin    nwl
-	lock      *sync.Mutex     = new(sync.Mutex)
-	whitelist map[string]bool = make(map[string]bool)
+	lock      *sync.Mutex = new(sync.Mutex)
+	whitelist             = make(map[string]bool)
 	enabled   bool
 	order     []string
 )
@@ -33,6 +34,7 @@ var (
 func (l *nwl) Reload() {
 }
 
+// NasWhitelistConfig represents the plugin's specific configuration
 type NasWhitelistConfig struct {
 	NasWhitelist struct {
 		Whitelist []string

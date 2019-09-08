@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"path/filepath"
@@ -21,10 +20,11 @@ func (l *umac) Name() string {
 }
 
 var (
-	cache    map[string]bool = make(map[string]bool)
-	lock     *sync.Mutex     = new(sync.Mutex)
+	cache                = make(map[string]bool)
+	lock     *sync.Mutex = new(sync.Mutex)
 	canCache bool
 	db       string
+	// Plugin represents the instance for the system
 	Plugin   umac
 	instance string
 )
@@ -76,12 +76,10 @@ func checkUserMac(p *core.ClientPacket) error {
 		go mark(good, username, calling, p, true)
 		if good {
 			return nil
-		} else {
-			return errors.New(fmt.Sprintf("%s is blacklisted", fqdn))
 		}
-	} else {
-		core.WriteDebug("not preauthed", fqdn)
+		return fmt.Errorf("%s is blacklisted", fqdn)
 	}
+	core.WriteDebug("not preauthed", fqdn)
 	path := filepath.Join(db, fqdn)
 	success := true
 	var failure error
@@ -90,7 +88,7 @@ func checkUserMac(p *core.ClientPacket) error {
 	cache[fqdn] = res
 	lock.Unlock()
 	if !res {
-		failure = errors.New(fmt.Sprintf("failed preauth: %s %s", username, calling))
+		failure = fmt.Errorf("failed preauth: %s %s", username, calling)
 		success = false
 	}
 	go mark(success, username, calling, p, false)

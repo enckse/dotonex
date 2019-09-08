@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	// Plugin represents the system instance of the module
 	Plugin   logger
 	modes    []string
 	instance string

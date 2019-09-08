@@ -6,6 +6,7 @@ import (
 	"layeh.com/radius"
 )
 
+// ClientPacket represents the radius packet from the client
 type ClientPacket struct {
 	ClientAddr *net.UDPAddr
 	Buffer     []byte
@@ -13,6 +14,7 @@ type ClientPacket struct {
 	Error      error
 }
 
+// NewClientPacket creates a client packet from an input data packet
 func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
 }

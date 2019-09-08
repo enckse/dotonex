@@ -13,6 +13,7 @@ const (
 	timeFormat = "2006-01-02T15:04:05"
 )
 
+// StatsConfig represents the configuration for the stats plugin
 type StatsConfig struct {
 	Stats struct {
 		Flush int
@@ -27,9 +28,10 @@ type modedata struct {
 }
 
 var (
-	lock     *sync.Mutex = new(sync.Mutex)
+	lock *sync.Mutex = new(sync.Mutex)
+	// Plugin represents the instance for the system
 	Plugin   stats
-	info     map[string]*modedata = make(map[string]*modedata)
+	info     = make(map[string]*modedata)
 	modes    []string
 	instance string
 	flush    int
@@ -105,7 +107,7 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 			kv.Add("Name", m.name)
 			core.LogPluginMessages(&Plugin, kv.Strings())
 		} else {
-			flushIdx += 1
+			flushIdx++
 		}
 	}()
 }

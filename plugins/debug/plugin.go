@@ -14,6 +14,7 @@ type tracer struct {
 }
 
 var (
+	// Plugin represents the system instance of the module
 	Plugin tracer
 	modes  []string
 )

@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+// LogError to log errors within the system
 func LogError(message string, err error) bool {
 	if err == nil {
 		return false

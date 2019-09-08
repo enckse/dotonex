@@ -37,9 +37,8 @@ func (c *Configuration) Dump() {
 func defaultString(given, dflt string) string {
 	if len(given) == 0 {
 		return dflt
-	} else {
-		return given
 	}
+	return given
 }
 
 // Defaults will set uninitialized values to default values

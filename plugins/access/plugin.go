@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	// Plugin represents the plugin instance for the system
 	Plugin access
 	modes  []string
 )
