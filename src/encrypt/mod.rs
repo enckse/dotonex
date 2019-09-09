@@ -11,20 +11,20 @@ fn get_pass_file() -> String {
     let mut file = String::new();
     file.push_str(PASSWORDS);
     file.push_str(".keys");
-    return file;
+    file
 }
 
-
 fn encrypt_decrypt(pass: &str, decrypt: bool) -> bool {
-    let in_file: String;
-    let out_file: String;
-    if decrypt {
-        in_file = get_pass_file();
-        out_file = PASSWORDS.to_string();
+    let in_file = if decrypt {
+        get_pass_file()
     } else {
-        in_file = PASSWORDS.to_string();
-        out_file = get_pass_file();
-    }
+        PASSWORDS.to_string()
+    };
+    let out_file = if decrypt {
+        PASSWORDS.to_string()
+    } else {
+        get_pass_file()
+    };
     let ifile = Path::new(CONFIG_DIR).join(in_file);
     let ofile = Path::new(CONFIG_DIR).join(out_file);
     let key = GenericArray::from_slice(pass.as_bytes());
@@ -53,24 +53,24 @@ fn encrypt_decrypt(pass: &str, decrypt: bool) -> bool {
                 }
             }
             match fs::write(ofile, use_data) {
-                Ok(_) => return true,
+                Ok(_) => true,
                 Err(e) => {
                     println!("unable to write file {}", e);
-                    return false;
+                    false
                 }
             }
         }
         Err(e) => {
             println!("unable to read file {}", e);
-            return false;
+            false
         }
     }
 }
 
 pub fn decrypt_file(pass: &str) -> bool {
-    return encrypt_decrypt(pass, true);
+    encrypt_decrypt(pass, true)
 }
 
 pub fn encrypt_file(pass: &str) -> bool {
-    return encrypt_decrypt(pass, false);
+    encrypt_decrypt(pass, false)
 }

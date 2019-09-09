@@ -22,12 +22,12 @@ fn process<D: Digest + Default>(value: &str) -> String {
     for byte in r {
         buf.push_str(&format!("{:02x}", byte));
     }
-    return buf;
+    buf
 }
 
 /// md4 hashing
 fn md4_hash(value: &str) -> String {
-    return process::<Md4>(value);
+    process::<Md4>(value)
 }
 
 /// use or generate a password
@@ -36,7 +36,7 @@ fn generate_password(out_password: &mut String) -> String {
     out_password.push_str(&pass);
     let md4 = md4_hash(&out_password);
     println!("password: {}\nmd4 hash: {}", out_password, md4);
-    return md4;
+    md4
 }
 
 // read a username from stdin
@@ -58,14 +58,14 @@ fn read_username() -> Option<String> {
         println!("empty username");
         return None;
     }
-    return Some(user.to_string());
+    Some(user.to_string())
 }
 
 /// get a password as a hashed value
 pub fn get_pass() -> bool {
     let mut out = String::new();
     generate_password(&mut out);
-    return true;
+    true
 }
 
 /// create a new user
@@ -73,7 +73,7 @@ fn create_user() -> Result<bool, io::Error> {
     match read_username() {
         Some(user) => {
             for c in user.chars() {
-                if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')  {
+                if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
                     continue;
                 }
                 println!("invalid user name (a-z): {}", user);
@@ -88,12 +88,10 @@ fn create_user() -> Result<bool, io::Error> {
             user_file.push_str(".lua");
             let user_path = Path::new(CONFIG_DIR).join(user_file);
             let mut buffer = File::create(user_path)?;
-            buffer.write(format!("-- {}", user).as_bytes())?;
-            return add_pass(user, md4);
+            buffer.write_all(format!("-- {}", user).as_bytes())?;
+            add_pass(user, md4)
         }
-        None => {
-            return Ok(false);
-        }
+        None => Ok(false),
     }
 }
 
@@ -125,7 +123,7 @@ fn add_pass(user: String, md4: String) -> Result<bool, io::Error> {
         wtr.write_record(r).expect("unable to write record to csv");
     }
     wtr.flush().expect("unable to save file");
-    return Ok(true);
+    Ok(true)
 }
 
 pub fn new_user(pass: &str) -> bool {
@@ -136,14 +134,14 @@ pub fn new_user(pass: &str) -> bool {
     match status {
         Ok(n) => {
             if n {
-                return encrypt_file(pass);
+                encrypt_file(pass)
             } else {
-                return n;
+                n
             }
         }
         Err(error) => {
             println!("{}", error);
-            return false;
+            false
         }
     }
 }

@@ -15,7 +15,7 @@ fn kill(pid: &str, signal: &str) -> bool {
         .arg(pid)
         .status()
         .expect("kill command failed");
-    return output.success();
+    output.success()
 }
 
 fn signal(name: &str, signal: &str) -> bool {
@@ -38,7 +38,7 @@ fn signal(name: &str, signal: &str) -> bool {
             valid = false;
         }
     }
-    return valid;
+    valid
 }
 
 fn signal_all() -> bool {
@@ -48,7 +48,7 @@ fn signal_all() -> bool {
     if !signal("radiucal", "2") {
         return false;
     }
-    return true;
+    true
 }
 
 fn update(outdir: PathBuf) -> bool {
@@ -63,7 +63,7 @@ fn update(outdir: PathBuf) -> bool {
         create_dir_all(&var_home).expect("unable to make live configs");
     }
     let contents = fs::read_to_string(manifest).expect("unable to read manifest");
-    let base_users: std::vec::Vec<&str> = contents.split("\n").collect();
+    let base_users: std::vec::Vec<&str> = contents.split('\n').collect();
     let mut new_users: std::vec::Vec<String> = std::vec::Vec::new();
     for b in base_users {
         if b == "" {
@@ -97,7 +97,7 @@ fn update(outdir: PathBuf) -> bool {
         return false;
     }
     copy(eap_bin, eap_var).expect("unable to copy eap_users file");
-    return signal_all();
+    signal_all()
 }
 
 fn get_file_list(dir: &str) -> std::vec::Vec<String> {
@@ -107,14 +107,14 @@ fn get_file_list(dir: &str) -> std::vec::Vec<String> {
         let entry = f.expect("unable to read dir");
         file_list.push(entry.path().to_string_lossy().into_owned());
     }
-    return file_list;
+    file_list
 }
 
 pub fn netconf() -> bool {
     let output = Command::new("radiucal-lua-bridge")
         .status()
         .expect("lua-bridge command failed");
-    return output.success();
+    output.success()
 }
 
 pub fn all(server: bool) -> bool {
@@ -172,5 +172,5 @@ pub fn all(server: bool) -> bool {
             return update(outdir.to_path_buf());
         }
     }
-    return true;
+    true
 }

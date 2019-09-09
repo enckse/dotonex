@@ -64,6 +64,7 @@ radiucal:
 
 format:
 	goformatter
+	cargo clippy
 
 setup:
 	rm -rf $(BIN)

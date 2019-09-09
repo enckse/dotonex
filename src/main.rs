@@ -10,10 +10,10 @@ mod constants {
     pub const MANIFEST: &str = "manifest";
     pub const EAP_USERS: &str = "eap_users";
     pub fn random_string(length: usize) -> String {
-        return rand::thread_rng()
+        rand::thread_rng()
             .sample_iter(&Alphanumeric)
             .take(length)
-            .collect::<String>();
+            .collect::<String>()
     }
 }
 
@@ -48,7 +48,7 @@ fn main() {
                 println!("parameter must start with --");
                 return;
             }
-            let parts: Vec<&str> = a.split("=").collect();
+            let parts: Vec<&str> = a.split('=').collect();
             if parts.len() != 2 {
                 println!("invalid parameter input");
                 return;
