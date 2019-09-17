@@ -37,7 +37,7 @@ endif
 $(UTESTS):
 	go test -v $@/*.go
 
-$(EXES): cmd/*.go
+$(EXES): $(shell find . -type f -name "*.go")
 	go build -o $@ $(FLAGS)pie cmd/$(shell echo $@ | sed "s|$(BIN)||g").go
 
 format:
