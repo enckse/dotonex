@@ -1,6 +1,6 @@
 [package]
 name = "radiucal-admin"
-version = "1.7.0"
+version = "1.7.1"
 authors = ["Sean Enck <enckse@voidedtech.com>"]
 edition = "2018"
 

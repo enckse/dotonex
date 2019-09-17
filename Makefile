@@ -13,7 +13,9 @@ RADIUCAL_ADM := $(BIN)radiucal-admin
 
 .PHONY: $(UTESTS)
 
-all: clean $(PLUGINS) $(EXES) admin test format
+all: clean build test format
+
+build: modules admin
 
 modules: $(PLUGINS)
 
