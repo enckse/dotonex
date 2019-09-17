@@ -7,7 +7,7 @@ ifneq ($(VERSION),master)
 endif
 CHECK_RUST   ?= $(VERSION)
 FLAGS        := -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
-UTESTS       := $(shell find . -type f -name "*_test.go")
+UTESTS       := $(shell find . -type f -name "*_test.go" | xargs dirname | sort -u)
 EXES         := $(BIN)radiucal $(BIN)radiucal-lua-bridge $(BIN)harness
 RADIUCAL_ADM := $(BIN)radiucal-admin
 
@@ -35,7 +35,7 @@ endif
 	cp target/release/radiucal-admin $@
 
 $(UTESTS):
-	go test -v $(shell dirname $@)/*.go
+	go test -v $@/*.go
 
 $(EXES): cmd/*.go
 	go build -o $@ $(FLAGS)pie cmd/$(shell echo $@ | sed "s|$(BIN)||g").go
