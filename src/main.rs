@@ -22,9 +22,9 @@ use crate::configure::{all, netconf};
 use crate::constants::CONFIG_DIR;
 use crate::encrypt::{decrypt_file, encrypt_file};
 use crate::useradd::{get_pass, new_user, passwd};
+use clap::{App, Arg};
 use std::env;
 use std::path::Path;
-use clap::{App, Arg};
 
 fn main() {
     let matches = App::new("radiucal-admin")
@@ -37,15 +37,16 @@ fn main() {
             Arg::with_name("server")
                 .short("s")
                 .long("server")
-                .help("operate in server-mode")
+                .help("operate in server-mode"),
         )
         .arg(
             Arg::with_name("pass")
                 .short("p")
                 .long("pass")
                 .help("administrative password")
-                .takes_value(true)
-        ).get_matches();
+                .takes_value(true),
+        )
+        .get_matches();
     if !Path::new(CONFIG_DIR).exists() {
         println!("config directory missing...");
         return;
@@ -54,7 +55,7 @@ fn main() {
     let server = matches.is_present("server");
     let mut pass = String::from(matches.value_of("pass").unwrap_or(""));
     if pass.is_empty() {
-        if let Ok(v) =  env::var("RADIUCAL_ADMIN_KEY") {
+        if let Ok(v) = env::var("RADIUCAL_ADMIN_KEY") {
             pass = v;
         }
     }
