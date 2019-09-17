@@ -17,62 +17,48 @@ mod constants {
     }
 }
 
+extern crate clap;
 use crate::configure::{all, netconf};
 use crate::constants::CONFIG_DIR;
 use crate::encrypt::{decrypt_file, encrypt_file};
 use crate::useradd::{get_pass, new_user, passwd};
 use std::env;
 use std::path::Path;
+use clap::{App, Arg};
 
 fn main() {
-    let args: Vec<_> = env::args().collect();
-    if args.len() < 2 {
-        println!("no command given");
-        return;
-    }
-    let mut server = false;
-    let mut pass = String::new();
-    let command = args[1].to_string();
+    let matches = App::new("radiucal-admin")
+        .arg(
+            Arg::with_name("command")
+                .help("command to perform")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("server")
+                .short("s")
+                .long("server")
+                .help("operate in server-mode")
+        )
+        .arg(
+            Arg::with_name("pass")
+                .short("p")
+                .long("pass")
+                .help("administrative password")
+                .takes_value(true)
+        ).get_matches();
     if !Path::new(CONFIG_DIR).exists() {
         println!("config directory missing...");
         return;
     }
-    if args.len() > 2 {
-        let mut idx = -1;
-        for a in args.into_iter() {
-            idx += 1;
-            if idx < 2 {
-                continue;
-            }
-            if !a.starts_with("--") {
-                println!("parameter must start with --");
-                return;
-            }
-            let parts: Vec<&str> = a.split('=').collect();
-            if parts.len() != 2 {
-                println!("invalid parameter input");
-                return;
-            }
-            let mut p = String::new();
-            p.push_str(&parts[0][2..]);
-            match &*p {
-                "pass" => {
-                    pass = parts[1].to_string();
-                }
-                "server" => {
-                    server = parts[1] == "true";
-                }
-                _ => println!("unknown parameter: {}", parts[0]),
-            }
-        }
-    }
+    let cmd = matches.value_of("command").expect("no command given...");
+    let server = matches.is_present("server");
+    let mut pass = String::from(matches.value_of("pass").unwrap_or(""));
     if pass.is_empty() {
         if let Ok(v) =  env::var("RADIUCAL_ADMIN_KEY") {
             pass = v;
         }
     }
     let mut valid = false;
-    let cmd: &str = &*command;
     match cmd {
         "useradd" => {
             valid = new_user(&pass);
@@ -96,7 +82,7 @@ fn main() {
             valid = netconf();
         }
         _ => {
-            println!("command unknown: {}", command);
+            println!("command unknown: {}", cmd);
         }
     }
     if !valid {

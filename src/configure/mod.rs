@@ -119,6 +119,9 @@ pub fn netconf() -> bool {
 
 pub fn all(server: bool) -> bool {
     println!("updating networking configuration");
+    if server {
+        println!("server mode");
+    }
     let outdir = Path::new(OUTPUT_DIR);
     if !outdir.exists() {
         create_dir(outdir).expect("unable to make output directory");
