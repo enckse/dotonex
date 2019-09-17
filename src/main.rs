@@ -66,6 +66,11 @@ fn main() {
             }
         }
     }
+    if pass.is_empty() {
+        if let Ok(v) =  env::var("RADIUCAL_ADMIN_KEY") {
+            pass = v;
+        }
+    }
     let mut valid = false;
     let cmd: &str = &*command;
     match cmd {

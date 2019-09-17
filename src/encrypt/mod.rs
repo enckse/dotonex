@@ -15,6 +15,10 @@ fn get_pass_file() -> String {
 }
 
 fn encrypt_decrypt(pass: &str, decrypt: bool) -> bool {
+    if pass.is_empty() {
+        println!("no password given");
+        return false;
+    }
     let in_file = if decrypt {
         get_pass_file()
     } else {
