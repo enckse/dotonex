@@ -1,5 +1,4 @@
 BIN          := bin/
-TST          := tests/
 PLUGIN       := plugins/
 PLUGINS      := $(shell ls $(PLUGIN))
 VERSION      ?= master
@@ -8,9 +7,8 @@ ifneq ($(VERSION),master)
 endif
 CHECK_RUST   ?= $(VERSION)
 FLAGS        := -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
-TEST_CONFS   := normal norjct
 UTESTS       := $(shell find . -type f -name "*_test.go")
-EXES         := $(BIN)radiucal $(BIN)radiucal-lua-bridge
+EXES         := $(BIN)radiucal $(BIN)radiucal-lua-bridge $(BIN)harness
 RADIUCAL_ADM := $(BIN)radiucal-admin
 
 .PHONY: $(UTESTS)
@@ -22,10 +20,12 @@ modules: $(PLUGINS)
 $(PLUGINS):
 	go build $(FLAGS)plugin -o $(BIN)$@.rd $(PLUGIN)$@/plugin.go
 
-test: $(UTESTS) $(TEST_CONFS)
+test: $(UTESTS)
+	./tests/run.sh normal
+	./tests/run.sh norjct
+	cd tests/admin && ./run.sh
 
 admin: $(EXES) $(RADIUCAL_ADM)
-	cd $(TST)admin && ./run.sh
 
 $(RADIUCAL_ADM): $(shell find src/ -type f -name "*.rs")
 ifneq ($(CHECK_RUST),$(VERSION))
@@ -37,14 +37,8 @@ endif
 $(UTESTS):
 	go test -v $(shell dirname $@)/*.go
 
-harness:
-	go build -o $(BIN)harness $(TST)harness.go
-
-$(TEST_CONFS): harness
-	./tests/run.sh $@
-
-$(EXES): radiucal.go radiucal-lua-bridge.go
-	go build -o $@ $(FLAGS)pie $(shell echo $@ | sed "s|$(BIN)||g").go
+$(EXES): cmd/*.go
+	go build -o $@ $(FLAGS)pie cmd/$(shell echo $@ | sed "s|$(BIN)||g").go
 
 format:
 	goformatter
