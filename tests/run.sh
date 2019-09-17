@@ -1,6 +1,14 @@
 #!/bin/bash
-OUT=bin/stdout
+BIN=bin/
+OUT=${BIN}stdout
 LOGS=tests/log/
+PLUGINS=tests/plugins/
+for d in $LOGS $PLUGINS; do
+    rm -rf $d
+    mkdir -p $d
+done
+cp $BIN/*.rd $PLUGINS
+
 CONF="$1"
 _run() {
     bin/radiucal --config tests/test.$CONF.conf > $OUT 2>&1
@@ -11,7 +19,7 @@ _acct() {
 }
 
 echo "==========================="
-echo "running $CONF"
+echo "running $CONF (from: $PWD)"
 echo "==========================="
 _run &
 _acct &
