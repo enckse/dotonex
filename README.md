@@ -23,7 +23,7 @@ Expectations:
 * Support a port-restricted LAN (+wifi) in a controlled, physical area
 * Provide a singular authentication strategy for supported clients using peap+mschapv2 (no CA validation).
 * Windows 10
-* Linux (any supporting modern versions of NetworkManager or systemd-networkd when server/headless)
+* Linux (any supported modern versions of NetworkManager or systemd-networkd when server/headless)
 * Android 7+
 * Map authenticated user+MAC combinations to specific VLANs
 * Support MAC-based authentication (bypass) for systems that can not authenticate themselves
