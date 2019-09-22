@@ -43,7 +43,7 @@ $(EXES): $(shell find . -type f -name "*.go")
 	go build -o $@ $(FLAGS)pie cmd/$(shell echo $@ | sed "s|$(BIN)||g").go
 
 format:
-	goformatter
+	@golinter
 	cargo clippy
 
 clean:
