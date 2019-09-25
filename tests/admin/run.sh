@@ -7,7 +7,6 @@ PASSFILE=${CONFIG}passwords
 
 PATH=$PATH:$(readlink -f $OUT)
 export PATH
-echo $PATH
 _radiucal-admin() {
     cwd=$PWD
     cd $OUT && echo $1 | ./radiucal-admin ${@:2} --pass=$PASS

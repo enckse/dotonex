@@ -27,9 +27,7 @@ $(UTESTS):
 	go test -v $@ $(shell ls core/*.go | grep -v test)
 
 test: $(UTESTS)
-	cd tests && ./run.sh normal
-	cd tests && ./run.sh norjct
-	cd tests/admin && ./run.sh
+	make -C tests
 
 admin: $(EXES) $(RADIUCAL_ADM)
 
