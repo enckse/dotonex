@@ -7,7 +7,7 @@ cp ../../target/release/radiucal-admin .
 cp ../../radiucal-lua-bridge .
 
 PATH=$PATH:$PWD
-export $PATH
+export PATH
 _radiucal-admin() {
     echo $1 | ./radiucal-admin ${@:2} --pass=$PASS
 }
@@ -23,7 +23,7 @@ cp *.lua $CONFIG
 _radiucal-admin "" netconf
 
 failure=0
-for f in audit.csv manifest eap_users sysinfo.csv segment-diagram.dot segments.md; do
+for f in audit.csv manifest eap_users sysinfo.csv segment-diagram.dot segments.csv; do
     echo "checking $f"
     diff -u $f ${FILES}$f
     if [ $? -ne 0 ]; then

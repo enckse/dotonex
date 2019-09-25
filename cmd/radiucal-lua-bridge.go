@@ -221,7 +221,6 @@ func (o *outputs) add(user string, desc map[string]map[string][]string) {
 func vlanReports(vlans []*VLAN) {
 	segments := [][]string{}
 	segments = append(segments, []string{"cell", "segment", "lan", "vlan", "owner", "description"})
-	segments = append(segments, []string{"---", "---", "---", "---", "---", "---"})
 	diagram := []string{"digraph g {", "    size=\"6,6\";", "    node [color=lightblue2, style=filled];"}
 	for _, vlan := range vlans {
 		diagram = append(diagram, fmt.Sprintf("    \"%s\" [shape=\"record\"]", vlan.name))
@@ -237,13 +236,8 @@ func vlanReports(vlans []*VLAN) {
 		segments = append(segments, entry)
 	}
 	diagram = append(diagram, "}")
-	markdown := []string{}
-	for _, line := range segments {
-		l := fmt.Sprintf("| %s |", strings.Join(line, " | "))
-		markdown = append(markdown, l)
-	}
 	writeContent("segment-diagram.dot", diagram)
-	writeContent("segments.md", markdown)
+	writeCSV("segments", segments, true)
 }
 
 func writeCSV(name string, content [][]string, hasHeader bool) {
