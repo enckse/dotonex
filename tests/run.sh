@@ -9,15 +9,15 @@ for d in $LOGS $PLUGINS; do
     rm -rf $d
     mkdir -p $d
 done
-cp ../bin/*.rd $PLUGINS
+cp ../*.rd $PLUGINS
 
 CONF="$1"
 _run() {
-    ../bin/radiucal --config test.$CONF.conf > $OUT 2>&1
+    ../radiucal --config test.$CONF.conf > $OUT 2>&1
 }
 
 _acct() {
-    ../bin/radiucal --instance acct --config test.acct.conf > $OUT.acct 2>&1
+    ../radiucal --instance acct --config test.acct.conf > $OUT.acct 2>&1
 }
 
 echo "==========================="
@@ -27,14 +27,14 @@ _run &
 _acct &
 sleep 1
 echo "starting harness..."
-../bin/harness --endpoint=true &
+../harness --endpoint=true &
 sleep 1
 echo "running tests..."
-../bin/harness
+../harness
 echo "reloading..."
 kill -2 $(pidof radiucal)
 echo "re-running..."
-../bin/harness
+../harness
 sleep 1
 echo "killing..."
 pkill --signal 2 radiucal

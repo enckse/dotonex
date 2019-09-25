@@ -1,35 +1,28 @@
-BIN          := bin/
-PLUGIN       := plugins/
-PLUGINS      := $(shell ls $(PLUGIN) | grep -v "test" | cut -d "." -f 1)
+PLUGINS      := access.rd debug.rd log.rd naswhitelist.rd stats.rd usermac.rd
 VERSION      ?= master
 ifneq ($(VERSION),master)
 	CHECK_RUST := $(shell cat Cargo.toml | grep "version = " | grep $(VERSION) | cut -d "=" -f 2 | sed 's/"//g' | sed "s/ //g")
 endif
 CHECK_RUST   ?= $(VERSION)
 FLAGS        := -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
-EXES         := $(BIN)radiucal $(BIN)radiucal-lua-bridge $(BIN)harness
-RADIUCAL_ADM := $(BIN)radiucal-admin
+EXES         := radiucal radiucal-lua-bridge harness
+RADIUCAL_ADM := radiucal-admin
 UTESTS       := $(shell find core -type f -name "*_test.go")
+SRC          := $(shell find . -type f -name "*.go")
 
-.PHONY: $(UTESTS) all build modules test admin lint clean
+.PHONY: $(UTESTS) build test lint clean
 
-all: clean build test lint
+build: $(PLUGINS) $(EXES) $(RADIUCAL_ADM) test lint
 
-build: modules admin
-
-modules: $(PLUGINS)
-
-$(PLUGINS):
-	go build $(FLAGS)plugin -o $(BIN)$@.rd $(PLUGIN)$@.go
-	test ! -s $(PLUGIN)$@_test.go || go test -v $(PLUGIN)$@_test.go $(PLUGIN)$@.go
+$(PLUGINS): $(SRC)
+	go build $(FLAGS)plugin -o $@ plugins/$@.go
+	test ! -s plugins/$@_test.go || go test -v plugins/$@_test.go plugins/$@.go
 
 $(UTESTS):
 	go test -v $@ $(shell ls core/*.go | grep -v test)
 
 test: $(UTESTS)
 	make -C tests
-
-admin: $(EXES) $(RADIUCAL_ADM)
 
 $(RADIUCAL_ADM): $(shell find src/ -type f -name "*.rs")
 ifneq ($(CHECK_RUST),$(VERSION))
@@ -38,12 +31,12 @@ endif
 	cargo build --release
 	cp target/release/radiucal-admin $@
 
-$(EXES): $(shell find . -type f -name "*.go")
-	go build -o $@ $(FLAGS)pie cmd/$(shell echo $@ | sed "s|$(BIN)||g").go
+$(EXES): $(SRC)
+	go build -o $@ $(FLAGS)pie cmd/$@.go
 
 lint:
 	@golinter
 	cargo clippy
 
 clean:
-	rm -rf $(BIN)
+	rm -rf $(EXECS) $(RADIUCAL_ADM) $(PLUGINS)

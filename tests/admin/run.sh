@@ -1,16 +1,15 @@
 #!/bin/bash
-OUT=../../bin/
-FILES=${OUT}bin/
-CONFIG=${OUT}config/
+FILES=bin/
+CONFIG=config/
 PASS=testtesttesttesttesttesttesttest
 PASSFILE=${CONFIG}passwords
+cp ../../radiucal-admin .
+cp ../../radiucal-lua-bridge .
 
-PATH=$PATH:$(readlink -f $OUT)
-export PATH
+PATH=$PATH:$PWD
+export $PATH
 _radiucal-admin() {
-    cwd=$PWD
-    cd $OUT && echo $1 | ./radiucal-admin ${@:2} --pass=$PASS
-    cd $cwd
+    echo $1 | ./radiucal-admin ${@:2} --pass=$PASS
 }
 
 rm -rf $FILES

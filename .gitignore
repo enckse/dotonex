@@ -3,5 +3,11 @@ certs/*
 radiucal.*
 tests/plugins/
 tests/log/
+tests/admin/config/
 plugins/**/tests/
 target/
+*.rd
+radiucal-admin
+radiucal
+radiucal-lua-bridge
+harness
