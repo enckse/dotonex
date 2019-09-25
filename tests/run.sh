@@ -1,21 +1,23 @@
 #!/bin/bash
 BIN=bin/
+rm -rf $BIN
+mkdir -p $BIN
 OUT=${BIN}stdout
-LOGS=tests/log/
-PLUGINS=tests/plugins/
+LOGS=log/
+PLUGINS=plugins/
 for d in $LOGS $PLUGINS; do
     rm -rf $d
     mkdir -p $d
 done
-cp $BIN/*.rd $PLUGINS
+cp ../bin/*.rd $PLUGINS
 
 CONF="$1"
 _run() {
-    bin/radiucal --config tests/test.$CONF.conf > $OUT 2>&1
+    ../bin/radiucal --config test.$CONF.conf > $OUT 2>&1
 }
 
 _acct() {
-    bin/radiucal --instance acct --config tests/test.acct.conf > $OUT.acct 2>&1
+    ../bin/radiucal --instance acct --config test.acct.conf > $OUT.acct 2>&1
 }
 
 echo "==========================="
@@ -25,14 +27,14 @@ _run &
 _acct &
 sleep 1
 echo "starting harness..."
-bin/harness --endpoint=true &
+../bin/harness --endpoint=true &
 sleep 1
 echo "running tests..."
-bin/harness
+../bin/harness
 echo "reloading..."
 kill -2 $(pidof radiucal)
 echo "re-running..."
-bin/harness
+../bin/harness
 sleep 1
 echo "killing..."
 pkill --signal 2 radiucal
@@ -67,7 +69,7 @@ for o in access logger; do
 done
 
 for d in $(echo $COMPARE); do
-    diff --color -w -u tests/expected/$CONF.$d.log bin/$d.log
+    diff --color -w -u expected/$CONF.$d.log bin/$d.log
     if [ $? -ne 0 ]; then
         echo "integration test failed ($d $1)"
         exit 1

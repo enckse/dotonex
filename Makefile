@@ -13,7 +13,7 @@ UTESTS       := $(shell find core -type f -name "*_test.go")
 
 .PHONY: $(UTESTS) all build modules test admin lint clean
 
-all: clean build test format
+all: clean build test lint
 
 build: modules admin
 
@@ -27,8 +27,8 @@ $(UTESTS):
 	go test -v $@ $(shell ls core/*.go | grep -v test)
 
 test: $(UTESTS)
-	./tests/run.sh normal
-	./tests/run.sh norjct
+	cd tests && ./run.sh normal
+	cd tests && ./run.sh norjct
 	cd tests/admin && ./run.sh
 
 admin: $(EXES) $(RADIUCAL_ADM)
