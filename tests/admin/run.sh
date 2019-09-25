@@ -3,7 +3,7 @@ FILES=bin/
 CONFIG=config/
 PASS=testtesttesttesttesttesttesttest
 PASSFILE=${CONFIG}passwords
-cp ../../radiucal-admin .
+cp ../../target/release/radiucal-admin .
 cp ../../radiucal-lua-bridge .
 
 PATH=$PATH:$PWD

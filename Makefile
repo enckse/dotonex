@@ -6,13 +6,12 @@ endif
 CHECK_RUST   ?= $(VERSION)
 FLAGS        := -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 EXES         := radiucal radiucal-lua-bridge harness
-RADIUCAL_ADM := radiucal-admin
-UTESTS       := $(shell find core -type f -name "*_test.go")
-SRC          := $(shell find . -type f -name "*.go")
+UTESTS       := $(shell find core/ -type f -name "*_test.go")
+SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
 
 .PHONY: $(UTESTS) build test lint clean
 
-build: $(PLUGINS) $(EXES) $(RADIUCAL_ADM) test lint
+build: $(PLUGINS) $(EXES) radiucal-admin test lint
 
 $(PLUGINS): $(SRC)
 	go build $(FLAGS)plugin -o $@ plugins/$@.go
@@ -24,12 +23,11 @@ $(UTESTS):
 test: $(UTESTS)
 	make -C tests
 
-$(RADIUCAL_ADM): $(shell find src/ -type f -name "*.rs")
+radiucal-admin: $(shell find src/ -type f -name "*.rs")
 ifneq ($(CHECK_RUST),$(VERSION))
 	$(error "administrative version mismatch $(CHECK_RUST) != $(VERSION)")
 endif
 	cargo build --release
-	cp target/release/radiucal-admin $@
 
 $(EXES): $(SRC)
 	go build -o $@ $(FLAGS)pie cmd/$@.go
@@ -39,4 +37,4 @@ lint:
 	cargo clippy
 
 clean:
-	rm -rf $(EXECS) $(RADIUCAL_ADM) $(PLUGINS)
+	rm -rf $(EXECS) radiucal-admin $(PLUGINS)
