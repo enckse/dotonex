@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"voidedtech.com/radiucal/core"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 var (

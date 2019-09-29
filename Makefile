@@ -6,7 +6,7 @@ endif
 CHECK_RUST   ?= $(VERSION)
 FLAGS        := -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 EXES         := radiucal radiucal-lua-bridge
-UTESTS       := $(shell find core/ -type f -name "*_test.go")
+UTESTS       := $(shell find internal/ -type f -name "*_test.go" | xargs dirname)
 SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
 
 .PHONY: $(UTESTS) build test lint clean
@@ -18,7 +18,7 @@ $(PLUGINS): $(SRC)
 	cd cmd/plugins/$@ && go test -v
 
 $(UTESTS):
-	go test -v $@ $(shell ls core/*.go | grep -v test)
+	cd $@ && go test -v
 
 test: $(UTESTS)
 	make -C tests
@@ -37,4 +37,4 @@ lint:
 	cargo clippy
 
 clean:
-	rm -rf $(EXECS) radiucal-admin $(PLUGINS)
+	rm -rf $(EXES) radiucal-admin $(PLUGINS)

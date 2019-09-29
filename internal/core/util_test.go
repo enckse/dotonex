@@ -2,13 +2,11 @@ package core
 
 import (
 	"testing"
-
-	"voidedtech.com/radiucal/core"
 )
 
 func TestKeyValueStrings(t *testing.T) {
-	c := core.KeyValueStore{}
-	c.KeyValues = append(c.KeyValues, core.KeyValue{Key: "key", Value: "val"})
+	c := KeyValueStore{}
+	c.KeyValues = append(c.KeyValues, KeyValue{Key: "key", Value: "val"})
 	c.Add("key2", "val2")
 	c.Add("key2", "val3")
 	res := c.Strings()
@@ -27,15 +25,15 @@ func TestKeyValueStrings(t *testing.T) {
 }
 
 func TestKeyValueString(t *testing.T) {
-	c := core.KeyValue{Key: "k", Value: "v"}
+	c := KeyValue{Key: "k", Value: "v"}
 	if c.String() != "k = v" {
 		t.Error("should collapse")
 	}
 }
 
 func TestKeyValueEmpty(t *testing.T) {
-	c := core.KeyValueStore{}
-	c.KeyValues = append(c.KeyValues, core.KeyValue{Key: "key", Value: "val"})
+	c := KeyValueStore{}
+	c.KeyValues = append(c.KeyValues, KeyValue{Key: "key", Value: "val"})
 	c.Add("key2", "val2")
 	c.Add("key2", "")
 	c.DropEmpty = true

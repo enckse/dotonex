@@ -7,7 +7,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/core"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (

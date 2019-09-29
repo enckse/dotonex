@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"voidedtech.com/radiucal/core"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 type tracer struct {

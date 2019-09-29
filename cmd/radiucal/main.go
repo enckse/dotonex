@@ -15,8 +15,8 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
-	"voidedtech.com/radiucal/core"
-	"voidedtech.com/radiucal/server"
+	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/server"
 )
 
 var vers = "master"

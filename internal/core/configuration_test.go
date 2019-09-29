@@ -2,12 +2,10 @@ package core
 
 import (
 	"testing"
-
-	"voidedtech.com/radiucal/core"
 )
 
 func TestDefaults(t *testing.T) {
-	c := &core.Configuration{}
+	c := &Configuration{}
 	c.Defaults([]byte{})
 	if c.Host != "localhost" {
 		t.Error("invalid default host")

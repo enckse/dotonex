@@ -6,7 +6,7 @@ import (
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
-	"voidedtech.com/radiucal/core"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (

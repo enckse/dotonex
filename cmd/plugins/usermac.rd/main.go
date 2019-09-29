@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/core"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 type umac struct {

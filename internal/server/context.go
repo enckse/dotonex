@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"layeh.com/radius"
-	"voidedtech.com/radiucal/core"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (

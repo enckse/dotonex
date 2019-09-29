@@ -13,7 +13,7 @@ import (
 
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
-	"voidedtech.com/radiucal/core"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (
