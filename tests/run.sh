@@ -5,6 +5,7 @@ mkdir -p $BIN
 OUT=${BIN}stdout
 LOGS=log/
 PLUGINS=plugins/
+HARNESS="../tools/harness.go"
 for d in $LOGS $PLUGINS; do
     rm -rf $d
     mkdir -p $d
@@ -27,14 +28,14 @@ _run &
 _acct &
 sleep 1
 echo "starting harness..."
-../harness --endpoint=true &
+go run $HARNESS --endpoint=true &
 sleep 1
 echo "running tests..."
-../harness
+go run $HARNESS
 echo "reloading..."
 kill -2 $(pidof radiucal)
 echo "re-running..."
-../harness
+go run $HARNESS
 sleep 1
 echo "killing..."
 pkill --signal 2 radiucal

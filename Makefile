@@ -5,7 +5,7 @@ ifneq ($(VERSION),master)
 endif
 CHECK_RUST   ?= $(VERSION)
 FLAGS        := -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
-EXES         := radiucal radiucal-lua-bridge harness
+EXES         := radiucal radiucal-lua-bridge
 UTESTS       := $(shell find core/ -type f -name "*_test.go")
 SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
 
@@ -30,7 +30,7 @@ endif
 	cargo build --release
 
 $(EXES): $(SRC)
-	go build -o $@ $(FLAGS)pie cmd/$@.go
+	go build -o $@ $(FLAGS)pie cmd/$@/main.go
 
 lint:
 	@golinter
