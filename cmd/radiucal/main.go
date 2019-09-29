@@ -9,13 +9,13 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"sync"
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/plugins"
 	"voidedtech.com/radiucal/internal/server"
 )
 
@@ -184,11 +184,9 @@ func main() {
 	pCtx.Logs = conf.Log
 	pCtx.Lib = conf.Dir
 	pCtx.Instance = *instance
-	pPath := filepath.Join(conf.Dir, "plugins")
 	for _, p := range conf.Plugins {
-		oPath := filepath.Join(pPath, fmt.Sprintf("%s.rd", p))
-		core.WriteInfo("loading plugin", p, oPath)
-		obj, err := core.LoadPlugin(oPath, pCtx)
+		core.WriteInfo("loading plugin", p)
+		obj, err := plugins.LoadPlugin(p, pCtx)
 		if err != nil {
 			core.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
 		}

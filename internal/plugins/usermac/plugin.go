@@ -1,4 +1,4 @@
-package main
+package usermac
 
 import (
 	"fmt"

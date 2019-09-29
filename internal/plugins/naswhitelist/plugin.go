@@ -1,4 +1,4 @@
-package main
+package naswhitelist
 
 import (
 	"net"
@@ -34,15 +34,15 @@ var (
 func (l *nwl) Reload() {
 }
 
-// NasWhitelistConfig represents the plugin's specific configuration
-type NasWhitelistConfig struct {
+// Config represents the plugin's specific configuration
+type Config struct {
 	NasWhitelist struct {
 		Whitelist []string
 	}
 }
 
 func (l *nwl) Setup(ctx *core.PluginContext) error {
-	conf := &NasWhitelistConfig{}
+	conf := &Config{}
 	err := yaml.Unmarshal(ctx.Backing, conf)
 	if err != nil {
 		return err

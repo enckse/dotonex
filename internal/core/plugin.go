@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"plugin"
 	"strings"
 	"sync"
 	"time"
@@ -100,7 +99,8 @@ func NewPluginContext(config *Configuration) *PluginContext {
 	return p
 }
 
-func (p *PluginContext) clone(moduleName string) *PluginContext {
+// Clone a plugin context to a copy for use in plugins
+func (p *PluginContext) Clone(moduleName string) *PluginContext {
 	n := &PluginContext{}
 	n.Logs = p.Logs
 	n.Lib = p.Lib
@@ -224,40 +224,6 @@ func newFile(path, instance string, appending bool) *os.File {
 		return nil
 	}
 	return f
-}
-
-// LoadPlugin loads a plugin from the file system and into the system
-func LoadPlugin(path string, ctx *PluginContext) (Module, error) {
-	p, err := plugin.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	v, err := p.Lookup("Plugin")
-	if err != nil {
-		return nil, err
-	}
-	var mod Module
-	mod, ok := v.(Module)
-	if !ok {
-		return nil, fmt.Errorf("unable to load plugin %s", path)
-	}
-	err = mod.Setup(ctx.clone(mod.Name()))
-	if err != nil {
-		return nil, err
-	}
-	return mod, nil
-	switch t := mod.(type) {
-	default:
-		return nil, fmt.Errorf("unknown type: %T", t)
-	case Accounting:
-		return t.(Accounting), nil
-	case PreAuth:
-		return t.(PreAuth), nil
-	case Tracing:
-		return t.(Tracing), nil
-	case PostAuth:
-		return t.(PostAuth), nil
-	}
 }
 
 // WritePluginMessages supports writing plugin messages to disk

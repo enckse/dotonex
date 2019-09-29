@@ -1,4 +1,4 @@
-package main
+package stats
 
 import (
 	"fmt"
@@ -13,8 +13,8 @@ const (
 	timeFormat = "2006-01-02T15:04:05"
 )
 
-// StatsConfig represents the configuration for the stats plugin
-type StatsConfig struct {
+// Config represents the configuration for the stats plugin
+type Config struct {
 	Stats struct {
 		Flush int
 	}
@@ -52,7 +52,7 @@ func (s *stats) Reload() {
 }
 
 func (s *stats) Setup(ctx *core.PluginContext) error {
-	conf := &StatsConfig{}
+	conf := &Config{}
 	err := yaml.Unmarshal(ctx.Backing, conf)
 	if err != nil {
 		return err

@@ -10,7 +10,6 @@ for d in $LOGS $PLUGINS; do
     rm -rf $d
     mkdir -p $d
 done
-cp ../*.rd $PLUGINS
 
 CONF="$1"
 _run() {
