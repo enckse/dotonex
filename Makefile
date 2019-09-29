@@ -14,8 +14,8 @@ SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
 build: $(PLUGINS) $(EXES) radiucal-admin test lint
 
 $(PLUGINS): $(SRC)
-	go build $(FLAGS)plugin -o $@ plugins/$@.go
-	test ! -s plugins/$@_test.go || go test -v plugins/$@_test.go plugins/$@.go
+	go build $(FLAGS)plugin -o $@ cmd/plugins/$@/main.go
+	cd cmd/plugins/$@ && go test -v
 
 $(UTESTS):
 	go test -v $@ $(shell ls core/*.go | grep -v test)
