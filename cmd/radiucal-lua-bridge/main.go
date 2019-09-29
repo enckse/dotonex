@@ -31,60 +31,90 @@ const (
 	logType
 )
 
-type assignType int
-
 var (
 	state        definition
 	stateDisable = false
 )
 
-type assignment struct {
-	objectType assignType
-	mac        string
-	vlan       int
-}
+type (
+	assignType int
 
-// Systems represents system definitions
-type Systems struct {
-	definition
-	file    string
-	user    string
-	objects []*assignment
-	desc    map[string]map[string][]string
-}
+	assignment struct {
+		objectType assignType
+		mac        string
+		vlan       int
+	}
 
-// VLAN represents actual VLAN definitions
-type VLAN struct {
-	file     string
-	number   int
-	name     string
-	initiate []string
-	route    string
-	net      string
-	owner    string
-	desc     string
-	group    string
-}
+	// Systems represents system definitions
+	Systems struct {
+		definition
+		file    string
+		user    string
+		objects []*assignment
+		desc    map[string]map[string][]string
+	}
 
-type network struct {
-	definition
-	systems []*Systems
-	vlans   []*VLAN
-	refVLAN map[int]struct{}
-	mab     map[string]struct{}
-	own     map[string]struct{}
-	login   map[string]struct{}
-}
+	// VLAN represents actual VLAN definitions
+	VLAN struct {
+		file     string
+		number   int
+		name     string
+		initiate []string
+		route    string
+		net      string
+		owner    string
+		desc     string
+		group    string
+	}
 
-type outputs struct {
-	audits     [][]string
-	manifest   []string
-	eap        map[string]string
-	eapKeys    []string
-	trackLines map[string]struct{}
-	sysTrack   map[string]map[string][]string
-	sysCols    map[string]struct{}
-}
+	network struct {
+		definition
+		systems []*Systems
+		vlans   []*VLAN
+		refVLAN map[int]struct{}
+		mab     map[string]struct{}
+		own     map[string]struct{}
+		login   map[string]struct{}
+	}
+
+	outputs struct {
+		audits     [][]string
+		manifest   []string
+		eap        map[string]string
+		eapKeys    []string
+		trackLines map[string]struct{}
+		sysTrack   map[string]map[string][]string
+		sysCols    map[string]struct{}
+	}
+	definition interface {
+		Segment(int, string, []string, string, string, string, string, string)
+		Object(assignType, string, int)
+		Describe(id, key, value string)
+	}
+
+	entityAdd func(mac string)
+
+	entity struct {
+		Macs     []string
+		ID       string
+		Typed    string
+		Make     string
+		Model    string
+		XAttr    []string
+		Revision string
+	}
+
+	segment struct {
+		Name     string
+		Num      int
+		Initiate []string
+		Route    string
+		Net      string
+		Owner    string
+		Desc     string
+		Group    string
+	}
+)
 
 func fatal(message string, err error) {
 	fmt.Println(message)
@@ -543,35 +573,6 @@ func dieNow(message string, err error, now bool) {
 
 func main() {
 	netconfRun()
-}
-
-type definition interface {
-	Segment(int, string, []string, string, string, string, string, string)
-	Object(assignType, string, int)
-	Describe(id, key, value string)
-}
-
-type entityAdd func(mac string)
-
-type entity struct {
-	Macs     []string
-	ID       string
-	Typed    string
-	Make     string
-	Model    string
-	XAttr    []string
-	Revision string
-}
-
-type segment struct {
-	Name     string
-	Num      int
-	Initiate []string
-	Route    string
-	Net      string
-	Owner    string
-	Desc     string
-	Group    string
 }
 
 func (e *entity) Disabled() {

@@ -19,9 +19,8 @@ import (
 	"voidedtech.com/radiucal/internal/server"
 )
 
-var vers = "master"
-
 var (
+	vers          = "master"
 	proxy         *net.UDPConn
 	serverAddress *net.UDPAddr
 	clients                   = make(map[string]*connection)
