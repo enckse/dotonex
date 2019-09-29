@@ -6,7 +6,7 @@ endif
 CHECK_RUST   ?= $(VERSION)
 FLAGS        := -gcflags=all=-trimpath=$(GOPATH) -asmflags=all=-trimpath=$(GOPATH) -ldflags '-linkmode external -extldflags '$(LDFLAGS)' -s -w -X main.vers=$(VERSION)' -buildmode=
 EXES         := radiucal radiucal-lua-bridge
-UTESTS       := $(shell find internal/ -type f -name "*_test.go" | xargs dirname)
+UTESTS       := $(shell find internal/ -type f -name "*_test.go" | xargs dirname | sort -u)
 SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
 
 .PHONY: $(UTESTS) build test lint clean
