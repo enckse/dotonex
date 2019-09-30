@@ -21,7 +21,7 @@ func (l *umac) Name() string {
 }
 
 var (
-	db       string
+	db string
 	// Plugin represents the instance for the system
 	Plugin   umac
 	instance string
