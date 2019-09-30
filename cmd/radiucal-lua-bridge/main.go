@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -117,11 +116,11 @@ type (
 )
 
 func fatal(message string, err error) {
-	fmt.Println(message)
+	msg := message
 	if err != nil {
-		fmt.Println(err)
+		msg = fmt.Sprintf("%s: %v", message, err)
 	}
-	os.Exit(1)
+	core.Fatal(msg, nil)
 }
 
 // Segment defines a new segment (VLAN)
@@ -213,8 +212,9 @@ func writeFile(file string, values []string) {
 }
 
 func rawWrite(file string, content []byte) {
-	err := ioutil.WriteFile(filepath.Join("bin/", file), content, 0644)
-	die(err)
+	if err := ioutil.WriteFile(filepath.Join("bin/", file), content, 0644); err != nil {
+		fatal("unable to write", err)
+	}
 }
 
 func writeContent(file string, lines []string) {
@@ -277,16 +277,20 @@ func writeCSV(name string, content [][]string, hasHeader bool) {
 	datum := content
 	if hasHeader {
 		datum = datum[1:]
-		err := w.Write(content[0])
-		die(err)
+		if err := w.Write(content[0]); err != nil {
+			fatal(fmt.Sprintf("unable to write csv header: %s", name), err)
+		}
 	}
 
 	for _, r := range datum {
-		err := w.Write(r)
-		die(err)
+		if err := w.Write(r); err != nil {
+			fatal(fmt.Sprintf("unable to write csv row: %s", name), err)
+		}
 	}
 	w.Flush()
-	die(w.Error())
+	if err := w.Error(); err != nil {
+		fatal(fmt.Sprintf("unable to write csv: %s", name), err)
+	}
 	lines := strings.Split(strings.TrimSpace(b.String()), "\n")
 	out := []string{}
 	if hasHeader {
@@ -421,7 +425,9 @@ func (s *Systems) Describe(id, key, value string) {
 
 func fileToScript(fileName string) string {
 	b, err := ioutil.ReadFile(fileName)
-	die(err)
+	if err != nil {
+		fatal(fmt.Sprintf("unable to write script: %s", fileName), err)
+	}
 	return string(b)
 }
 
@@ -476,9 +482,11 @@ func (n *network) addSystem(s *Systems) {
 	n.systems = append(n.systems, s)
 }
 
-func netconfRun() {
+func main() {
 	f, err := ioutil.ReadDir(configDir)
-	die(err)
+	if err != nil {
+		fatal("unable to run netconf", err)
+	}
 	net := &network{}
 	net.mab = make(map[string]struct{})
 	net.own = make(map[string]struct{})
@@ -514,7 +522,9 @@ func readPasses() map[string]string {
 	userPasses := make(map[string]string)
 	path := filepath.Join(configDir, "passwords")
 	data, err := ioutil.ReadFile(path)
-	die(err)
+	if err != nil {
+		fatal(fmt.Sprintf("unable to read file: %s", path), err)
+	}
 	tracked := make(map[string]string)
 	r := csv.NewReader(strings.NewReader(string(data)))
 	for {
@@ -522,7 +532,9 @@ func readPasses() map[string]string {
 		if err == io.EOF {
 			break
 		}
-		die(err)
+		if err != nil {
+			fatal("unable to read passwords", err)
+		}
 		u := record[0]
 		p := record[1]
 		if _, ok := userPasses[u]; ok {
@@ -551,28 +563,6 @@ func checkMAC(mac string) {
 		}
 	}
 	fatal(fmt.Sprintf("invalid mac detected: %s", mac), nil)
-}
-
-func die(err error) {
-	dieNow("unrecoverable error", err, err != nil)
-}
-
-func dieNow(message string, err error, now bool) {
-	messaged := false
-	if err != nil {
-		messaged = true
-		fmt.Println(fmt.Sprintf("%s (%v)", message, err))
-	}
-	if now {
-		if !messaged {
-			fmt.Println(message)
-		}
-		os.Exit(1)
-	}
-}
-
-func main() {
-	netconfRun()
 }
 
 func (e *entity) Disabled() {
@@ -649,6 +639,6 @@ func buildSystems(path string, s definition) {
 	script := getScript(path)
 	if err := L.DoString(script); err != nil {
 		fmt.Println(script)
-		die(err)
+		fatal("^ script error", err)
 	}
 }
