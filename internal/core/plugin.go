@@ -14,6 +14,10 @@ import (
 )
 
 const (
+	// NoTrace indicates no tracing to occur
+	NoTrace TraceType = 0
+	// TraceRequest indicate to trace the request
+	TraceRequest TraceType = 1
 	// AccountingMode for accounting
 	AccountingMode = "accounting"
 	// TracingMode for tracing
@@ -22,10 +26,6 @@ const (
 	PreAuthMode = "preauth"
 	// PostAuthMode for post-auth
 	PostAuthMode = "postauth"
-	// NoTrace indicates no tracing to occur
-	NoTrace TraceType = iota
-	// TraceRequest indicate to trace the request
-	TraceRequest TraceType = iota
 )
 
 var (
