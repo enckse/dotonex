@@ -27,10 +27,12 @@ var (
 	clientLock    *sync.Mutex = new(sync.Mutex)
 )
 
-type connection struct {
-	client *net.UDPAddr
-	server *net.UDPConn
-}
+type (
+	connection struct {
+		client *net.UDPAddr
+		server *net.UDPConn
+	}
+)
 
 func newConnection(srv, cli *net.UDPAddr) *connection {
 	conn := new(connection)
@@ -148,8 +150,7 @@ func main() {
 		core.Fatal("unable to load config", err)
 	}
 	conf := &core.Configuration{}
-	err = yaml.Unmarshal(b, conf)
-	if err != nil {
+	if err := yaml.Unmarshal(b, conf); err != nil {
 		core.Fatal("unable to parse config", err)
 	}
 	conf.Defaults(b)
@@ -167,9 +168,6 @@ func main() {
 		if conf.To > 0 {
 			to = conf.To
 		}
-	}
-	if err != nil {
-		core.Fatal("unable to bind address", err)
 	}
 	addr := fmt.Sprintf("%s:%d", conf.Host, to)
 	err = setup(addr, conf.Bind)
