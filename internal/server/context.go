@@ -3,7 +3,6 @@ package server
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -131,8 +130,7 @@ func (ctx *Context) authorize(packet *core.ClientPacket, mode authingMode) Reaso
 		// we let that go
 		if packet.Error == nil {
 			if receiving {
-				err := ctx.checkSecret(packet)
-				if err != nil {
+				if err := ctx.checkSecret(packet); err != nil {
 					core.WriteError("invalid radius secret", err)
 					valid = badSecretCode
 				}
@@ -241,7 +239,7 @@ func parseSecretFile(secretFile string) (string, error) {
 
 func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
 	if !core.PathExists(secretFile) {
-		return nil, errors.New("no secrets file")
+		return nil, fmt.Errorf("no secrets file")
 	}
 	f, err := os.Open(secretFile)
 	if err != nil {
@@ -269,7 +267,7 @@ func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, er
 		}
 	}
 	if len(lines) == 0 && !mapping {
-		return nil, errors.New("no secrets found")
+		return nil, fmt.Errorf("no secrets found")
 	}
 	return lines, nil
 }
@@ -301,15 +299,15 @@ func (ctx *Context) Reload() {
 func (ctx *Context) checkSecret(p *core.ClientPacket) error {
 	var inSecret []byte
 	if p == nil || p.Packet == nil {
-		return errors.New("no packet information")
+		return fmt.Errorf("no packet information")
 	}
 	inSecret = p.Packet.Secret
 	if inSecret == nil {
-		return errors.New("no secret input")
+		return fmt.Errorf("no secret input")
 	}
 	if len(ctx.secrets) > 0 {
 		if p.ClientAddr == nil {
-			return errors.New("no client addr")
+			return fmt.Errorf("no client addr")
 		}
 		ip := p.ClientAddr.String()
 		h, _, err := net.SplitHostPort(ip)
@@ -328,11 +326,11 @@ func (ctx *Context) checkSecret(p *core.ClientPacket) error {
 			}
 		}
 		if !good {
-			return errors.New("matches no secrets")
+			return fmt.Errorf("matches no secrets")
 		}
 	} else {
 		if !bytes.Equal(ctx.secret, inSecret) {
-			return errors.New("does not match shared secret")
+			return fmt.Errorf("does not match shared secret")
 		}
 	}
 	return nil

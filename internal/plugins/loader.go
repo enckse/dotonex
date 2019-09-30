@@ -18,8 +18,7 @@ func LoadPlugin(name string, ctx *core.PluginContext) (core.Module, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = mod.Setup(ctx.Clone(mod.Name()))
-	if err != nil {
+	if err := mod.Setup(ctx.Clone(mod.Name())); err != nil {
 		return nil, err
 	}
 	return mod, nil

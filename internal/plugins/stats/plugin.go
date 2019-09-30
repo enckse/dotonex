@@ -55,8 +55,7 @@ func (s *stats) Reload() {
 
 func (s *stats) Setup(ctx *core.PluginContext) error {
 	conf := &Config{}
-	err := yaml.Unmarshal(ctx.Backing, conf)
-	if err != nil {
+	if err := yaml.Unmarshal(ctx.Backing, conf); err != nil {
 		return err
 	}
 	flush = conf.Stats.Flush

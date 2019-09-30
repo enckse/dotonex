@@ -44,8 +44,7 @@ func (l *nwl) Reload() {
 
 func (l *nwl) Setup(ctx *core.PluginContext) error {
 	conf := &Config{}
-	err := yaml.Unmarshal(ctx.Backing, conf)
-	if err != nil {
+	if err := yaml.Unmarshal(ctx.Backing, conf); err != nil {
 		return err
 	}
 	array := conf.NasWhitelist.Whitelist
