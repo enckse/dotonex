@@ -2,27 +2,29 @@ package core
 
 import yaml "gopkg.in/yaml.v2"
 
-// Configuration is the configuration definition
-type Configuration struct {
-	Debug      bool
-	Cache      bool
-	Host       string
-	Accounting bool
-	To         int
-	Bind       int
-	Dir        string
-	NoReject   bool
-	Log        string
-	Plugins    []string
-	LogBuffer  int
-	Disable    struct {
-		Accounting []string
-		Preauth    []string
-		Trace      []string
-		Postauth   []string
+type (
+	// Configuration is the configuration definition
+	Configuration struct {
+		Debug      bool
+		Cache      bool
+		Host       string
+		Accounting bool
+		To         int
+		Bind       int
+		Dir        string
+		NoReject   bool
+		Log        string
+		Plugins    []string
+		LogBuffer  int
+		Disable    struct {
+			Accounting []string
+			Preauth    []string
+			Trace      []string
+			Postauth   []string
+		}
+		backing []byte
 	}
-	backing []byte
-}
+)
 
 // Dump writes debug information about the configuration
 func (c *Configuration) Dump() {

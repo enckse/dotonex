@@ -14,8 +14,9 @@ var (
 	modes  []string
 )
 
-type access struct {
-}
+type (
+	access struct{}
+)
 
 func (l *access) Name() string {
 	return "access"

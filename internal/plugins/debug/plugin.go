@@ -10,8 +10,15 @@ import (
 	"voidedtech.com/radiucal/internal/core"
 )
 
-type tracer struct {
-}
+type (
+	tracer struct {
+	}
+
+	logTrace struct {
+		io.Writer
+		data bytes.Buffer
+	}
+)
 
 var (
 	// Plugin represents the system instance of the module
@@ -45,11 +52,6 @@ func (t *tracer) Trace(objType core.TraceType, packet *core.ClientPacket) {
 
 func (t *tracer) Account(packet *core.ClientPacket) {
 	dump(core.AccountingMode, core.NoTrace, packet)
-}
-
-type logTrace struct {
-	io.Writer
-	data bytes.Buffer
 }
 
 func (t *logTrace) Write(b []byte) (int, error) {

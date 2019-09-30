@@ -15,8 +15,16 @@ const (
 	star = "*"
 )
 
-type nwl struct {
-}
+type (
+	nwl struct {
+	}
+	// Config represents the plugin's specific configuration
+	Config struct {
+		NasWhitelist struct {
+			Whitelist []string
+		}
+	}
+)
 
 func (l *nwl) Name() string {
 	return "naswhitelist"
@@ -32,13 +40,6 @@ var (
 )
 
 func (l *nwl) Reload() {
-}
-
-// Config represents the plugin's specific configuration
-type Config struct {
-	NasWhitelist struct {
-		Whitelist []string
-	}
 }
 
 func (l *nwl) Setup(ctx *core.PluginContext) error {

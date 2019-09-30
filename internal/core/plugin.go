@@ -22,6 +22,10 @@ const (
 	PreAuthMode = "preauth"
 	// PostAuthMode for post-auth
 	PostAuthMode = "postauth"
+	// NoTrace indicates no tracing to occur
+	NoTrace TraceType = iota
+	// TraceRequest indicate to trace the request
+	TraceRequest TraceType = iota
 )
 
 var (
@@ -30,65 +34,65 @@ var (
 	pluginLID  int
 )
 
-// TraceType indicates how to trace a request
-type TraceType int
+type (
+	// RequestDump represents the interfaces available to log/dump a request
+	RequestDump struct {
+		data *ClientPacket
+		mode string
+	}
+	// TraceType indicates how to trace a request
+	TraceType int
 
-// NoopCall represents module calls that perform no operation (mocks)
-type NoopCall func(string, TraceType, *ClientPacket)
+	// NoopCall represents module calls that perform no operation (mocks)
+	NoopCall func(string, TraceType, *ClientPacket)
 
-const (
-	// NoTrace indicates no tracing to occur
-	NoTrace TraceType = iota
-	// TraceRequest indicate to trace the request
-	TraceRequest TraceType = iota
+	// PluginContext is the context given to a plugin module
+	PluginContext struct {
+		// Location of logs directory
+		Logs string
+		// Location of the general lib directory
+		Lib string
+		// Backing config
+		config *Configuration
+		// Instance name
+		Instance string
+		// Enable caching
+		Cache bool
+		// Backing configuration data
+		Backing []byte
+	}
+
+	// Module represents a plugin module for packet checking
+	Module interface {
+		Reload()
+		Setup(*PluginContext) error
+		Name() string
+	}
+
+	// PreAuth represents the interface required to pre-authorize a packet
+	PreAuth interface {
+		Module
+		Pre(*ClientPacket) bool
+	}
+
+	// PostAuth represents the interface required to post-authorize a packet
+	PostAuth interface {
+		Module
+		Post(*ClientPacket) bool
+	}
+
+	// Tracing represents the interface required to trace requests
+	Tracing interface {
+		Module
+		Trace(TraceType, *ClientPacket)
+	}
+
+	// Accounting represents the interface required to handle accounting
+	Accounting interface {
+		Module
+		Account(*ClientPacket)
+	}
 )
-
-// PluginContext is the context given to a plugin module
-type PluginContext struct {
-	// Location of logs directory
-	Logs string
-	// Location of the general lib directory
-	Lib string
-	// Backing config
-	config *Configuration
-	// Instance name
-	Instance string
-	// Enable caching
-	Cache bool
-	// Backing configuration data
-	Backing []byte
-}
-
-// Module represents a plugin module for packet checking
-type Module interface {
-	Reload()
-	Setup(*PluginContext) error
-	Name() string
-}
-
-// PreAuth represents the interface required to pre-authorize a packet
-type PreAuth interface {
-	Module
-	Pre(*ClientPacket) bool
-}
-
-// PostAuth represents the interface required to post-authorize a packet
-type PostAuth interface {
-	Module
-	Post(*ClientPacket) bool
-}
-
-// Tracing represents the interface required to trace requests
-type Tracing interface {
-	Module
-	Trace(TraceType, *ClientPacket)
-}
-
-// Accounting represents the interface required to handle accounting
-type Accounting interface {
-	Module
-	Account(*ClientPacket)
-}
 
 // NewPluginContext prepares a context from a configuration
 func NewPluginContext(config *Configuration) *PluginContext {
@@ -114,12 +118,6 @@ func (p *PluginContext) Clone(moduleName string) *PluginContext {
 // GetBackingConfig returns the corresponding backing config of the context
 func (p *PluginContext) GetBackingConfig() []byte {
 	return p.config.backing
-}
-
-// RequestDump represents the interfaces available to log/dump a request
-type RequestDump struct {
-	data *ClientPacket
-	mode string
 }
 
 // NewRequestDump prepares a packet request for dumping

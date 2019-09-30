@@ -14,7 +14,9 @@ func LogError(message string, err error) bool {
 	return true
 }
 
-const defaultFlags = 0
+const (
+	defaultFlags = 0
+)
 
 var (
 	debugging   = false
@@ -27,23 +29,25 @@ var (
 	variadic    = true
 )
 
-// LogOptions specify how to output logging information
-type LogOptions struct {
-	Debug bool
-	Info  bool
-	Warn  bool
-	Error bool
-	// Enable timestamps
-	Timestamps bool
-	// Disable all logging
-	Quiet bool
-	// Instance name to use (default is empty
-	Instance string
-	// Indicates if level output should be disabled
-	NoLevel bool
-	// Indicates if the variadic args should be displayed
-	NoVariadic bool
-}
+type (
+	// LogOptions specify how to output logging information
+	LogOptions struct {
+		Debug bool
+		Info  bool
+		Warn  bool
+		Error bool
+		// Enable timestamps
+		Timestamps bool
+		// Disable all logging
+		Quiet bool
+		// Instance name to use (default is empty
+		Instance string
+		// Indicates if level output should be disabled
+		NoLevel bool
+		// Indicates if the variadic args should be displayed
+		NoVariadic bool
+	}
+)
 
 // NewLogOptions creates a new logging configuration option set
 func NewLogOptions() *LogOptions {

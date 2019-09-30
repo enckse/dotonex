@@ -26,36 +26,38 @@ const (
 	postAuthCode  ReasonCode = 3
 )
 
-type writeBack func([]byte)
+type (
+	writeBack func([]byte)
 
-type authingMode int
+	authingMode int
 
-// ReasonCode for authorization state
-type ReasonCode int
+	// ReasonCode for authorization state
+	ReasonCode int
 
-// AuthorizePacket handles determining whether a packet is authorized to continue
-type AuthorizePacket func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, ReasonCode)
+	// AuthorizePacket handles determining whether a packet is authorized to continue
+	AuthorizePacket func(*Context, []byte, *net.UDPAddr) (*core.ClientPacket, ReasonCode)
 
-type authCheck func(core.Module, *core.ClientPacket) bool
+	authCheck func(core.Module, *core.ClientPacket) bool
 
-// Context is the server's operating context
-type Context struct {
-	Debug     bool
-	secret    []byte
-	preauths  []core.PreAuth
-	postauths []core.PostAuth
-	accts     []core.Accounting
-	traces    []core.Tracing
-	modules   []core.Module
-	secrets   map[string][]byte
-	noReject  bool
-	// shortcuts
-	postauth bool
-	preauth  bool
-	acct     bool
-	trace    bool
-	module   bool
-}
+	// Context is the server's operating context
+	Context struct {
+		Debug     bool
+		secret    []byte
+		preauths  []core.PreAuth
+		postauths []core.PostAuth
+		accts     []core.Accounting
+		traces    []core.Tracing
+		modules   []core.Module
+		secrets   map[string][]byte
+		noReject  bool
+		// shortcuts
+		postauth bool
+		preauth  bool
+		acct     bool
+		trace    bool
+		module   bool
+	}
+)
 
 // AddTrace adds a tracing check to the context
 func (ctx *Context) AddTrace(t core.Tracing) {

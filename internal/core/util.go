@@ -5,17 +5,19 @@ import (
 	"os"
 )
 
-// KeyValue represents a simple key/value object
-type KeyValue struct {
-	Key   string
-	Value string
-}
+type (
+	// KeyValue represents a simple key/value object
+	KeyValue struct {
+		Key   string
+		Value string
+	}
 
-// KeyValueStore represents a store of KeyValue objects
-type KeyValueStore struct {
-	KeyValues []KeyValue
-	DropEmpty bool
-}
+	// KeyValueStore represents a store of KeyValue objects
+	KeyValueStore struct {
+		KeyValues []KeyValue
+		DropEmpty bool
+	}
+)
 
 // Add adds a key value object to the store
 func (kv *KeyValueStore) Add(key, val string) {

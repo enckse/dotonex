@@ -12,8 +12,10 @@ import (
 	"voidedtech.com/radiucal/internal/core"
 )
 
-type umac struct {
-}
+type (
+	umac struct {
+	}
+)
 
 func (l *umac) Name() string {
 	return "usermac"

@@ -13,8 +13,10 @@ var (
 	instance string
 )
 
-type logger struct {
-}
+type (
+	logger struct {
+	}
+)
 
 func (l *logger) Name() string {
 	return "logger"

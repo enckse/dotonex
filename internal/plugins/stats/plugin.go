@@ -14,18 +14,23 @@ const (
 )
 
 // Config represents the configuration for the stats plugin
-type Config struct {
-	Stats struct {
-		Flush int
+type (
+	Config struct {
+		Stats struct {
+			Flush int
+		}
 	}
-}
 
-type modedata struct {
-	first time.Time
-	last  time.Time
-	name  string
-	count int
-}
+	modedata struct {
+		first time.Time
+		last  time.Time
+		name  string
+		count int
+	}
+
+	stats struct {
+	}
+)
 
 var (
 	lock *sync.Mutex = new(sync.Mutex)
@@ -37,9 +42,6 @@ var (
 	flush    int
 	flushIdx int
 )
-
-type stats struct {
-}
 
 func (s *stats) Name() string {
 	return "stats"
