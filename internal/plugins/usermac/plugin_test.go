@@ -52,7 +52,6 @@ func newTestSet(t *testing.T, user, mac string, valid bool) (*core.ClientPacket,
 }
 
 func setupUserMac() *umac {
-	canCache = true
 	db = "./tests/"
 	m := &umac{}
 	m.Reload()
@@ -62,11 +61,7 @@ func setupUserMac() *umac {
 func TestUserMacCache(t *testing.T) {
 	pg, m := newTestSet(t, "test", "11-22-33-44-55-66", true)
 	pb, _ := newTestSet(t, "test", "11-22-33-44-55-68", false)
-	first := "test.112233445568 is blacklisted"
-	for _, b := range []bool{true, false} {
-		canCache = b
-		ErrorIfNotPre(t, m, pg, "")
-		ErrorIfNotPre(t, m, pb, first)
-		first = "failed preauth: test 112233445568"
-	}
+	first := "failed preauth: test 112233445568"
+	ErrorIfNotPre(t, m, pg, "")
+	ErrorIfNotPre(t, m, pb, first)
 }

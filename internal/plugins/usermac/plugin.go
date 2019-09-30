@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 
 	"layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/internal/core"
@@ -22,9 +21,6 @@ func (l *umac) Name() string {
 }
 
 var (
-	cache                = make(map[string]bool)
-	lock     *sync.Mutex = new(sync.Mutex)
-	canCache bool
 	db       string
 	// Plugin represents the instance for the system
 	Plugin   umac
@@ -32,13 +28,9 @@ var (
 )
 
 func (l *umac) Reload() {
-	lock.Lock()
-	defer lock.Unlock()
-	cache = make(map[string]bool)
 }
 
 func (l *umac) Setup(ctx *core.PluginContext) error {
-	canCache = ctx.Cache
 	instance = ctx.Instance
 	db = filepath.Join(ctx.Lib, "users")
 	return nil
@@ -70,25 +62,10 @@ func checkUserMac(p *core.ClientPacket) error {
 	username = clean(username)
 	calling = clean(calling)
 	fqdn := fmt.Sprintf("%s.%s", username, calling)
-	lock.Lock()
-	good, ok := cache[fqdn]
-	lock.Unlock()
-	if canCache && ok {
-		core.WriteDebug("object is preauthed", fqdn)
-		go mark(good, username, calling, p, true)
-		if good {
-			return nil
-		}
-		return fmt.Errorf("%s is blacklisted", fqdn)
-	}
-	core.WriteDebug("not preauthed", fqdn)
 	path := filepath.Join(db, fqdn)
 	success := true
 	var failure error
 	res := core.PathExists(path)
-	lock.Lock()
-	cache[fqdn] = res
-	lock.Unlock()
 	if !res {
 		failure = fmt.Errorf("failed preauth: %s %s", username, calling)
 		success = false
