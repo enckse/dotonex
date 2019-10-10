@@ -88,15 +88,7 @@ make
 
 run (with a socket listening to be proxied to, e.g. hostapd)
 ```
-./bin/radiucal
-```
-
-## administration
-
-using the administrative tooling
-
-```
-./bin/radiucal-admin <command>
+./radiucal
 ```
 
 ## debugging
@@ -125,7 +117,3 @@ to run
 ```
 eapol_test -a <radius_server_ip> -c test.conf -s <secret_key> -M <mac>
 ```
-
-## administration
-
-please review the documentation in `admin/` for how to administrate the server using various tooling
