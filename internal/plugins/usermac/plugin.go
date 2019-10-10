@@ -49,10 +49,18 @@ func (l *umac) reload() error {
 	}
 	manifest = make(map[string]bool)
 	data := strings.Split(string(b), "\n")
-	core.LogPluginMessages(&Plugin, data)
-	for _, m := range data {
-		manifest[m] = true
+	kv := core.KeyValueStore{}
+	kv.Add("Manfiest", "reload")
+	idx := 0
+	for _, d := range data {
+		if strings.TrimSpace(d) == "" {
+			continue
+		}
+		kv.Add(fmt.Sprintf("Manifest-%d", idx), d)
+		manifest[d] = true
+		idx++
 	}
+	core.LogPluginMessages(&Plugin, kv.Strings())
 	return nil
 }
 
