@@ -1,10 +1,7 @@
-.PHONY: radiucal admin
+.PHONY: radiucal
 
-all: radiucal admin
+all: radiucal
 
 radiucal:
 	./run.sh normal
 	./run.sh norjct
-
-admin:
-	cd admin && ./run.sh

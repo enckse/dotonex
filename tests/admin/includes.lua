@@ -1,2 +1,0 @@
-VALID_MAC = "001122334455"
-DROP_MAC = "ffffffffffff"

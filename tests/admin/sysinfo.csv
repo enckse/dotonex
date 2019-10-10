@@ -1,7 +1,0 @@
-id,make,model,objType,user,xattr
-test1,,,d1;mabme;2,def;mab;user1;user2,
-test2,,,d2;mabme,def;mab,
-test3,,,mabme,mab,
-testattr,TEST,,2,attr,
-testattr3,,testtest,3,attr,"extension,information test;blah"
-testid,,,1,admin,
