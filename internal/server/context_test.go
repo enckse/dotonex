@@ -26,8 +26,9 @@ func (m *MockModule) Name() string {
 	return "mock"
 }
 
-func (m *MockModule) Reload() {
+func (m *MockModule) Reload() error {
 	m.reload++
+	return nil
 }
 
 func (m *MockModule) Post(p *core.ClientPacket) bool {

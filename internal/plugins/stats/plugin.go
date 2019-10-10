@@ -47,10 +47,11 @@ func (s *stats) Name() string {
 	return "stats"
 }
 
-func (s *stats) Reload() {
+func (s *stats) Reload() error {
 	lock.Lock()
 	defer lock.Unlock()
 	info = make(map[string]*modedata)
+	return nil
 }
 
 func (s *stats) Setup(ctx *core.PluginContext) error {

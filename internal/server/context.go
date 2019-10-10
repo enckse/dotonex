@@ -291,7 +291,9 @@ func (ctx *Context) Reload() {
 		core.WriteInfo("reloading")
 		for _, m := range ctx.modules {
 			core.WriteDebug("reloading module", m.Name())
-			m.Reload()
+			if err := m.Reload(); err != nil {
+				core.WriteError("plugin reload error", err)
+			}
 		}
 	}
 }

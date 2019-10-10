@@ -31,13 +31,7 @@ var (
 	instance string
 )
 
-func (l *umac) Reload() {
-	if err := l.reload(); err != nil {
-		core.LogPluginMessages(&Plugin, []string{fmt.Sprintf("unable to reload manifest: %v", err)})
-	}
-}
-
-func (l *umac) reload() error {
+func (l *umac) Reload() error {
 	if !core.PathExists(file) {
 		return fmt.Errorf("%s is missing", file)
 	}
@@ -67,7 +61,7 @@ func (l *umac) reload() error {
 func (l *umac) Setup(ctx *core.PluginContext) error {
 	instance = ctx.Instance
 	file = filepath.Join(ctx.Lib, "manifest")
-	if err := l.reload(); err != nil {
+	if err := l.Reload(); err != nil {
 		return err
 	}
 	return nil

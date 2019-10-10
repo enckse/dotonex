@@ -39,7 +39,8 @@ var (
 	order     []string
 )
 
-func (l *nwl) Reload() {
+func (l *nwl) Reload() error {
+	return nil
 }
 
 func (l *nwl) Setup(ctx *core.PluginContext) error {

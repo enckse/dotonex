@@ -22,7 +22,8 @@ func (l *access) Name() string {
 	return "access"
 }
 
-func (l *access) Reload() {
+func (l *access) Reload() error {
+	return nil
 }
 
 func (l *access) Setup(ctx *core.PluginContext) error {
