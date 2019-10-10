@@ -52,7 +52,7 @@ func newTestSet(t *testing.T, user, mac string, valid bool) (*core.ClientPacket,
 }
 
 func setupUserMac() *umac {
-	db = "./tests/"
+	file = "./tests/manifest"
 	m := &umac{}
 	m.Reload()
 	return m

@@ -2,10 +2,12 @@ package usermac
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/internal/core"
@@ -21,18 +23,45 @@ func (l *umac) Name() string {
 }
 
 var (
-	db string
+	lock     = &sync.Mutex{}
+	file     string
+	manifest = make(map[string]bool)
 	// Plugin represents the instance for the system
 	Plugin   umac
 	instance string
 )
 
 func (l *umac) Reload() {
+	if err := l.reload(); err != nil {
+		core.LogPluginMessages(&Plugin, []string{fmt.Sprintf("unable to reload manifest: %v", err)})
+	}
+}
+
+func (l *umac) reload() error {
+	if !core.PathExists(file) {
+		return fmt.Errorf("%s is missing", file)
+	}
+	lock.Lock()
+	defer lock.Unlock()
+	b, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	manifest = make(map[string]bool)
+	data := strings.Split(string(b), "\n")
+	core.LogPluginMessages(&Plugin, data)
+	for _, m := range data {
+		manifest[m] = true
+	}
+	return nil
 }
 
 func (l *umac) Setup(ctx *core.PluginContext) error {
 	instance = ctx.Instance
-	db = filepath.Join(ctx.Lib, "users")
+	file = filepath.Join(ctx.Lib, "manifest")
+	if err := l.reload(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -62,11 +91,12 @@ func checkUserMac(p *core.ClientPacket) error {
 	username = clean(username)
 	calling = clean(calling)
 	fqdn := fmt.Sprintf("%s.%s", username, calling)
-	path := filepath.Join(db, fqdn)
 	success := true
 	var failure error
-	res := core.PathExists(path)
-	if !res {
+	lock.Lock()
+	_, ok := manifest[fqdn]
+	lock.Unlock()
+	if !ok {
 		failure = fmt.Errorf("failed preauth: %s %s", username, calling)
 		success = false
 	}
