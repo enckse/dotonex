@@ -226,6 +226,9 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
+			if ctx.Debug {
+				core.WriteDebug("reload signal received")
+			}
 			clientLock.Lock()
 			for _, v := range clients {
 				v.server.Close()
