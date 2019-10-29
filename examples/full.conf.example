@@ -25,8 +25,11 @@ dir: /var/lib/radiucal/
 # log dir
 log: /var/log/radiucal/
 
-# how long (seconds, default 30) to buffer logs
+# how long (seconds, default 10) to buffer logs
 logbuffer: 10
+
+# how long (hours, default 12) to allow client connections to persist
+connage: 12
 
 # plugins to load (an array/multiple values allowed)
 plugins
