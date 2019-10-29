@@ -143,6 +143,7 @@ func account(ctx *server.Context) {
 
 func dropConnections(debug bool, lifespan time.Duration) {
 	clientLock.Lock()
+	defer clientLock.Unlock()
 	newClients := make(map[string]*connection)
 	n := time.Now()
 	for k, v := range clients {
@@ -156,7 +157,6 @@ func dropConnections(debug bool, lifespan time.Duration) {
 		newClients[k] = v
 	}
 	clients = newClients
-	clientLock.Unlock()
 }
 
 func main() {
