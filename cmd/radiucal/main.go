@@ -31,14 +31,12 @@ type (
 	connection struct {
 		client *net.UDPAddr
 		server *net.UDPConn
-		age    time.Time
 	}
 )
 
 func newConnection(srv, cli *net.UDPAddr) *connection {
 	conn := new(connection)
 	conn.client = cli
-	conn.age = time.Now()
 	serverUDP, err := net.DialUDP("udp", nil, srv)
 	if core.LogError("dial udp", err) {
 		return nil
@@ -141,24 +139,6 @@ func account(ctx *server.Context) {
 	}
 }
 
-func dropConnections(debug bool, lifespan time.Duration) {
-	clientLock.Lock()
-	newClients := make(map[string]*connection)
-	n := time.Now()
-	for k, v := range clients {
-		if v.age.Add(lifespan).Before(n) {
-			if debug {
-				core.WriteDebug(fmt.Sprintf("closing connection: %s", k))
-			}
-			v.server.Close()
-			continue
-		}
-		newClients[k] = v
-	}
-	clients = newClients
-	clientLock.Unlock()
-}
-
 func main() {
 	core.WriteInfo(fmt.Sprintf("radiucal (%s)", vers))
 	var cfg = flag.String("config", "/etc/radiucal/radiucal.conf", "Configuration file")
@@ -230,9 +210,6 @@ func main() {
 				core.WriteDebug("reload signal received")
 			}
 			clientLock.Lock()
-			for _, v := range clients {
-				v.server.Close()
-			}
 			clients = make(map[string]*connection)
 			clientLock.Unlock()
 			ctx.Reload()
@@ -248,17 +225,6 @@ func main() {
 				core.WriteDebug("flushing logs")
 			}
 			core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
-		}
-	}()
-
-	connAge := time.Duration(conf.ConnAge) * time.Hour
-	go func() {
-		for {
-			time.Sleep(connAge)
-			if ctx.Debug {
-				core.WriteDebug("cleaning up old connections")
-			}
-			dropConnections(ctx.Debug, connAge)
 		}
 	}()
 

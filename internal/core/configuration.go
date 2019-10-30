@@ -16,7 +16,6 @@ type (
 		Log        string
 		Plugins    []string
 		LogBuffer  int
-		ConnAge    int
 		Disable    struct {
 			Accounting []string
 			Preauth    []string
@@ -58,9 +57,6 @@ func (c *Configuration) Defaults(backing []byte) {
 	}
 	if c.LogBuffer <= 0 {
 		c.LogBuffer = 10
-	}
-	if c.ConnAge <= 0 {
-		c.ConnAge = 12
 	}
 	c.backing = backing
 }
