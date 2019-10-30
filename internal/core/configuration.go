@@ -16,6 +16,7 @@ type (
 		Log        string
 		Plugins    []string
 		LogBuffer  int
+		ConnAge    int
 		Disable    struct {
 			Accounting []string
 			Preauth    []string

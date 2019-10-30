@@ -139,6 +139,14 @@ func account(ctx *server.Context) {
 	}
 }
 
+func reload(ctx *server.Context, pCtx *core.PluginContext) {
+	clientLock.Lock()
+	clients = make(map[string]*connection)
+	clientLock.Unlock()
+	ctx.Reload()
+	core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
+}
+
 func main() {
 	core.WriteInfo(fmt.Sprintf("radiucal (%s)", vers))
 	var cfg = flag.String("config", "/etc/radiucal/radiucal.conf", "Configuration file")
@@ -209,13 +217,29 @@ func main() {
 			if ctx.Debug {
 				core.WriteDebug("reload signal received")
 			}
-			clientLock.Lock()
-			clients = make(map[string]*connection)
-			clientLock.Unlock()
-			ctx.Reload()
-			core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
+			reload(ctx, pCtx)
 		}
 	}()
+	if conf.ConnAge > 0 {
+		connAge := time.Duration(conf.ConnAge) * time.Hour
+		go func() {
+			lastConn := time.Now().Format("2006-01-02")
+			for {
+				time.Sleep(connAge)
+				if ctx.Debug {
+					core.WriteDebug("checking connection age")
+				}
+				now := time.Now().Format("2006-01-02")
+				if now != lastConn {
+					if ctx.Debug {
+						core.WriteDebug("auto reset")
+					}
+					reload(ctx, pCtx)
+				}
+				lastConn = now
+			}
+		}()
+	}
 
 	logBuffer := time.Duration(conf.LogBuffer) * time.Second
 	go func() {
