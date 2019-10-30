@@ -210,6 +210,30 @@ func main() {
 		ctx.AddModule(obj)
 	}
 
+	type coreFlags struct {
+		signal     bool
+		bufferLogs bool
+		connAge    bool
+	}
+	flags := &coreFlags{
+		signal:     true,
+		bufferLogs: true,
+		connAge:    true,
+	}
+
+	for _, f := range conf.CoreFlags {
+		switch f {
+		case "nosignal":
+			flags.signal = false
+		case "nobufferlogs":
+			flags.bufferLogs = false
+		case "noconnage":
+			flags.connAge = false
+		default:
+			core.WriteWarn(fmt.Sprintf("%s is not a known core flag", f))
+		}
+	}
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
@@ -217,29 +241,32 @@ func main() {
 			if ctx.Debug {
 				core.WriteDebug("reload signal received")
 			}
-			reload(ctx, pCtx)
+			if flags.signal {
+				reload(ctx, pCtx)
+			}
 		}
 	}()
-	if conf.ConnAge > 0 {
-		connAge := time.Duration(conf.ConnAge) * time.Hour
-		go func() {
-			lastConn := time.Now().Format("2006-01-02")
-			for {
-				time.Sleep(connAge)
+
+	connAge := time.Duration(conf.ConnAge) * time.Hour
+	go func() {
+		lastConn := time.Now().Format("2006-01-02")
+		for {
+			time.Sleep(connAge)
+			if ctx.Debug {
+				core.WriteDebug("checking connection age")
+			}
+			now := time.Now().Format("2006-01-02")
+			if now != lastConn {
 				if ctx.Debug {
-					core.WriteDebug("checking connection age")
+					core.WriteDebug("auto reset")
 				}
-				now := time.Now().Format("2006-01-02")
-				if now != lastConn {
-					if ctx.Debug {
-						core.WriteDebug("auto reset")
-					}
+				if flags.connAge {
 					reload(ctx, pCtx)
 				}
-				lastConn = now
 			}
-		}()
-	}
+			lastConn = now
+		}
+	}()
 
 	logBuffer := time.Duration(conf.LogBuffer) * time.Second
 	go func() {
@@ -248,7 +275,9 @@ func main() {
 			if ctx.Debug {
 				core.WriteDebug("flushing logs")
 			}
-			core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
+			if flags.bufferLogs {
+				core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
+			}
 		}
 	}()
 
