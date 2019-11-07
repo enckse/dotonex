@@ -214,11 +214,13 @@ func main() {
 		signal     bool
 		bufferLogs bool
 		connAge    bool
+		fullUnload bool
 	}
 	flags := &coreFlags{
 		signal:     true,
 		bufferLogs: true,
 		connAge:    true,
+		fullUnload: true,
 	}
 
 	for _, f := range conf.CoreFlags {
@@ -229,6 +231,8 @@ func main() {
 			flags.bufferLogs = false
 		case "noconnage":
 			flags.connAge = false
+		case "nofullunload":
+			flags.fullUnload = false
 		default:
 			core.WriteWarn(fmt.Sprintf("%s is not a known core flag", f))
 		}
@@ -262,6 +266,10 @@ func main() {
 				}
 				if flags.connAge {
 					reload(ctx, pCtx)
+				}
+				if flags.fullUnload {
+					core.WriteInfo("unloading")
+					os.Exit(0)
 				}
 			}
 			lastConn = now
