@@ -213,13 +213,11 @@ func main() {
 	type coreFlags struct {
 		signal     bool
 		bufferLogs bool
-		connAge    bool
 		fullUnload bool
 	}
 	flags := &coreFlags{
 		signal:     true,
 		bufferLogs: true,
-		connAge:    true,
 		fullUnload: true,
 	}
 
@@ -229,8 +227,6 @@ func main() {
 			flags.signal = false
 		case "nobufferlogs":
 			flags.bufferLogs = false
-		case "noconnage":
-			flags.connAge = false
 		case "nofullunload":
 			flags.fullUnload = false
 		default:
@@ -263,9 +259,6 @@ func main() {
 			if now != lastConn {
 				if ctx.Debug {
 					core.WriteDebug("auto reset")
-				}
-				if flags.connAge {
-					reload(ctx, pCtx)
 				}
 				if flags.fullUnload {
 					core.WriteInfo("unloading")
