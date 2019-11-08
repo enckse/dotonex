@@ -247,25 +247,6 @@ func main() {
 		}
 	}()
 
-	connAge := time.Duration(conf.ConnAge) * time.Hour
-	go func() {
-		lastConn := time.Now().Format("2006-01-02")
-		for {
-			time.Sleep(connAge)
-			if ctx.Debug {
-				core.WriteDebug("checking connection age")
-			}
-			now := time.Now().Format("2006-01-02")
-			if now != lastConn {
-				if flags.fullUnload {
-					core.WriteInfo("unloading")
-					os.Exit(0)
-				}
-			}
-			lastConn = now
-		}
-	}()
-
 	logBuffer := time.Duration(conf.LogBuffer) * time.Second
 	go func() {
 		for {
@@ -281,8 +262,25 @@ func main() {
 
 	if conf.Accounting {
 		core.WriteInfo("accounting mode")
-		account(ctx)
+		go account(ctx)
 	} else {
-		runProxy(ctx)
+		go runProxy(ctx)
+	}
+
+	connAge := time.Duration(conf.ConnAge) * time.Hour
+	lastConn := time.Now().Format("2006-01-02")
+	for {
+		time.Sleep(connAge)
+		if ctx.Debug {
+			core.WriteDebug("checking connection age")
+		}
+		now := time.Now().Format("2006-01-02")
+		if now != lastConn {
+			if flags.fullUnload {
+				core.WriteInfo("unloading")
+				os.Exit(0)
+			}
+		}
+		lastConn = now
 	}
 }
