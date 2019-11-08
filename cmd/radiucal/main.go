@@ -257,9 +257,6 @@ func main() {
 			}
 			now := time.Now().Format("2006-01-02")
 			if now != lastConn {
-				if ctx.Debug {
-					core.WriteDebug("auto reset")
-				}
 				if flags.fullUnload {
 					core.WriteInfo("unloading")
 					os.Exit(0)
