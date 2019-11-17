@@ -24,7 +24,7 @@ type (
 	Secret struct {
 		UserName string
 		Password string
-		Fake     bool   `yaml:"-"`
+		Fake     bool `yaml:"-"`
 	}
 
 	// VLAN represents a textual VLAN description
