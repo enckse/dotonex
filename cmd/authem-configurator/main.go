@@ -13,6 +13,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	"voidedtech.com/radiucal/internal/authem"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (
@@ -46,7 +47,7 @@ func (c *configuratorError) Error() string {
 }
 
 func unchanged(cfg *Config, radius *authem.RADIUSConfig, users, rawConfig []byte) (bool, error) {
-	if !authem.PathExists(authem.TempDir) {
+	if !core.PathExists(authem.TempDir) {
 		if err := os.Mkdir(authem.TempDir, 0755); err != nil {
 			return false, err
 		}
@@ -54,11 +55,11 @@ func unchanged(cfg *Config, radius *authem.RADIUSConfig, users, rawConfig []byte
 	valid := 0
 	manifestBytes := []byte(strings.Join(radius.Manifest, "\n"))
 	hostapdBytes := append(radius.Hostapd, []byte("\n")...)
-	authem.Info("[overall]")
+	core.WriteInfo("[overall]")
 	for _, f := range trackedFiles {
-		authem.InfoDetail(f)
+		core.WriteInfoDetail(f)
 		path := filepath.Join(authem.TempDir, f)
-		if authem.PathExists(path) {
+		if core.PathExists(path) {
 			b, err := ioutil.ReadFile(path)
 			if err != nil {
 				return false, err
@@ -67,19 +68,19 @@ func unchanged(cfg *Config, radius *authem.RADIUSConfig, users, rawConfig []byte
 				return false, err
 			}
 			if cfg.Verbose {
-				authem.InfoDetail("performing diff")
+				core.WriteInfoDetail("performing diff")
 			}
 			switch f {
 			case manifest:
-				if authem.Compare(b, manifestBytes, cfg.Diffs) {
+				if core.Compare(b, manifestBytes, cfg.Diffs) {
 					valid++
 				}
 			case eap:
-				if authem.Compare(b, hostapdBytes, cfg.Diffs) {
+				if core.Compare(b, hostapdBytes, cfg.Diffs) {
 					valid++
 				}
 			case usersCfg:
-				if authem.Compare(b, users, cfg.Diffs) {
+				if core.Compare(b, users, cfg.Diffs) {
 					valid++
 				}
 			default:
@@ -99,7 +100,7 @@ func unchanged(cfg *Config, radius *authem.RADIUSConfig, users, rawConfig []byte
 		for _, f := range paths {
 			p := filepath.Join(f, k)
 			if cfg.Verbose {
-				authem.InfoDetail(fmt.Sprintf("writing %s (%s)", k, p))
+				core.WriteInfoDetail(fmt.Sprintf("writing %s (%s)", k, p))
 			}
 			data := v
 			if f != authem.TempDir && k == usersCfg && cfg.Deploy {
@@ -114,7 +115,7 @@ func unchanged(cfg *Config, radius *authem.RADIUSConfig, users, rawConfig []byte
 }
 
 func getConfig(f string, scripts []string, verbose bool) (*Config, error) {
-	if !authem.PathExists(f) {
+	if !core.PathExists(f) {
 		k, err := authem.GetKey(true)
 		if err != nil {
 			return nil, err
@@ -227,7 +228,7 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 	}
 	postScript := scripting
 	if !same {
-		authem.Info("changes detected")
+		core.WriteInfo("changes detected")
 		postScript = true
 	}
 	if postScript && len(postProcess) > 0 {
@@ -235,10 +236,10 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 		for _, post := range postProcess {
 			if len(post.Data) > 0 {
 				if first {
-					authem.Info("[scripts]")
+					core.WriteInfo("[scripts]")
 					first = false
 				}
-				authem.InfoDetail(post.Name)
+				core.WriteInfoDetail(post.Name)
 				if err := post.Execute(); err != nil {
 					return err
 				}
@@ -252,17 +253,17 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 }
 
 func main() {
-	cfg := flag.String("config", authem.DefaultYaml("configurator"), "config file (server mode)")
+	cfg := flag.String("config", "/etc/authem/configurator.yaml", "config file (server mode)")
 	verbose := flag.Bool("verbose", false, "enable verbose outputs")
 	forceScript := flag.Bool("run-scripts", false, "run the scripts regardless of configuration changes")
 	flag.Parse()
 	remainders := flag.Args()
-	authem.Version(vers)
+	core.Version(vers)
 	err := configurate(*cfg, remainders, *verbose, *forceScript)
 	if err != nil {
 		if _, ok := err.(*configuratorError); !ok {
-			authem.ExitNow("unable to configure", err)
+			core.ExitNow("unable to configure", err)
 		}
-		os.Exit(authem.ExitSignal)
+		os.Exit(core.ExitSignal)
 	}
 }

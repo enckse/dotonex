@@ -10,6 +10,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	"voidedtech.com/radiucal/internal/authem"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (
@@ -44,7 +45,7 @@ func newUserSecret(l int, pass bool) (string, error) {
 }
 
 func passwd(user, userFile, key, pwd string, force bool, length int) error {
-	if authem.PathExists(userFile) {
+	if core.PathExists(userFile) {
 		if !force {
 			return fmt.Errorf("%s already exists, use force to overwrite", userFile)
 		}
@@ -52,10 +53,10 @@ func passwd(user, userFile, key, pwd string, force bool, length int) error {
 			return err
 		}
 	}
-	authem.Info("")
-	authem.Info(user)
-	authem.Info("")
-	authem.InfoDetail(userFile)
+	core.WriteInfo("")
+	core.WriteInfo(user)
+	core.WriteInfo("")
+	core.WriteInfoDetail(userFile)
 	password := pwd
 	needPass := len(password) == 0
 	if needPass {
@@ -84,8 +85,8 @@ func passwd(user, userFile, key, pwd string, force bool, length int) error {
 		return err
 	}
 	userDef := filepath.Join(authem.UserDir, user+".yaml")
-	authem.InfoDetail(userDef)
-	if !authem.PathExists(userDef) {
+	core.WriteInfoDetail(userDef)
+	if !core.PathExists(userDef) {
 		if err := ioutil.WriteFile(userDef, []byte(fmt.Sprintf(userBase, user)), 0644); err != nil {
 			return err
 		}
@@ -94,7 +95,7 @@ func passwd(user, userFile, key, pwd string, force bool, length int) error {
 }
 
 func showObject(userFile, key string) error {
-	if !authem.PathExists(userFile) {
+	if !core.PathExists(userFile) {
 		return fmt.Errorf("user does not exist")
 	}
 	b, err := ioutil.ReadFile(userFile)
@@ -106,12 +107,12 @@ func showObject(userFile, key string) error {
 		return err
 	}
 
-	authem.Info("")
-	authem.Info("=======file========")
-	authem.Info("")
-	authem.Info(fmt.Sprintf("%s", dec))
-	authem.Info("===================")
-	authem.Info("")
+	core.WriteInfo("")
+	core.WriteInfo("=======file========")
+	core.WriteInfo("")
+	core.WriteInfo(fmt.Sprintf("%s", dec))
+	core.WriteInfo("===================")
+	core.WriteInfo("")
 	return nil
 }
 
@@ -142,8 +143,8 @@ func main() {
 	pwd := flag.String("password", "", "use this password")
 	length := flag.Int("length", 64, "default password length")
 	flag.Parse()
-	authem.Version(vers)
+	core.Version(vers)
 	if err := updatePwd(*user, *pwd, *show, *force, *length); err != nil {
-		authem.ExitNow("failed to perform operation", err)
+		core.ExitNow("failed to perform operation", err)
 	}
 }

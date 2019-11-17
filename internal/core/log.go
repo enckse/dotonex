@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
 // LogError to log errors within the system
@@ -16,6 +17,10 @@ func LogError(message string, err error) bool {
 
 const (
 	defaultFlags = 0
+	// ExitFailure indicates something went wrong
+	ExitFailure = 2
+	// ExitSignal indicates a signal exit (ok but do something)
+	ExitSignal = 1
 )
 
 var (
@@ -103,6 +108,11 @@ func WriteInfo(message string, messages ...string) {
 	write(information || debugging, "INFO", message, messages...)
 }
 
+// WriteInfoDetail logs detail for informational messages
+func WriteInfoDetail(message string) {
+	write(information || debugging, "INFO", fmt.Sprintf(" => %s", message))
+}
+
 // WriteWarn logs warning messages
 func WriteWarn(message string, messages ...string) {
 	write(warning || debugging || information, "WARN", message, messages...)
@@ -133,4 +143,15 @@ func write(condition bool, cat string, message string, messages ...string) {
 			log.Print(msg)
 		}
 	}
+}
+
+// Version prints version information
+func Version(vers string) {
+	WriteInfo(fmt.Sprintf("Version: %s", vers))
+}
+
+// ExitNow prints an error message and calls Exit (do NOT call when defers are running)
+func ExitNow(message string, err error) {
+	WriteError(message, err)
+	os.Exit(ExitFailure)
 }

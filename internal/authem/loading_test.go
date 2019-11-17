@@ -3,11 +3,12 @@ package authem
 import (
 	"os"
 	"testing"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 func setup(t *testing.T) LoadingOptions {
 	for _, d := range []string{TempDir} {
-		if !PathExists(d) {
+		if !core.PathExists(d) {
 			if err := os.Mkdir(d, 0755); err != nil {
 				t.Error("unable to make test dir")
 			}

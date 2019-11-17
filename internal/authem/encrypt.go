@@ -10,11 +10,12 @@ import (
 	"unicode/utf16"
 
 	"golang.org/x/crypto/md4"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 func encDecInit(serverKey string) (cipher.Block, error) {
 	if len(serverKey) == 0 {
-		Fatal("invalid key", nil)
+		core.Fatal("invalid key", nil)
 	}
 	key := []byte(serverKey)
 	return aes.NewCipher(key)

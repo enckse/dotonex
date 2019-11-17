@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	yaml "gopkg.in/yaml.v2"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (
@@ -110,10 +111,10 @@ func loadDirectory(dir string, load onLoad) error {
 	if err != nil {
 		return err
 	}
-	Info(fmt.Sprintf("[%s]", dir))
+	core.WriteInfo(fmt.Sprintf("[%s]", dir))
 	for _, f := range files {
 		n := f.Name()
-		InfoDetail(n)
+		core.WriteInfoDetail(n)
 		b, err := ioutil.ReadFile(filepath.Join(dir, n))
 		if err != nil {
 			return err
@@ -152,14 +153,14 @@ func loadUser(b []byte, opts LoadingOptions, vlan []*VLAN, sys []*System, secret
 func asyncLoadUser(comm chan bool, users *sync.Map, radius *sync.Map, file string, b []byte, opts LoadingOptions, vlan []*VLAN, sys []*System, secret []*Secret) {
 	u, r, err := loadUser(b, opts, vlan, sys, secret)
 	if err != nil {
-		Error(file, err)
+		core.WriteError(file, err)
 		if comm != nil {
 			comm <- false
 		}
 		return
 	}
 	if _, ok := users.LoadOrStore(u.UserName, u); ok {
-		Error(fmt.Sprintf("%s is already defined", u.UserName), nil)
+		core.WriteError(fmt.Sprintf("%s is already defined", u.UserName), nil)
 		if comm != nil {
 			comm <- false
 		}
@@ -167,7 +168,7 @@ func asyncLoadUser(comm chan bool, users *sync.Map, radius *sync.Map, file strin
 	}
 	if r != nil {
 		if _, ok := radius.LoadOrStore(u.UserName, r); ok {
-			Error(fmt.Sprintf("%s is already defined", u.UserName), nil)
+			core.WriteError(fmt.Sprintf("%s is already defined", u.UserName), nil)
 			if comm != nil {
 				comm <- false
 			}

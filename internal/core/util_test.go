@@ -48,3 +48,14 @@ func TestKeyValueEmpty(t *testing.T) {
 		t.Error("invalid mid")
 	}
 }
+
+func TestCompare(t *testing.T) {
+	diff := Compare([]byte(""), []byte("a"), false)
+	if diff {
+		t.Error("different")
+	}
+	diff = Compare([]byte("a"), []byte("a"), false)
+	if !diff {
+		t.Error("different")
+	}
+}

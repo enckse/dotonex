@@ -148,7 +148,7 @@ func reload(ctx *server.Context, pCtx *core.PluginContext) {
 }
 
 func main() {
-	core.WriteInfo(fmt.Sprintf("radiucal (%s)", vers))
+	core.Version(vers)
 	var cfg = flag.String("config", "/etc/radiucal/radiucal.conf", "Configuration file")
 	var instance = flag.String("instance", "", "Instance name")
 	var debugging = flag.Bool("debug", false, "debugging")
