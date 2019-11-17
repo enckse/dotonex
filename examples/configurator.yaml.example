@@ -1,0 +1,14 @@
+# verbose output 
+verbose: false
+
+# secret key
+key: aaaabbbbccccddddeeeeffffgggghhhh
+
+# where should authem store files from the configurator?
+cache: /var/cache/authem/
+
+# scripts are scripts that will be executed by authem configurator after processing is complete
+scripts: []
+
+# show diffs
+diffs: false

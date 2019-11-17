@@ -1,0 +1,12 @@
+username: test4
+email:
+vlans: ["dev", "prod"]
+perms:
+    isradius: true
+systems:
+    - id: a
+      type: y
+      macs:
+          - vlan: dev
+            mab: true
+            macs: [aa11ccddeeff]
