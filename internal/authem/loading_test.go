@@ -3,6 +3,7 @@ package authem
 import (
 	"os"
 	"testing"
+
 	"voidedtech.com/radiucal/internal/core"
 )
 
