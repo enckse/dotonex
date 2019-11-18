@@ -44,7 +44,7 @@ func newUserSecret(l int, pass bool) (string, error) {
 	return password, nil
 }
 
-func passwd(user, userFile, key, pwd string, force bool, length int) error {
+func passwd(user, email, userFile, key, pwd string, force bool, length int) error {
 	if core.PathExists(userFile) {
 		if !force {
 			return fmt.Errorf("%s already exists, use force to overwrite", userFile)
@@ -71,6 +71,7 @@ func passwd(user, userFile, key, pwd string, force bool, length int) error {
 	s := authem.Secret{
 		UserName: user,
 		Password: password,
+		Email:    email,
 		Fake:     false,
 	}
 	b, err := yaml.Marshal(s)
@@ -116,7 +117,7 @@ func showObject(userFile, key string) error {
 	return nil
 }
 
-func updatePwd(user, pwd string, show, force bool, length int) error {
+func updatePwd(user, email, pwd string, show, force bool, length int) error {
 	k, err := authem.GetKey(false)
 	if err != nil {
 		return err
@@ -124,9 +125,12 @@ func updatePwd(user, pwd string, show, force bool, length int) error {
 	if len(user) == 0 {
 		return fmt.Errorf("no user given")
 	}
+	if len(email) == 0 {
+		return fmt.Errorf("no email given")
+	}
 	userFile := filepath.Join(authem.SecretsDir, user+".yaml")
 	if !show {
-		if err := passwd(user, userFile, k, pwd, force, length); err != nil {
+		if err := passwd(user, email, userFile, k, pwd, force, length); err != nil {
 			return err
 		}
 	}
@@ -138,13 +142,14 @@ func updatePwd(user, pwd string, show, force bool, length int) error {
 
 func main() {
 	user := flag.String("user", "", "user to change")
+	email := flag.String("email", "", "user's email address")
 	force := flag.Bool("force", false, "force change a user's secret")
 	show := flag.Bool("show", false, "show the user's secrets, perform no changes")
 	pwd := flag.String("password", "", "use this password")
 	length := flag.Int("length", 64, "default password length")
 	flag.Parse()
 	core.Version(vers)
-	if err := updatePwd(*user, *pwd, *show, *force, *length); err != nil {
+	if err := updatePwd(*user, *email, *pwd, *show, *force, *length); err != nil {
 		core.ExitNow("failed to perform operation", err)
 	}
 }
