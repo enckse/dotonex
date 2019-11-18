@@ -1,7 +1,6 @@
 users:
 - username: test
   fullname: ""
-  email: ""
   md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
   vlans:
   - dev
@@ -21,7 +20,6 @@ users:
   loginas: ""
 - username: test2
   fullname: ""
-  email: ""
   md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
   vlans:
   - prod
@@ -40,7 +38,6 @@ users:
   loginas: ""
 - username: test3
   fullname: ""
-  email: ""
   md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
   vlans: []
   systems: []
@@ -51,7 +48,6 @@ users:
   loginas: ""
 - username: test4
   fullname: ""
-  email: ""
   md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
   vlans:
   - dev
@@ -71,7 +67,6 @@ users:
   loginas: ""
 - username: test5
   fullname: ""
-  email: ""
   md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
   vlans: []
   systems: []
@@ -82,7 +77,6 @@ users:
   loginas: ""
 - username: test6
   fullname: ""
-  email: ""
   md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
   vlans:
   - dev
