@@ -53,6 +53,9 @@ func passwd(user, email, userFile, key, pwd string, force bool, length int) erro
 			return err
 		}
 	}
+	if len(email) == 0 {
+		return fmt.Errorf("no email given")
+	}
 	core.WriteInfo("")
 	core.WriteInfo(user)
 	core.WriteInfo("")
@@ -124,9 +127,6 @@ func updatePwd(user, email, pwd string, show, force bool, length int) error {
 	}
 	if len(user) == 0 {
 		return fmt.Errorf("no user given")
-	}
-	if len(email) == 0 {
-		return fmt.Errorf("no email given")
 	}
 	userFile := filepath.Join(authem.SecretsDir, user+".yaml")
 	if !show {
