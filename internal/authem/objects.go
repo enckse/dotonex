@@ -24,6 +24,7 @@ type (
 	Secret struct {
 		UserName string
 		Password string
+		Email    string
 		Fake     bool `yaml:"-"`
 	}
 
@@ -66,7 +67,6 @@ type (
 	User struct {
 		UserName string
 		FullName string
-		Email    string
 		MD4      string
 		VLANs    []string
 		Systems  []UserSystem

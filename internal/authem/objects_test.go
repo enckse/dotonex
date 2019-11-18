@@ -6,8 +6,8 @@ import (
 
 var (
 	testSecrets = []*Secret{
-		&Secret{"abc", "garbage", false},
-		&Secret{"xyz", "more", false},
+		&Secret{"abc", "garbage", "test@user", false},
+		&Secret{"xyz", "more", "test2@user", false},
 	}
 )
 
