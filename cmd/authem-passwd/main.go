@@ -111,11 +111,7 @@ func showObject(userFile, key string) error {
 		return err
 	}
 
-	core.WriteInfo("")
-	core.WriteInfo("=======file========")
-	core.WriteInfo(fmt.Sprintf("\n\n%s\n", dec))
-	core.WriteInfo("===================")
-	core.WriteInfo("")
+	fmt.Println(fmt.Sprintf("\n%s", dec))
 	return nil
 }
 
