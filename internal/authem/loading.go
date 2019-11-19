@@ -40,7 +40,7 @@ type (
 func (l LoadingOptions) LoadVLANs() ([]*VLAN, error) {
 	tracked := make(map[int]string)
 	var vlans []*VLAN
-	err := loadDirectory(VLANsDir, func(n string, b []byte) error {
+	err := l.loadDirectory(VLANsDir, func(n string, b []byte) error {
 		v := &VLAN{}
 		if err := yaml.Unmarshal(b, &v); err != nil {
 			return err
@@ -67,7 +67,7 @@ func (l LoadingOptions) LoadSecrets() ([]*Secret, error) {
 	if l.NoKey {
 		return secrets, nil
 	}
-	err := loadDirectory(SecretsDir, func(n string, b []byte) error {
+	err := l.loadDirectory(SecretsDir, func(n string, b []byte) error {
 		dec, err := Decrypt(l.Key, string(b))
 		if err != nil {
 			return err
@@ -89,7 +89,7 @@ func (l LoadingOptions) LoadSecrets() ([]*Secret, error) {
 // LoadSystems load system hardware from disk
 func (l LoadingOptions) LoadSystems() ([]*System, error) {
 	var systems []*System
-	err := loadDirectory(SystemsDir, func(n string, b []byte) error {
+	err := l.loadDirectory(SystemsDir, func(n string, b []byte) error {
 		s := &System{}
 		if err := yaml.Unmarshal(b, &s); err != nil {
 			return err
@@ -106,21 +106,36 @@ func (l LoadingOptions) LoadSystems() ([]*System, error) {
 	return systems, nil
 }
 
-func loadDirectory(dir string, load onLoad) error {
+func (l LoadingOptions) backtrace(bt []string, err error) error {
+	if !l.Verbose {
+		core.WriteInfo("~~~BACKTRACE~~~")
+		for _, l := range bt {
+			core.WriteInfoDetail(l)
+		}
+	}
+	core.WriteInfo("^^^ ERROR ^^^")
+	return err
+}
+
+func (l LoadingOptions) loadDirectory(dir string, load onLoad) error {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return err
 	}
 	core.WriteInfo(fmt.Sprintf("[%s]", dir))
+	var bt []string
 	for _, f := range files {
 		n := f.Name()
-		core.WriteInfoDetail(n)
+		if l.Verbose {
+			core.WriteInfoDetail(n)
+		}
+		bt = append(bt, n)
 		b, err := ioutil.ReadFile(filepath.Join(dir, n))
 		if err != nil {
-			return err
+			return l.backtrace(bt, err)
 		}
 		if err := load(n, b); err != nil {
-			return err
+			return l.backtrace(bt, err)
 		}
 	}
 	return nil
@@ -185,7 +200,7 @@ func (l LoadingOptions) LoadUsers(vlan []*VLAN, sys []*System, secret []*Secret)
 	users := &sync.Map{}
 	radius := &sync.Map{}
 	var chans []chan bool
-	err := loadDirectory(UserDir, func(n string, b []byte) error {
+	err := l.loadDirectory(UserDir, func(n string, b []byte) error {
 		if l.Sync {
 			asyncLoadUser(nil, users, radius, n, b, l, vlan, sys, secret)
 		} else {

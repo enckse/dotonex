@@ -57,7 +57,9 @@ func unchanged(cfg *Config, radius *authem.RADIUSConfig, users, rawConfig []byte
 	hostapdBytes := append(radius.Hostapd, []byte("\n")...)
 	core.WriteInfo("[overall]")
 	for _, f := range trackedFiles {
-		core.WriteInfoDetail(f)
+		if cfg.Verbose {
+			core.WriteInfoDetail(f)
+		}
 		path := filepath.Join(authem.TempDir, f)
 		if core.PathExists(path) {
 			b, err := ioutil.ReadFile(path)
@@ -227,7 +229,9 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 		return err
 	}
 	postScript := scripting
-	if !same {
+	if same {
+		core.WriteInfoDetail("no changes")
+	} else {
 		core.WriteInfo("changes detected")
 		postScript = true
 	}
