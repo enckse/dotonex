@@ -17,7 +17,7 @@ const (
 	targetDir = "bin"
 	alphaNum  = "abcdefghijklmnopqrstuvwxyz0123456789"
 	userBase  = `username: %s
-email:
+fullname:
 vlans: []
 perms:
     isradius: true
