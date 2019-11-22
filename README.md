@@ -23,7 +23,7 @@ Expectations:
 * Support a port-restricted LAN (+wifi) in a controlled, physical area
 * Provide a singular authentication strategy for supported clients using peap+mschapv2 (no CA validation).
 * Windows 10
-* Linux (any supported modern versions of NetworkManager or systemd-networkd when server/headless)
+* Linux (any supported modern versions of NetworkManager or direct `wpa_supplicant` usage)
 * Android 7+
 * Map authenticated user+MAC combinations to specific VLANs
 * Support MAC-based authentication (bypass) for systems that can not authenticate themselves
@@ -57,14 +57,14 @@ systemctl enable --now hostapd.service
 if using radiucal as a proxy (make sure to bind hostapd to not 1812 for radius)
 ```
 # to use the default supplied proxy config
-ln -s /etc/radiucal/proxy.conf /etc/radiucal/radiucal.proxy.conf
+ln -s /etc/radiucal/proxy.conf.example /etc/radiucal/radiucal.proxy.conf
 systemctl enable --now radiucal@proxy.service
 ```
 
 to run an accounting server via radiucal
 ```
 # to use the default supplied accounting config
-ln -s /etc/radiucal/accounting.proxy.conf /etc/radiucal/radiucal.accounting.conf
+ln -s /etc/radiucal/accounting.conf.example /etc/radiucal/radiucal.accounting.conf
 systemctl enable --now radiucal@accounting.service
 ```
 
@@ -90,6 +90,18 @@ run (with a socket listening to be proxied to, e.g. hostapd)
 ```
 ./radiucal
 ```
+
+## administration
+
+included within radiucal is the administrative stack: `authem`
+
+### authem
+
+authem is composed a set of 3 utilities:
+
+- authem-passwd for managing user accounts/credentials
+- authem-configurator for handling configuration file generation and process management on a server system
+- authem-sync to read from remote repositories and automatically handle authem-configurator calls
 
 ## debugging
 
