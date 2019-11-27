@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 	"voidedtech.com/radiucal/internal/authem"
@@ -143,6 +144,13 @@ func main() {
 	pwd := flag.String("password", "", "use this password")
 	length := flag.Int("length", 64, "default password length")
 	flag.Parse()
+	home := strings.TrimSpace(os.Getenv("AUTHEM_HOME"))
+	if home != "" {
+		if !core.PathExists(home) {
+			core.ExitNow("Unable to chdir", fmt.Errorf("AUTHEM_HOME does not exist: %s", home))
+		}
+		os.Chdir(home)
+	}
 	core.Version(vers)
 	if err := updatePwd(*user, *email, *pwd, *show, *force, *length); err != nil {
 		core.ExitNow("failed to perform operation", err)
