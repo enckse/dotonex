@@ -16,7 +16,11 @@ users:
   perms:
     isradius: true
     ispeap: true
+    isroot: false
     extended: []
+    trusts:
+    - test3
+    - test4
   loginas: ""
 - username: test2
   fullname: ""
@@ -34,7 +38,11 @@ users:
   perms:
     isradius: true
     ispeap: true
+    isroot: true
     extended: []
+    trusts:
+    - test
+    - test5
   loginas: ""
 - username: test3
   fullname: ""
@@ -44,7 +52,9 @@ users:
   perms:
     isradius: false
     ispeap: false
+    isroot: false
     extended: []
+    trusts: []
   loginas: ""
 - username: test4
   fullname: ""
@@ -63,7 +73,10 @@ users:
   perms:
     isradius: true
     ispeap: false
+    isroot: false
     extended: []
+    trusts:
+    - test6
   loginas: ""
 - username: test5
   fullname: ""
@@ -73,7 +86,9 @@ users:
   perms:
     isradius: false
     ispeap: false
+    isroot: false
     extended: []
+    trusts: []
   loginas: ""
 - username: test6
   fullname: ""
@@ -92,5 +107,7 @@ users:
   perms:
     isradius: false
     ispeap: true
+    isroot: false
     extended: []
+    trusts: []
   loginas: ""

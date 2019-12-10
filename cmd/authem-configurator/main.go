@@ -177,6 +177,9 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 	if err != nil {
 		return err
 	}
+	if err := loader.BuildTrust(users); err != nil {
+		return err
+	}
 	merged, err := authem.MergeRADIUS(radius)
 	if err != nil {
 		return err

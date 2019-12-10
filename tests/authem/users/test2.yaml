@@ -4,6 +4,8 @@ vlans: ["prod"]
 perms:
     isradius: true
     ispeap: true
+    isroot: true
+    trusts: ["test", "test5"]
 systems:
     - id: a
       type: y

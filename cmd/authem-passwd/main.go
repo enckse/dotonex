@@ -23,6 +23,7 @@ vlans: []
 perms:
     isradius: true
     ispeap: true
+    isroot: false
 systems: []
 `
 )

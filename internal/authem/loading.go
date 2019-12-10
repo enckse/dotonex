@@ -21,7 +21,8 @@ const (
 	// SystemsDir is where hardware information is stored
 	SystemsDir = "hardware"
 	// TempDir is a locally working directory
-	TempDir = "bin"
+	TempDir      = "bin"
+	maxTreeDepth = 20
 )
 
 type (
@@ -33,6 +34,11 @@ type (
 		Key     string
 		Sync    bool
 		NoKey   bool
+	}
+
+	trustTree struct {
+		node     *User
+		children []*trustTree
 	}
 )
 
@@ -193,6 +199,64 @@ func asyncLoadUser(comm chan bool, users *sync.Map, radius *sync.Map, file strin
 	if comm != nil {
 		comm <- true
 	}
+}
+
+func newTrustTree(u *User) *trustTree {
+	return &trustTree{u, []*trustTree{}}
+}
+
+func (t *trustTree) assign(users []*User, depth int) error {
+	if depth == maxTreeDepth {
+		return fmt.Errorf("max depth reached, circular?")
+	}
+	for _, c := range t.children {
+		for _, u := range users {
+			if c.node.UserName == u.UserName {
+				continue
+			}
+			for _, name := range c.node.Perms.Trusts {
+				if name == u.UserName {
+					c.children = append(c.children, newTrustTree(u))
+				}
+			}
+		}
+		if err := c.assign(users, depth+1); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (t *trustTree) find(userName string) bool {
+	if t.node.UserName == userName {
+		return true
+	}
+	for _, c := range t.children {
+		if c.find(userName) {
+			return true
+		}
+	}
+	return false
+}
+
+func (l LoadingOptions) BuildTrust(users []*User) error {
+	root := &trustTree{}
+	root.node = &User{}
+	root.node.UserName = ""
+	for _, u := range users {
+		if u.Perms.IsRoot {
+			root.children = append(root.children, newTrustTree(u))
+		}
+	}
+	if err := root.assign(users, 0); err != nil {
+		return err
+	}
+	for _, u := range users {
+		if !root.find(u.UserName) {
+			return fmt.Errorf("%s is not trusted", u.UserName)
+		}
+	}
+	return nil
 }
 
 // LoadUsers builds users from disk and other necessary objects)
