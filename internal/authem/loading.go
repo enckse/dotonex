@@ -239,6 +239,7 @@ func (t *trustTree) find(userName string) bool {
 	return false
 }
 
+// BuildTrust models trust between users from roots
 func (l LoadingOptions) BuildTrust(users []*User) error {
 	root := &trustTree{}
 	root.node = &User{}
