@@ -1,6 +1,6 @@
 VERSION      ?= master
 FLAGS        := -ldflags '-linkmode external -extldflags "-zrelro -znow $(LDFLAGS)" -s -w -X main.vers=$(VERSION)' -gcflags=all=-trimpath=$(PWD) -asmflags=all=-trimpath=$(PWD) -buildmode=pie
-EXES         := radiucal authem-passwd authem-configurator
+EXES         := radiucal authem-passwd authem-configurator radiucal-runner
 UTESTS       := $(shell find . -type f -name "*_test.go" | xargs dirname | sort -u)
 SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
 

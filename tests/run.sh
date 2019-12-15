@@ -11,6 +11,7 @@ for d in $LOGS $PLUGINS; do
     mkdir -p $d
 done
 
+PATH="../:$PATH"
 CONF="$1"
 _run() {
     ../radiucal --config test.$CONF.conf > $OUT 2>&1
@@ -18,6 +19,10 @@ _run() {
 
 _acct() {
     ../radiucal --instance acct --config test.acct.conf > $OUT.acct 2>&1
+}
+
+_reset() {
+    pkill --signal 2 radiucal-runner
 }
 
 echo "==========================="
@@ -32,12 +37,12 @@ sleep 1
 echo "running tests..."
 go run $HARNESS
 echo "reloading..."
-kill -2 $(pidof radiucal)
+_reset
 echo "re-running..."
 go run $HARNESS
 sleep 1
 echo "killing..."
-pkill --signal 2 radiucal
+_reset
 sleep 1
 pkill radiucal
 pkill harness
