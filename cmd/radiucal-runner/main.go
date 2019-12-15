@@ -203,8 +203,8 @@ func main() {
 	}
 	flags := &coreFlags{
 		bufferLogs: true,
-		reload: true,
-		exit: true,
+		reload:     true,
+		exit:       true,
 	}
 
 	for _, f := range conf.CoreFlags {
@@ -257,7 +257,7 @@ func main() {
 		go runProxy(ctx)
 	}
 	if flags.exit {
-		<- wait
+		<-wait
 		core.WriteInfo("exiting...")
 	} else {
 		for {

@@ -5,6 +5,7 @@ import (
 )
 
 type (
+	// ProcessFlags represent command line arguments to the process
 	ProcessFlags struct {
 		Config   string
 		Instance string
@@ -18,6 +19,7 @@ const (
 	debugFlag    = "debug"
 )
 
+// Args converts the process flags back to callable arguments
 func (p ProcessFlags) Args() []string {
 	args := []string{"--" + configFlag, p.Config, "--" + instanceFlag, p.Instance}
 	if p.Debug {
@@ -26,6 +28,7 @@ func (p ProcessFlags) Args() []string {
 	return args
 }
 
+// Flags parses CLI flags for radiucal
 func Flags() ProcessFlags {
 	var cfg = flag.String(configFlag, "/etc/radiucal/radiucal.conf", "Configuration file")
 	var instance = flag.String(instanceFlag, "", "Instance name")
