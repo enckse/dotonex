@@ -200,11 +200,13 @@ func main() {
 		reload     bool
 		bufferLogs bool
 		exit       bool
+		timeout    bool
 	}
 	flags := &coreFlags{
 		bufferLogs: true,
 		reload:     true,
 		exit:       true,
+		timeout:    true,
 	}
 
 	for _, f := range conf.CoreFlags {
@@ -215,6 +217,8 @@ func main() {
 			flags.reload = false
 		case "noexit":
 			flags.exit = false
+		case "notimeout":
+			flags.timeout = false
 		default:
 			core.WriteWarn(fmt.Sprintf("%s is not a known core flag", f))
 		}
@@ -231,37 +235,58 @@ func main() {
 			}
 		}
 	}()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
 	wait := make(chan bool)
-	go func() {
-		for range c {
-			if ctx.Debug {
-				core.WriteDebug("interrupt signal received")
-			}
-			if flags.reload {
-				if !flags.exit {
-					ctx.Reload()
+	if flags.reload || flags.exit {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		go func() {
+			for range c {
+				if ctx.Debug {
+					core.WriteDebug("interrupt signal received")
 				}
-				core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
+				if flags.reload {
+					core.WriteInfo("reloading")
+					if !flags.exit {
+						ctx.Reload()
+					}
+					core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
+				}
+				if flags.exit {
+					wait <- true
+				}
 			}
-			if flags.exit {
-				wait <- true
+		}()
+	}
+	timeout := make(chan bool)
+	if flags.timeout {
+		connAge := time.Duration(conf.ConnAge) * time.Hour
+		lastConn := time.Now().Format("2006-01-02")
+		go func() {
+			for {
+				time.Sleep(connAge)
+				if ctx.Debug {
+					core.WriteDebug("timed out")
+				}
+				now := time.Now().Format("2006-01-02")
+				if now != lastConn {
+					core.WriteInfo("timing out")
+					timeout <- true
+				}
+				lastConn = now
 			}
-		}
-	}()
+		}()
+	}
 	if conf.Accounting {
 		core.WriteInfo("accounting mode")
 		go account(ctx)
 	} else {
 		go runProxy(ctx)
 	}
-	if flags.exit {
-		<-wait
-		core.WriteInfo("exiting...")
-	} else {
-		for {
-			time.Sleep(1 * time.Second)
-		}
+	select {
+	case <-wait:
+		core.WriteInfo("signal...")
+	case <-timeout:
+		core.WriteInfo("lifecyle...")
 	}
+	os.Exit(0)
 }
