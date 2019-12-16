@@ -28,7 +28,7 @@ log: /var/log/radiucal/
 # how long (seconds, default 10) to buffer logs
 logbuffer: 10
 
-# connection age reset (hours, default 1 hour) before auto-reload
+# connection age reset check (hours, default 1)
 connage: 1
 
 # core flags control some underlying core behavior and should not normally ever be configured unless debugging an issue

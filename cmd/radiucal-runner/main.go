@@ -265,7 +265,7 @@ func main() {
 			for {
 				time.Sleep(connAge)
 				if ctx.Debug {
-					core.WriteDebug("timed out")
+					core.WriteDebug("connection age wakeup")
 				}
 				now := time.Now().Format("2006-01-02")
 				if now != lastConn {
