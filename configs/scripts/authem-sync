@@ -23,8 +23,6 @@ cd $AUTHEM_GIT
 git fetch origin
 git merge origin/master
 
-echo "commit:"
-git log --pretty=format:'%h' -n 1
-echo
+echo "commit: "$(git log --pretty=format:'%h' -n 1)
 authem-configurator
 git push
