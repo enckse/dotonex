@@ -31,7 +31,7 @@ logbuffer: 10
 # connection age reset check (hours, default 1)
 connage: 1
 
-# core flags control some underlying core behavior and should not normally ever be configured unless debugging an issue
+# core flags control change underlying core behavior for generally advanced/changes in how radiucal works (use with caution)
 coreflags: []
 
 # plugins to load (an array/multiple values allowed)
