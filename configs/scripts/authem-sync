@@ -25,6 +25,6 @@ git merge origin/master
 
 echo "commit:"
 git log --pretty=format:'%h' -n 1
-echo "authem-configurator"
+echo
 authem-configurator
 git push
