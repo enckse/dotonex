@@ -152,7 +152,7 @@ func main() {
 		}
 		os.Chdir(home)
 	}
-	core.Version(vers)
+	core.Version(vers, "")
 	if err := updatePwd(*user, *email, *pwd, *show, *force, *length); err != nil {
 		core.ExitNow("failed to perform operation", err)
 	}
