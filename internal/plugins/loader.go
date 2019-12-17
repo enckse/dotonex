@@ -8,7 +8,6 @@ import (
 	"voidedtech.com/radiucal/internal/plugins/debug"
 	"voidedtech.com/radiucal/internal/plugins/log"
 	"voidedtech.com/radiucal/internal/plugins/naswhitelist"
-	"voidedtech.com/radiucal/internal/plugins/stats"
 	"voidedtech.com/radiucal/internal/plugins/usermac"
 )
 
@@ -32,8 +31,6 @@ func getPlugin(name string) (core.Module, error) {
 		return &log.Plugin, nil
 	case "debug":
 		return &debug.Plugin, nil
-	case "stats":
-		return &stats.Plugin, nil
 	case "naswhitelist":
 		return &naswhitelist.Plugin, nil
 	case "access":

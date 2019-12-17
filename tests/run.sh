@@ -47,8 +47,7 @@ sleep 1
 pkill radiucal
 pkill harness
 
-COMPARE="stats logger access usermac"
-rm -f bin/stats.log
+COMPARE="logger access usermac"
 rm -f bin/logger.log
 rm -f bin/access.log
 rm -f bin/usermac.log
@@ -61,7 +60,6 @@ _getaux() {
     done
 }
 
-_getaux "stats" | sed "s/^  //g" | grep -v -E "^(Time|First|Last)" | tr '\n' '=' | sed "s/=Count/\nCount/g" | sed "s/=/ /g" | sort > bin/stats.log 
 _getaux "usermac" | grep -v "^  Id" > bin/usermac.log
 for o in access logger; do
     _getaux $o | \

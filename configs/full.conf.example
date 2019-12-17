@@ -46,16 +46,13 @@ plugins
     - log
     # to output debug tracing messages
     - debug
-    # primitive stats output
-    - stats
     # nas whitelisting/blacklist
     - naswhitelist
     # track access requests
     - access
 
-
 disable:
-    accounting: [stats]
+    accounting: []
     preauth: [debugger]
     trace: [logger]
     postauth: []
@@ -66,7 +63,3 @@ naswhitelist:
         - 192.168.100.
         # except this specific ip
         - !192.168.100.5
-
-stats:
-    # how often to flush stats to logs
-    flush: 5
