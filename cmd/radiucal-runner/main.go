@@ -225,9 +225,20 @@ func main() {
 		for {
 			time.Sleep(check)
 			if ctx.Debug {
-				core.WriteDebug("connection age wakeup")
+				core.WriteDebug("lifespan wakeup")
 			}
 			now := time.Now()
+			hr := now.Hour()
+			skip := true
+			for _, h := range conf.Internals.LifeHours {
+				if hr == h {
+					skip = false
+					break
+				}
+			}
+			if skip {
+				continue
+			}
 			if now.After(end) {
 				core.WriteInfo("lifespan reached")
 				timeout <- true

@@ -33,10 +33,12 @@ internals:
     nologs: false
 	# how long (seconds, default 10) to buffer logs
 	logs: 10
-	# how long should a runner last (hours: default 24)
-	lifespan: 24
+	# how long should a runner last (hours: default 12)
+	lifespan: 12
 	# how often should a runner check for lifespan (hours: default 1)
 	spancheck: 1
+	# hour range in which a recycle is allowed based on lifespan (day hour 0-23, default: 22, 23, 0, 1, 2, 3, 4, 5)
+	lifehours: [22, 23, 0, 1, 2, 3, 4, 5]
 
 # plugins to load (an array/multiple values allowed)
 plugins

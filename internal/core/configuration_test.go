@@ -28,7 +28,7 @@ func TestDefaults(t *testing.T) {
 	if c.Internals.SpanCheck != 1 {
 		t.Error("invalid span check")
 	}
-	if c.Internals.Lifespan != 24 {
+	if c.Internals.Lifespan != 12 {
 		t.Error("invalid lifespan")
 	}
 }

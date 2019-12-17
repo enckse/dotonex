@@ -21,6 +21,7 @@ type (
 			Logs        int
 			Lifespan    int
 			SpanCheck   int
+			LifeHours   []int
 		}
 		Disable struct {
 			Accounting []string
@@ -65,10 +66,13 @@ func (c *Configuration) Defaults(backing []byte) {
 		c.Internals.Logs = 10
 	}
 	if c.Internals.Lifespan <= 0 {
-		c.Internals.Lifespan = 24
+		c.Internals.Lifespan = 12
 	}
 	if c.Internals.SpanCheck <= 0 {
 		c.Internals.SpanCheck = 1
+	}
+	if len(c.Internals.LifeHours) == 0 {
+		c.Internals.LifeHours = []int{22, 23, 0, 1, 2, 3, 4, 5}
 	}
 	c.backing = backing
 }
