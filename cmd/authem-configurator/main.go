@@ -265,7 +265,7 @@ func main() {
 	forceScript := flag.Bool("run-scripts", false, "run the scripts regardless of configuration changes")
 	flag.Parse()
 	remainders := flag.Args()
-	core.Version(vers, "")
+	core.Version(vers)
 	err := configurate(*cfg, remainders, *verbose, *forceScript)
 	if err != nil {
 		if _, ok := err.(*configuratorError); !ok {

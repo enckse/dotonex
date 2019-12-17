@@ -79,12 +79,8 @@ func write(cat string, message string, messages ...string) {
 }
 
 // Version prints version information
-func Version(vers, details string) {
-	d := ""
-	if len(details) > 0 {
-		d = fmt.Sprintf(" (%s)", details)
-	}
-	WriteInfo(fmt.Sprintf("Version: %s%s", vers, d))
+func Version(vers string) {
+	WriteInfo(fmt.Sprintf("Version: %s", vers))
 }
 
 // ExitNow prints an error message and calls Exit (do NOT call when defers are running)

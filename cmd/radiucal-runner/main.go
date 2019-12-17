@@ -143,8 +143,8 @@ func account(ctx *server.Context) {
 }
 
 func main() {
+	core.Version(vers)
 	p := core.Flags()
-	core.Version(vers, p.Instance)
 	b, err := ioutil.ReadFile(p.Config)
 	if err != nil {
 		core.Fatal("unable to load config", err)
