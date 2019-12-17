@@ -74,7 +74,7 @@ func test(accounting bool) {
 	if err != nil {
 		panic("unable to dial")
 	}
-	for _, ip := range []net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(192, 100, 100, 100)} {
+	for _, ip := range []net.IP{net.IPv4(127, 0, 0, 1)} {
 		write("test", "11-22-33-44-55-66", srv, ip)
 		write("test", "11-22-33-44-55-67", srv, ip)
 		write("test", "11-22-33-44-55-66", srv, ip)

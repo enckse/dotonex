@@ -46,8 +46,6 @@ plugins
     - log
     # to output debug tracing messages
     - debug
-    # nas whitelisting/blacklist
-    - naswhitelist
     # track access requests
     - access
 
@@ -56,10 +54,3 @@ disable:
     preauth: [debugger]
     trace: [logger]
     postauth: []
-
-naswhitelist:
-    whitelist:
-        # everything in this sub is allowed
-        - 192.168.100.
-        # except this specific ip
-        - !192.168.100.5
