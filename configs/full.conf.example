@@ -46,7 +46,7 @@ plugins
     - usermac
     # to output log file dumps from packets received
     - log
-    # to output debug tracing messages
+    # to output debug tracing messages for packets
     - debug
     # track access requests
     - access
