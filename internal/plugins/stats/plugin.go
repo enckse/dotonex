@@ -47,13 +47,6 @@ func (s *stats) Name() string {
 	return "stats"
 }
 
-func (s *stats) Reload() error {
-	lock.Lock()
-	defer lock.Unlock()
-	info = make(map[string]*modedata)
-	return nil
-}
-
 func (s *stats) Setup(ctx *core.PluginContext) error {
 	conf := &Config{}
 	if err := yaml.Unmarshal(ctx.Backing, conf); err != nil {

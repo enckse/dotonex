@@ -26,10 +26,6 @@ var (
 	modes  []string
 )
 
-func (t *tracer) Reload() error {
-	return nil
-}
-
 func (t *tracer) Name() string {
 	return "debugger"
 }

@@ -31,7 +31,7 @@ var (
 	instance string
 )
 
-func (l *umac) Reload() error {
+func (l *umac) reload() error {
 	if !core.PathExists(file) {
 		return fmt.Errorf("%s is missing", file)
 	}
@@ -61,7 +61,7 @@ func (l *umac) Reload() error {
 func (l *umac) Setup(ctx *core.PluginContext) error {
 	instance = ctx.Instance
 	file = filepath.Join(ctx.Lib, "manifest")
-	if err := l.Reload(); err != nil {
+	if err := l.reload(); err != nil {
 		return err
 	}
 	return nil

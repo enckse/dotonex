@@ -285,19 +285,6 @@ func (ctx *Context) DebugDump() {
 	}
 }
 
-// Reload performs a context (server) reload
-func (ctx *Context) Reload() {
-	if ctx.module {
-		core.WriteInfo("reloading")
-		for _, m := range ctx.modules {
-			core.WriteDebug("reloading module", m.Name())
-			if err := m.Reload(); err != nil {
-				core.WriteError("plugin reload error", err)
-			}
-		}
-	}
-}
-
 func (ctx *Context) checkSecret(p *core.ClientPacket) error {
 	var inSecret []byte
 	if p == nil || p.Packet == nil {

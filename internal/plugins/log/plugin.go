@@ -22,10 +22,6 @@ func (l *logger) Name() string {
 	return "logger"
 }
 
-func (l *logger) Reload() error {
-	return nil
-}
-
 func (l *logger) Setup(ctx *core.PluginContext) error {
 	modes = core.DisabledModes(l, ctx)
 	instance = ctx.Instance

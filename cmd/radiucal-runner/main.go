@@ -244,13 +244,7 @@ func main() {
 				if ctx.Debug {
 					core.WriteDebug("interrupt signal received")
 				}
-				if flags.reload {
-					core.WriteInfo("reloading")
-					if !flags.exit {
-						ctx.Reload()
-					}
-					core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
-				}
+				core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
 				if flags.exit {
 					wait <- true
 				}
@@ -270,6 +264,7 @@ func main() {
 				now := time.Now().Format("2006-01-02")
 				if now != lastConn {
 					core.WriteInfo("timing out")
+					core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
 					timeout <- true
 				}
 				lastConn = now

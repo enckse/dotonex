@@ -39,10 +39,6 @@ var (
 	order     []string
 )
 
-func (l *nwl) Reload() error {
-	return nil
-}
-
 func (l *nwl) Setup(ctx *core.PluginContext) error {
 	conf := &Config{}
 	if err := yaml.Unmarshal(ctx.Backing, conf); err != nil {

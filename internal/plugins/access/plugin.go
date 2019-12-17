@@ -22,10 +22,6 @@ func (l *access) Name() string {
 	return "access"
 }
 
-func (l *access) Reload() error {
-	return nil
-}
-
 func (l *access) Setup(ctx *core.PluginContext) error {
 	modes = core.DisabledModes(l, ctx)
 	return nil

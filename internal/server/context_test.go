@@ -26,11 +26,6 @@ func (m *MockModule) Name() string {
 	return "mock"
 }
 
-func (m *MockModule) Reload() error {
-	m.reload++
-	return nil
-}
-
 func (m *MockModule) Post(p *core.ClientPacket) bool {
 	m.post++
 	return !m.fail
@@ -267,18 +262,6 @@ func TestSecretParsing(t *testing.T) {
 	_, err = parseSecretFile(dir + "noopsecret")
 	if err.Error() != "no secrets found" {
 		t.Error("empty key")
-	}
-}
-
-func TestReload(t *testing.T) {
-	ctx, _ := getPacket(t)
-	m := &MockModule{}
-	ctx.Reload()
-	ctx.AddModule(m)
-	ctx.AddModule(m)
-	ctx.Reload()
-	if m.reload != 2 {
-		t.Error("should have reloaded each module once")
 	}
 }
 
