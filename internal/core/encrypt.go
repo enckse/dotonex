@@ -1,4 +1,4 @@
-package authem
+package core
 
 import (
 	"crypto/aes"
@@ -10,12 +10,11 @@ import (
 	"unicode/utf16"
 
 	"golang.org/x/crypto/md4"
-	"voidedtech.com/radiucal/internal/core"
 )
 
 func encDecInit(serverKey string) (cipher.Block, error) {
 	if len(serverKey) == 0 {
-		core.Fatal("invalid key", nil)
+		Fatal("invalid key", nil)
 	}
 	key := []byte(serverKey)
 	return aes.NewCipher(key)

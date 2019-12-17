@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"voidedtech.com/radiucal/internal/core"
 )
 
 type (
@@ -107,10 +109,10 @@ func (u *User) Inflate(key string, secrets []*Secret) error {
 	for _, s := range secrets {
 		if s.UserName == u.UserName {
 			if s.Fake {
-				u.MD4 = MD4("")
+				u.MD4 = core.MD4("")
 				return nil
 			}
-			u.MD4 = MD4(s.Password)
+			u.MD4 = core.MD4(s.Password)
 			return nil
 		}
 	}

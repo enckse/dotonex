@@ -83,7 +83,7 @@ func passwd(user, email, userFile, key, pwd string, force bool, length int) erro
 	if err != nil {
 		return err
 	}
-	enc, err := authem.Encrypt(key, string(b))
+	enc, err := core.Encrypt(key, string(b))
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func showObject(userFile, key string) error {
 	if err != nil {
 		return err
 	}
-	dec, err := authem.Decrypt(key, string(b))
+	dec, err := core.Decrypt(key, string(b))
 	if err != nil {
 		return err
 	}

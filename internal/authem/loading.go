@@ -74,7 +74,7 @@ func (l LoadingOptions) LoadSecrets() ([]*Secret, error) {
 		return secrets, nil
 	}
 	err := l.loadDirectory(SecretsDir, func(n string, b []byte) error {
-		dec, err := Decrypt(l.Key, string(b))
+		dec, err := core.Decrypt(l.Key, string(b))
 		if err != nil {
 			return err
 		}

@@ -1,4 +1,4 @@
-package authem
+package core
 
 import (
 	"testing"
