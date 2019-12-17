@@ -6,10 +6,11 @@ import (
 	"os/exec"
 
 	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/server"
 )
 
 func main() {
-	flags := core.Flags()
+	flags := server.Flags()
 	i := fmt.Sprintf("instance: %s", flags.Instance)
 	args := flags.Args()
 	if flags.Debug {

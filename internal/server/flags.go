@@ -1,4 +1,4 @@
-package core
+package server
 
 import (
 	"flag"
@@ -17,13 +17,22 @@ const (
 	configFlag   = "config"
 	instanceFlag = "instance"
 	debugFlag    = "debug"
+	dash         = "--"
 )
 
 // Args converts the process flags back to callable arguments
 func (p ProcessFlags) Args() []string {
-	args := []string{"--" + configFlag, p.Config, "--" + instanceFlag, p.Instance}
+	var args []string
+	for k, v := range map[string]string{
+		dash + configFlag:   p.Config,
+		dash + instanceFlag: p.Instance,
+	} {
+		if len(v) > 0 {
+			args = append(args, []string{k, v}...)
+		}
+	}
 	if p.Debug {
-		args = append(args, "--"+debugFlag)
+		args = append(args, dash+debugFlag)
 	}
 	return args
 }

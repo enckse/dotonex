@@ -143,7 +143,7 @@ func account(ctx *server.Context) {
 }
 
 func main() {
-	p := core.Flags()
+	p := server.Flags()
 	core.ConfigureLogging(p.Debug, p.Instance)
 	core.WriteInfo(vers)
 	b, err := ioutil.ReadFile(p.Config)
