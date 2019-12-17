@@ -155,11 +155,7 @@ func main() {
 	}
 	conf.Defaults(b)
 	debug := conf.Debug || p.Debug
-	logOpts := core.NewLogOptions()
-	logOpts.Debug = debug
-	logOpts.Info = true
-	logOpts.Instance = p.Instance
-	core.ConfigureLogging(logOpts)
+	core.ConfigureLogging(debug, p.Instance)
 	if debug {
 		conf.Dump()
 	}
