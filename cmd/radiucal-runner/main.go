@@ -219,18 +219,18 @@ func main() {
 			core.WriteWarn(fmt.Sprintf("%s is not a known core flag", f))
 		}
 	}
-	logBuffer := time.Duration(conf.LogBuffer) * time.Second
-	go func() {
-		for {
-			time.Sleep(logBuffer)
-			if ctx.Debug {
-				core.WriteDebug("flushing logs")
-			}
-			if flags.bufferLogs {
+	if flags.bufferLogs {
+		logBuffer := time.Duration(conf.LogBuffer) * time.Second
+		go func() {
+			for {
+				time.Sleep(logBuffer)
+				if ctx.Debug {
+					core.WriteDebug("flushing logs")
+				}
 				core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
 			}
-		}
-	}()
+		}()
+	}
 	wait := make(chan bool)
 	if flags.exit {
 		c := make(chan os.Signal, 1)
