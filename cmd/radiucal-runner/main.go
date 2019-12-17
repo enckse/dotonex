@@ -229,7 +229,7 @@ func main() {
 				core.WriteDebug("lifespan wakeup")
 			}
 			now := time.Now()
-			if !core.In(now.Hour(), conf.Internals.LifeHours) {
+			if !core.IntegerIn(now.Hour(), conf.Internals.LifeHours) {
 				continue
 			}
 			if now.After(end) {
