@@ -95,13 +95,13 @@ _checks() {
     fi
 }
 
-reject=8
+reject=2
 if [[ "$CONF" == "norjct" ]]; then
     reject=0
 fi
 
 _checks "rejecting client" $reject
-_checks "client failed auth check" 8
+_checks "client failed auth check" 2
 echo "stdout checks passed"
 sleep 3
 echo "$CONF is completed..."

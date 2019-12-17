@@ -43,7 +43,7 @@ func (l *umac) load() error {
 	manifest = make(map[string]bool)
 	data := strings.Split(string(b), "\n")
 	kv := core.KeyValueStore{}
-	kv.Add("Manfiest", "reload")
+	kv.Add("Manfiest", "load")
 	idx := 0
 	for _, d := range data {
 		if strings.TrimSpace(d) == "" {
