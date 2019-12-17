@@ -21,7 +21,7 @@ func main() {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			core.WriteError("radiucal runner error "+i, err)
+			core.WriteWarn(fmt.Sprintf("radiucal runner ended %s (%v)", i, err))
 		}
 	}
 }
