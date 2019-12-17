@@ -38,7 +38,6 @@ var (
 	Plugin   stats
 	info     = make(map[string]*modedata)
 	modes    []string
-	instance string
 	flush    int
 	flushIdx int
 )
@@ -56,7 +55,6 @@ func (s *stats) Setup(ctx *core.PluginContext) error {
 	if flush < 0 {
 		flush = 0
 	}
-	instance = ctx.Instance
 	modes = core.DisabledModes(s, ctx)
 	return nil
 }
