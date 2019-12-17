@@ -196,8 +196,8 @@ func main() {
 		ctx.AddModule(obj)
 	}
 
-	if !conf.Internals.NoLogBuffer {
-		logBuffer := time.Duration(conf.LogBuffer) * time.Second
+	if !conf.Internals.NoLogs {
+		logBuffer := time.Duration(conf.Internals.Logs) * time.Second
 		go func() {
 			for {
 				time.Sleep(logBuffer)
@@ -209,7 +209,7 @@ func main() {
 		}()
 	}
 	wait := make(chan bool)
-	if !conf.Internals.NoExit {
+	if !conf.Internals.NoInterrupt {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		go func() {
@@ -222,24 +222,21 @@ func main() {
 		}()
 	}
 	timeout := make(chan bool)
-	if !conf.Internals.NoTimeout {
-		connAge := time.Duration(conf.ConnAge) * time.Hour
-		lastConn := time.Now().Format("2006-01-02")
-		go func() {
-			for {
-				time.Sleep(connAge)
-				if ctx.Debug {
-					core.WriteDebug("connection age wakeup")
-				}
-				now := time.Now().Format("2006-01-02")
-				if now != lastConn {
-					core.WriteInfo("timing out")
-					timeout <- true
-				}
-				lastConn = now
+	check := time.Duration(conf.Internals.SpanCheck) * time.Hour
+	end := time.Now().Add(time.Duration(conf.Internals.Lifespan) * time.Hour)
+	go func() {
+		for {
+			time.Sleep(check)
+			if ctx.Debug {
+				core.WriteDebug("connection age wakeup")
 			}
-		}()
-	}
+			now := time.Now()
+			if now.After(end) {
+				core.WriteInfo("lifespan reached")
+				timeout <- true
+			}
+		}
+	}()
 	if conf.Accounting {
 		core.WriteInfo("accounting mode")
 		go account(ctx)

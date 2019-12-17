@@ -22,7 +22,13 @@ func TestDefaults(t *testing.T) {
 	if c.Bind != 1812 {
 		t.Error("invalid port")
 	}
-	if c.LogBuffer != 10 {
+	if c.Internals.Logs != 10 {
 		t.Error("invalid log buffer")
+	}
+	if c.Internals.SpanCheck != 1 {
+		t.Error("invalid span check")
+	}
+	if c.Internals.Lifespan != 24 {
+		t.Error("invalid lifespan")
 	}
 }

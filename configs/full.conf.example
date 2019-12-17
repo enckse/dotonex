@@ -25,20 +25,18 @@ dir: /var/lib/radiucal/
 # log dir
 log: /var/log/radiucal/
 
-# how long (seconds, default 10) to buffer logs
-logbuffer: 10
-
-# connection age reset check (hours, default 1), set high to disable
-connage: 1
-
 # internal operations (do NOT change except for debugging)
 internals:
     # disable exit on interrupt
-    noexit: false
-    # disable exit on connection age greater than 24 hours/new day
-    notimeout: false
+    nointerrupt: false
     # disable log buffering
-    nologbuffer: false
+    nologs: false
+	# how long (seconds, default 10) to buffer logs
+	logs: 10
+	# how long should a runner last (hours: default 24)
+	lifespan: 24
+	# how often should a runner check for lifespan (hours: default 1)
+	spancheck: 1
 
 # plugins to load (an array/multiple values allowed)
 plugins

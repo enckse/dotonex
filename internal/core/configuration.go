@@ -15,12 +15,12 @@ type (
 		NoReject   bool
 		Log        string
 		Plugins    []string
-		LogBuffer  int
-		ConnAge    int
 		Internals  struct {
-			NoExit      bool
-			NoLogBuffer bool
-			NoTimeout   bool
+			NoInterrupt bool
+			NoLogs      bool
+			Logs        int
+			Lifespan    int
+			SpanCheck   int
 		}
 		Disable struct {
 			Accounting []string
@@ -61,11 +61,14 @@ func (c *Configuration) Defaults(backing []byte) {
 			c.Bind = 1812
 		}
 	}
-	if c.LogBuffer <= 0 {
-		c.LogBuffer = 10
+	if c.Internals.Logs <= 0 {
+		c.Internals.Logs = 10
 	}
-	if c.ConnAge <= 0 {
-		c.ConnAge = 1
+	if c.Internals.Lifespan <= 0 {
+		c.Internals.Lifespan = 24
+	}
+	if c.Internals.SpanCheck <= 0 {
+		c.Internals.SpanCheck = 1
 	}
 	c.backing = backing
 }
