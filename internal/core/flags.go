@@ -32,7 +32,7 @@ func (p ProcessFlags) Args() []string {
 func Flags() ProcessFlags {
 	var cfg = flag.String(configFlag, "/etc/radiucal/radiucal.conf", "Configuration file")
 	var instance = flag.String(instanceFlag, "", "Instance name")
-	var debugging = flag.Bool(debugFlag, false, "debugging")
+	var debugging = flag.Bool(debugFlag, false, "Enable debugging")
 	flag.Parse()
 	return ProcessFlags{
 		Config:   *cfg,
