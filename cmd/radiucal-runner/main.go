@@ -205,7 +205,7 @@ func main() {
 			}
 		}()
 	}
-	wait := make(chan bool)
+	interrupt := make(chan bool)
 	if !conf.Internals.NoInterrupt {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
@@ -214,11 +214,11 @@ func main() {
 				if ctx.Debug {
 					core.WriteDebug("interrupt signal received")
 				}
-				wait <- true
+				interrupt <- true
 			}
 		}()
 	}
-	timeout := make(chan bool)
+	lifecycle := make(chan bool)
 	check := time.Duration(conf.Internals.SpanCheck) * time.Hour
 	end := time.Now().Add(time.Duration(conf.Internals.Lifespan) * time.Hour)
 	go func() {
@@ -229,11 +229,13 @@ func main() {
 			}
 			now := time.Now()
 			if !core.IntegerIn(now.Hour(), conf.Internals.LifeHours) {
+				if ctx.Debug {
+					core.WriteDebug("lifespan in quiet hours")
+				}
 				continue
 			}
 			if now.After(end) {
-				core.WriteInfo("lifespan reached")
-				timeout <- true
+				lifecycle <- true
 			}
 		}
 	}()
@@ -245,9 +247,9 @@ func main() {
 		go runProxy(ctx)
 	}
 	select {
-	case <-wait:
-		core.WriteInfo("signal...")
-	case <-timeout:
+	case <-interrupt:
+		core.WriteInfo("interrupt...")
+	case <-lifecycle:
 		core.WriteInfo("lifecyle...")
 	}
 	core.WritePluginMessages(conf.Log, p.Instance)
