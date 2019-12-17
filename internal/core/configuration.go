@@ -5,7 +5,6 @@ import yaml "gopkg.in/yaml.v2"
 type (
 	// Configuration is the configuration definition
 	Configuration struct {
-		Debug      bool
 		Cache      bool
 		Host       string
 		Accounting bool

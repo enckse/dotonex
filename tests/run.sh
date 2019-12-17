@@ -14,11 +14,11 @@ done
 PATH="../:$PATH"
 CONF="$1"
 _run() {
-    ../radiucal --config test.$CONF.conf > $OUT 2>&1
+    ../radiucal --debug --config test.$CONF.conf > $OUT 2>&1
 }
 
 _acct() {
-    ../radiucal --instance acct --config test.acct.conf > $OUT.acct 2>&1
+    ../radiucal --debug --instance acct --config test.acct.conf > $OUT.acct 2>&1
 }
 
 _reset() {

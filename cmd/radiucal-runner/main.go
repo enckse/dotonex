@@ -155,9 +155,7 @@ func main() {
 		core.Fatal("unable to parse config", err)
 	}
 	conf.Defaults(b)
-	debug := conf.Debug || p.Debug
-	core.ConfigureLogging(debug, p.Instance)
-	if debug {
+	if p.Debug {
 		conf.Dump()
 	}
 	to := 1814
@@ -171,7 +169,7 @@ func main() {
 		core.Fatal("proxy setup", err)
 	}
 
-	ctx := &server.Context{Debug: debug}
+	ctx := &server.Context{Debug: p.Debug}
 	ctx.FromConfig(conf.Dir, conf)
 	pCtx := core.NewPluginContext(conf)
 	for _, p := range conf.Plugins {

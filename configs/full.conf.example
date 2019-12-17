@@ -1,6 +1,3 @@
-# to enable debugging output/logging (false)
-debug: true
-
 # to support caching operations (false)
 cache: true
 
