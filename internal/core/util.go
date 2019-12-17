@@ -69,7 +69,7 @@ func Compare(prev, now []byte, show bool) bool {
 	return true
 }
 
-// In will check if an integer is in a list
+// IntegerIn will check if an integer is in a list
 func IntegerIn(i int, list []int) bool {
 	for _, obj := range list {
 		if obj == i {
