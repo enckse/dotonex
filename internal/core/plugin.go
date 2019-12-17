@@ -48,14 +48,10 @@ type (
 
 	// PluginContext is the context given to a plugin module
 	PluginContext struct {
-		// Location of logs directory
-		Logs string
 		// Location of the general lib directory
 		Lib string
 		// Backing config
 		config *Configuration
-		// Enable caching
-		Cache bool
 		// Backing configuration data
 		Backing []byte
 	}
@@ -95,7 +91,6 @@ type (
 // NewPluginContext prepares a context from a configuration
 func NewPluginContext(config *Configuration) *PluginContext {
 	p := &PluginContext{}
-	p.Cache = config.Cache
 	p.config = config
 	p.Backing = config.backing
 	return p
@@ -104,9 +99,7 @@ func NewPluginContext(config *Configuration) *PluginContext {
 // Clone a plugin context to a copy for use in plugins
 func (p *PluginContext) Clone(moduleName string) *PluginContext {
 	n := &PluginContext{}
-	n.Logs = p.Logs
 	n.Lib = p.Lib
-	n.Cache = p.Cache
 	n.config = p.config
 	n.Backing = p.Backing
 	return n
