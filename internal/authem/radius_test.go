@@ -397,3 +397,9 @@ func TestSystem(t *testing.T) {
 		t.Error("system valid")
 	}
 }
+
+func TestManifestEntry(t *testing.T) {
+	if NewManifestEntry("test", "object") != "test.object" {
+		t.Error("invalid manifest entry")
+	}
+}

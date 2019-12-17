@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+// NewManifestEntry creates a new manifest entry object
+func NewManifestEntry(user, mac string) string {
+	return fmt.Sprintf("%s.%s", user, mac)
+}
+
 // UserAddRADIUS creates an user entry for RADIUS
 func UserAddRADIUS(user, md4 string, vlan int) string {
 	return fmt.Sprintf(`"%s" PEAP
@@ -165,7 +170,7 @@ func (u User) ForRADIUS(vlans []*VLAN, systems []*System, options RADIUSOptions)
 	for mac, mab := range trackMACs {
 		r.MACs = append(r.MACs, mac)
 		if mab {
-			r.Manifest = append(r.Manifest, fmt.Sprintf("%s.%s", mac, mac))
+			r.Manifest = append(r.Manifest, NewManifestEntry(mac, mac))
 		}
 		for _, uVLAN := range append([]string{""}, u.VLANs...) {
 			credentials := login
@@ -173,7 +178,7 @@ func (u User) ForRADIUS(vlans []*VLAN, systems []*System, options RADIUSOptions)
 				credentials = fmt.Sprintf("%s.%s", uVLAN, credentials)
 			}
 			if u.Perms.IsPEAP {
-				r.Manifest = append(r.Manifest, fmt.Sprintf("%s.%s", credentials, mac))
+				r.Manifest = append(r.Manifest, NewManifestEntry(credentials, mac))
 			}
 		}
 	}

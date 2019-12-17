@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"layeh.com/radius/rfc2865"
+	"voidedtech.com/radiucal/internal/authem"
 	"voidedtech.com/radiucal/internal/core"
 )
 
@@ -90,7 +91,7 @@ func checkUserMac(p *core.ClientPacket) error {
 	}
 	username = clean(username)
 	calling = clean(calling)
-	fqdn := fmt.Sprintf("%s.%s", username, calling)
+	fqdn := authem.NewManifestEntry(username, calling)
 	success := true
 	var failure error
 	lock.Lock()
