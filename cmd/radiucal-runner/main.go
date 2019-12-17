@@ -251,7 +251,6 @@ func main() {
 	case <-timeout:
 		core.WriteInfo("lifecyle...")
 	}
-	ctx.Unload()
 	core.WritePluginMessages(conf.Log, p.Instance)
 	os.Exit(0)
 }

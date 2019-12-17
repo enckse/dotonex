@@ -32,10 +32,6 @@ func (m *MockModule) Post(p *core.ClientPacket) bool {
 	return !m.fail
 }
 
-func (m *MockModule) Unload() {
-	m.unload++
-}
-
 func (m *MockModule) Setup(c *core.PluginContext) error {
 	return nil
 }

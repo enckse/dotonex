@@ -57,9 +57,6 @@ func (l *umac) load() error {
 	return nil
 }
 
-func (l *umac) Unload() {
-}
-
 func (l *umac) Setup(ctx *core.PluginContext) error {
 	file = filepath.Join(ctx.Lib, "manifest")
 	if err := l.load(); err != nil {

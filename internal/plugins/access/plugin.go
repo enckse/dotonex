@@ -27,9 +27,6 @@ func (l *access) Setup(ctx *core.PluginContext) error {
 	return nil
 }
 
-func (l *access) Unload() {
-}
-
 func (l *access) Pre(packet *core.ClientPacket) bool {
 	return core.NoopPre(packet, write)
 }
