@@ -196,30 +196,7 @@ func main() {
 		ctx.AddModule(obj)
 	}
 
-	type coreFlags struct {
-		bufferLogs bool
-		exit       bool
-		timeout    bool
-	}
-	flags := &coreFlags{
-		bufferLogs: true,
-		exit:       true,
-		timeout:    true,
-	}
-
-	for _, f := range conf.CoreFlags {
-		switch f {
-		case "nobufferlogs":
-			flags.bufferLogs = false
-		case "noexit":
-			flags.exit = false
-		case "notimeout":
-			flags.timeout = false
-		default:
-			core.WriteWarn(fmt.Sprintf("%s is not a known core flag", f))
-		}
-	}
-	if flags.bufferLogs {
+	if !conf.Internals.NoLogBuffer {
 		logBuffer := time.Duration(conf.LogBuffer) * time.Second
 		go func() {
 			for {
@@ -232,7 +209,7 @@ func main() {
 		}()
 	}
 	wait := make(chan bool)
-	if flags.exit {
+	if !conf.Internals.NoExit {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		go func() {
@@ -245,7 +222,7 @@ func main() {
 		}()
 	}
 	timeout := make(chan bool)
-	if flags.timeout {
+	if !conf.Internals.NoTimeout {
 		connAge := time.Duration(conf.ConnAge) * time.Hour
 		lastConn := time.Now().Format("2006-01-02")
 		go func() {

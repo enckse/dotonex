@@ -28,11 +28,17 @@ log: /var/log/radiucal/
 # how long (seconds, default 10) to buffer logs
 logbuffer: 10
 
-# connection age reset check (hours, default 1)
+# connection age reset check (hours, default 1), set high to disable
 connage: 1
 
-# core flags control change underlying core behavior for generally advanced/changes in how radiucal works (use with caution)
-coreflags: []
+# internal operations
+internals:
+    # disable exit on interrupt
+    noexit: false
+    # disable exit on connection age greater than 24 hours/new day
+    notimeout: false
+    # disable log buffering
+    nologbuffer: false
 
 # plugins to load (an array/multiple values allowed)
 plugins

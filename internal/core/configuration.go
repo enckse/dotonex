@@ -17,8 +17,12 @@ type (
 		Plugins    []string
 		LogBuffer  int
 		ConnAge    int
-		CoreFlags  []string
-		Disable    struct {
+		Internals  struct {
+			NoExit      bool
+			NoLogBuffer bool
+			NoTimeout   bool
+		}
+		Disable struct {
 			Accounting []string
 			Preauth    []string
 			Trace      []string
