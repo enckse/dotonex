@@ -48,12 +48,10 @@ type (
 
 	// PluginContext is the context given to a plugin module
 	PluginContext struct {
-		// Location of the general lib directory
-		Lib string
 		// Backing config
 		config *Configuration
-		// Backing configuration data
-		Backing []byte
+		// Lib represents the library path for radiucal
+		Lib string
 	}
 
 	// Module represents a plugin module for packet checking
@@ -92,22 +90,13 @@ type (
 func NewPluginContext(config *Configuration) *PluginContext {
 	p := &PluginContext{}
 	p.config = config
-	p.Backing = config.backing
+	p.Lib = config.Dir
 	return p
 }
 
-// Clone a plugin context to a copy for use in plugins
-func (p *PluginContext) Clone(moduleName string) *PluginContext {
-	n := &PluginContext{}
-	n.Lib = p.Lib
-	n.config = p.config
-	n.Backing = p.Backing
-	return n
-}
-
-// GetBackingConfig returns the corresponding backing config of the context
-func (p *PluginContext) GetBackingConfig() []byte {
-	return p.config.backing
+// CloneContext a plugin context to a copy for use in other plugins
+func (p *PluginContext) CloneContext() *PluginContext {
+	return NewPluginContext(p.config)
 }
 
 // NewRequestDump prepares a packet request for dumping

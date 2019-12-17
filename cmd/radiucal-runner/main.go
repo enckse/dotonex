@@ -172,7 +172,6 @@ func main() {
 	ctx := &server.Context{Debug: debug}
 	ctx.FromConfig(conf.Dir, conf)
 	pCtx := core.NewPluginContext(conf)
-	pCtx.Lib = conf.Dir
 	for _, p := range conf.Plugins {
 		core.WriteInfo("loading plugin", p)
 		obj, err := plugins.LoadPlugin(p, pCtx)
