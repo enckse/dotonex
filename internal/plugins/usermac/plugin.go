@@ -27,7 +27,7 @@ var (
 	file     string
 	manifest = make(map[string]bool)
 	// Plugin represents the instance for the system
-	Plugin   umac
+	Plugin umac
 )
 
 func (l *umac) reload() error {

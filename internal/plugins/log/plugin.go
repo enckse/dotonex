@@ -8,8 +8,8 @@ import (
 
 var (
 	// Plugin represents the system instance of the module
-	Plugin   logger
-	modes    []string
+	Plugin logger
+	modes  []string
 )
 
 type (
