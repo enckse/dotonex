@@ -197,14 +197,12 @@ func main() {
 	}
 
 	type coreFlags struct {
-		reload     bool
 		bufferLogs bool
 		exit       bool
 		timeout    bool
 	}
 	flags := &coreFlags{
 		bufferLogs: true,
-		reload:     true,
 		exit:       true,
 		timeout:    true,
 	}
@@ -213,8 +211,6 @@ func main() {
 		switch f {
 		case "nobufferlogs":
 			flags.bufferLogs = false
-		case "noreload":
-			flags.reload = false
 		case "noexit":
 			flags.exit = false
 		case "notimeout":
@@ -236,7 +232,7 @@ func main() {
 		}
 	}()
 	wait := make(chan bool)
-	if flags.reload || flags.exit {
+	if flags.exit {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		go func() {
@@ -244,10 +240,7 @@ func main() {
 				if ctx.Debug {
 					core.WriteDebug("interrupt signal received")
 				}
-				core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
-				if flags.exit {
-					wait <- true
-				}
+				wait <- true
 			}
 		}()
 	}
@@ -264,7 +257,6 @@ func main() {
 				now := time.Now().Format("2006-01-02")
 				if now != lastConn {
 					core.WriteInfo("timing out")
-					core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
 					timeout <- true
 				}
 				lastConn = now
@@ -283,5 +275,6 @@ func main() {
 	case <-timeout:
 		core.WriteInfo("lifecyle...")
 	}
+	core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
 	os.Exit(0)
 }
