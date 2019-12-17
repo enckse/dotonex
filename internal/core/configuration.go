@@ -29,7 +29,6 @@ type (
 			Trace      []string
 			Postauth   []string
 		}
-		backing []byte
 	}
 )
 
@@ -37,7 +36,7 @@ type (
 func (c *Configuration) Dump() {
 	config, err := yaml.Marshal(c)
 	if err == nil {
-		WriteDebug("configuration (mem/raw)", string(config), string(c.backing))
+		WriteDebug("configuration", string(config))
 	} else {
 		WriteError("unable to read yaml configuration", err)
 	}
@@ -74,5 +73,4 @@ func (c *Configuration) Defaults(backing []byte) {
 	if len(c.Internals.LifeHours) == 0 {
 		c.Internals.LifeHours = []int{22, 23, 0, 1, 2, 3, 4, 5}
 	}
-	c.backing = backing
 }
