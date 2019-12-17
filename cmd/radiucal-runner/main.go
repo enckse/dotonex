@@ -35,7 +35,8 @@ func newConnection(srv, cli *net.UDPAddr) *connection {
 	conn := new(connection)
 	conn.client = cli
 	serverUDP, err := net.DialUDP("udp", nil, srv)
-	if core.LogError("dial udp", err) {
+	if err != nil {
+		core.WriteError("dial udp", err)
 		return nil
 	}
 	conn.server = serverUDP
@@ -64,15 +65,17 @@ func runConnection(ctx *server.Context, conn *connection) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, err := conn.server.Read(buffer[0:])
-		if core.LogError("unable to read", err) {
+		if err != nil {
+			core.WriteError("unable to read buffer", err)
 			continue
 		}
 		buffered := []byte(buffer[0:n])
 		if !checkAuth("post", server.PostAuthorize, ctx, buffered, conn.client, conn.client) {
 			continue
 		}
-		_, err = proxy.WriteToUDP(buffer[0:n], conn.client)
-		core.LogError("relaying", err)
+		if _, err := proxy.WriteToUDP(buffer[0:n], conn.client); err != nil {
+			core.WriteError("error relaying", err)
+		}
 	}
 }
 
@@ -98,7 +101,8 @@ func runProxy(ctx *server.Context) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
-		if core.LogError("read from udp", err) {
+		if err != nil {
+			core.WriteError("read from udp", err)
 			continue
 		}
 		addr := cliaddr.String()
@@ -120,8 +124,9 @@ func runProxy(ctx *server.Context) {
 		if !checkAuth("pre", server.PreAuthorize, ctx, buffered, cliaddr, conn.client) {
 			continue
 		}
-		_, err = conn.server.Write(buffer[0:n])
-		core.LogError("server write", err)
+		if _, err := conn.server.Write(buffer[0:n]); err != nil {
+			core.WriteError("unable to write to the server", err)
+		}
 	}
 }
 
@@ -129,7 +134,8 @@ func account(ctx *server.Context) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
-		if core.LogError("accounting udp error", err) {
+		if err != nil {
+			core.WriteError("accounting udp error", err)
 			continue
 		}
 		ctx.Account(core.NewClientPacket(buffer[0:n], cliaddr))
@@ -164,9 +170,8 @@ func main() {
 		}
 	}
 	addr := fmt.Sprintf("%s:%d", conf.Host, to)
-	err = setup(addr, conf.Bind)
-	if core.LogError("proxy setup", err) {
-		panic("unable to proceed")
+	if err := setup(addr, conf.Bind); err != nil {
+		core.Fatal("proxy setup", err)
 	}
 
 	ctx := &server.Context{Debug: debug}

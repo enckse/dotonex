@@ -230,8 +230,8 @@ func parseSecretMappings(filename string) (map[string][]byte, error) {
 
 func (ctx *Context) parseSecrets(secretFile string) {
 	s, err := parseSecretFile(secretFile)
-	if core.LogError(fmt.Sprintf("unable to read secrets: %s", secretFile), err) {
-		panic("unable to read secrets")
+	if err != nil {
+		core.Fatal(fmt.Sprintf("unable to read secrets: %s", secretFile), err)
 	}
 	ctx.secret = []byte(s)
 }
