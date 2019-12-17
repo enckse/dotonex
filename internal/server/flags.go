@@ -24,11 +24,11 @@ const (
 func (p ProcessFlags) Args() []string {
 	var args []string
 	if len(p.Config) > 0 {
-		args = append(args, dash + configFlag)
+		args = append(args, dash+configFlag)
 		args = append(args, p.Config)
 	}
 	if len(p.Instance) > 0 {
-		args = append(args, dash + instanceFlag)
+		args = append(args, dash+instanceFlag)
 		args = append(args, p.Instance)
 	}
 	if p.Debug {
