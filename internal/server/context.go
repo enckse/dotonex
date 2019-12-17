@@ -98,6 +98,13 @@ func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*core.ClientPacket
 	return ctx.doAuthing(b, addr, preMode)
 }
 
+// Unload will do any unload context actions and unload on modules
+func (ctx *Context) Unload() {
+	for _, m := range ctx.modules {
+		m.Unload()
+	}
+}
+
 func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*core.ClientPacket, ReasonCode) {
 	p := core.NewClientPacket(b, addr)
 	return p, ctx.authorize(p, mode)

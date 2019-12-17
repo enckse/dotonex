@@ -66,6 +66,7 @@ type (
 	Module interface {
 		Setup(*PluginContext) error
 		Name() string
+		Unload()
 	}
 
 	// PreAuth represents the interface required to pre-authorize a packet

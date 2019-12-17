@@ -30,6 +30,9 @@ func (t *tracer) Name() string {
 	return "debugger"
 }
 
+func (t *tracer) Unload() {
+}
+
 func (t *tracer) Setup(ctx *core.PluginContext) error {
 	modes = core.DisabledModes(t, ctx)
 	return nil

@@ -75,6 +75,25 @@ func (s *stats) Account(packet *core.ClientPacket) {
 	write(core.AccountingMode, core.NoTrace, nil)
 }
 
+func (s *stats) Unload() {
+	lock.Lock()
+	defer lock.Unlock()
+	t := time.Now()
+	for _, m := range info {
+		flushStats(m, t)
+	}
+}
+
+func flushStats(m *modedata, t time.Time) {
+	kv := core.KeyValueStore{}
+	kv.Add("Time", t.Format(timeFormat))
+	kv.Add("First", m.first.Format(timeFormat))
+	kv.Add("Last", m.first.Format(timeFormat))
+	kv.Add("Count", fmt.Sprintf("%d", m.count))
+	kv.Add("Name", m.name)
+	core.LogPluginMessages(&Plugin, kv.Strings())
+}
+
 func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	go func() {
 		lock.Lock()
@@ -92,13 +111,7 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		m.count++
 		if flush == 0 || flushIdx > flush {
 			flushIdx = 0
-			kv := core.KeyValueStore{}
-			kv.Add("Time", t.Format(timeFormat))
-			kv.Add("First", m.first.Format(timeFormat))
-			kv.Add("Last", m.first.Format(timeFormat))
-			kv.Add("Count", fmt.Sprintf("%d", m.count))
-			kv.Add("Name", m.name)
-			core.LogPluginMessages(&Plugin, kv.Strings())
+			flushStats(m, t)
 		} else {
 			flushIdx++
 		}

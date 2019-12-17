@@ -81,6 +81,9 @@ func (l *nwl) startup(array []string) {
 	}
 }
 
+func (l *nwl) Unload() {
+}
+
 func (l *nwl) Pre(packet *core.ClientPacket) bool {
 	if !enabled {
 		return true

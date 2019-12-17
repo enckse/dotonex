@@ -28,6 +28,9 @@ func (l *logger) Setup(ctx *core.PluginContext) error {
 	return nil
 }
 
+func (l *logger) Unload() {
+}
+
 func (l *logger) Pre(packet *core.ClientPacket) bool {
 	return core.NoopPre(packet, write)
 }

@@ -58,6 +58,9 @@ func (l *umac) reload() error {
 	return nil
 }
 
+func (l *umac) Unload() {
+}
+
 func (l *umac) Setup(ctx *core.PluginContext) error {
 	instance = ctx.Instance
 	file = filepath.Join(ctx.Lib, "manifest")

@@ -17,6 +17,7 @@ type MockModule struct {
 	fail   bool
 	reload int
 	post   int
+	unload int
 	// TraceType
 	preAuth  int
 	postAuth int
@@ -29,6 +30,10 @@ func (m *MockModule) Name() string {
 func (m *MockModule) Post(p *core.ClientPacket) bool {
 	m.post++
 	return !m.fail
+}
+
+func (m *MockModule) Unload() {
+	m.unload++
 }
 
 func (m *MockModule) Setup(c *core.PluginContext) error {
@@ -285,5 +290,18 @@ func TestAcct(t *testing.T) {
 	ctx.Account(p)
 	if m.acct != 2 {
 		t.Error("didn't account")
+	}
+}
+
+func TestUnload(t *testing.T) {
+	ctx := &Context{}
+	m := &MockModule{}
+	ctx.AddModule(m)
+	if m.unload != 0 {
+		t.Error("not loaded")
+	}
+	ctx.Unload()
+	if m.unload != 1 {
+		t.Error("should have unloaded")
 	}
 }
