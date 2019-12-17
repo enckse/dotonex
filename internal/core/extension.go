@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
+	"layeh.com/radius"
 	"layeh.com/radius/debug"
 )
 
@@ -83,7 +85,20 @@ type (
 		Module
 		Account(*ClientPacket)
 	}
+
+	// ClientPacket represents the radius packet from the client
+	ClientPacket struct {
+		ClientAddr *net.UDPAddr
+		Buffer     []byte
+		Packet     *radius.Packet
+		Error      error
+	}
 )
+
+// NewClientPacket creates a client packet from an input data packet
+func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
+	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
+}
 
 // NewPluginContext prepares a context from a configuration
 func NewPluginContext(config *Configuration) *PluginContext {
