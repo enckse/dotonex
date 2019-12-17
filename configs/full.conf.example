@@ -31,7 +31,7 @@ logbuffer: 10
 # connection age reset check (hours, default 1), set high to disable
 connage: 1
 
-# internal operations
+# internal operations (do NOT change except for debugging)
 internals:
     # disable exit on interrupt
     noexit: false

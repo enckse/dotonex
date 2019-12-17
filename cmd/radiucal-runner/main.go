@@ -244,6 +244,7 @@ func main() {
 		core.WriteInfo("accounting mode")
 		go account(ctx)
 	} else {
+		core.WriteInfo("proxy mode")
 		go runProxy(ctx)
 	}
 	select {
