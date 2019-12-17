@@ -30,7 +30,7 @@ var (
 	Plugin umac
 )
 
-func (l *umac) reload() error {
+func (l *umac) load() error {
 	if !core.PathExists(file) {
 		return fmt.Errorf("%s is missing", file)
 	}
@@ -62,7 +62,7 @@ func (l *umac) Unload() {
 
 func (l *umac) Setup(ctx *core.PluginContext) error {
 	file = filepath.Join(ctx.Lib, "manifest")
-	if err := l.reload(); err != nil {
+	if err := l.load(); err != nil {
 		return err
 	}
 	return nil
