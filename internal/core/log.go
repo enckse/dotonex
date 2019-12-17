@@ -14,8 +14,8 @@ const (
 )
 
 var (
-	debugging   = false
-	instance    = ""
+	debugging = false
+	instance  = ""
 )
 
 // ConfigureLogging will configure the underlying logging options
