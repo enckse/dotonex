@@ -28,7 +28,6 @@ var (
 	manifest = make(map[string]bool)
 	// Plugin represents the instance for the system
 	Plugin   umac
-	instance string
 )
 
 func (l *umac) reload() error {
@@ -62,7 +61,6 @@ func (l *umac) Unload() {
 }
 
 func (l *umac) Setup(ctx *core.PluginContext) error {
-	instance = ctx.Instance
 	file = filepath.Join(ctx.Lib, "manifest")
 	if err := l.reload(); err != nil {
 		return err

@@ -174,7 +174,6 @@ func main() {
 	pCtx := core.NewPluginContext(conf)
 	pCtx.Logs = conf.Log
 	pCtx.Lib = conf.Dir
-	pCtx.Instance = p.Instance
 	for _, p := range conf.Plugins {
 		core.WriteInfo("loading plugin", p)
 		obj, err := plugins.LoadPlugin(p, pCtx)
@@ -204,7 +203,7 @@ func main() {
 				if ctx.Debug {
 					core.WriteDebug("flushing logs")
 				}
-				core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
+				core.WritePluginMessages(pCtx.Logs, p.Instance)
 			}
 		}()
 	}
@@ -251,6 +250,6 @@ func main() {
 		core.WriteInfo("lifecyle...")
 	}
 	ctx.Unload()
-	core.WritePluginMessages(pCtx.Logs, pCtx.Instance)
+	core.WritePluginMessages(pCtx.Logs, p.Instance)
 	os.Exit(0)
 }

@@ -54,8 +54,6 @@ type (
 		Lib string
 		// Backing config
 		config *Configuration
-		// Instance name
-		Instance string
 		// Enable caching
 		Cache bool
 		// Backing configuration data
@@ -108,7 +106,6 @@ func (p *PluginContext) Clone(moduleName string) *PluginContext {
 	n := &PluginContext{}
 	n.Logs = p.Logs
 	n.Lib = p.Lib
-	n.Instance = p.Instance
 	n.Cache = p.Cache
 	n.config = p.config
 	n.Backing = p.Backing

@@ -10,7 +10,6 @@ var (
 	// Plugin represents the system instance of the module
 	Plugin   logger
 	modes    []string
-	instance string
 )
 
 type (
@@ -24,7 +23,6 @@ func (l *logger) Name() string {
 
 func (l *logger) Setup(ctx *core.PluginContext) error {
 	modes = core.DisabledModes(l, ctx)
-	instance = ctx.Instance
 	return nil
 }
 
