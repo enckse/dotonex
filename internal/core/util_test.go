@@ -59,3 +59,12 @@ func TestCompare(t *testing.T) {
 		t.Error("different")
 	}
 }
+
+func TestIn(t *testing.T) {
+	if In(1, []int{0, 2}) {
+		t.Error("in was wrong")
+	}
+	if !In(3, []int{1, 2, 3}) {
+		t.Error("in should be right...")
+	}
+}

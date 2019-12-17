@@ -228,15 +228,7 @@ func main() {
 				core.WriteDebug("lifespan wakeup")
 			}
 			now := time.Now()
-			hr := now.Hour()
-			skip := true
-			for _, h := range conf.Internals.LifeHours {
-				if hr == h {
-					skip = false
-					break
-				}
-			}
-			if skip {
+			if !core.In(now.Hour(), conf.Internals.LifeHours) {
 				continue
 			}
 			if now.After(end) {

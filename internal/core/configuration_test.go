@@ -31,4 +31,10 @@ func TestDefaults(t *testing.T) {
 	if c.Internals.Lifespan != 12 {
 		t.Error("invalid lifespan")
 	}
+	l := c.Internals.LifeHours
+	for _, o := range []int{22, 23, 0, 1, 2, 3, 4, 5} {
+		if !In(o, l) {
+			t.Error("invalid hour defaults")
+		}
+	}
 }
