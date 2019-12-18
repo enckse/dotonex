@@ -2,6 +2,7 @@ package server
 
 import (
 	"testing"
+
 	"voidedtech.com/radiucal/internal/core"
 )
 
