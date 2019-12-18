@@ -138,7 +138,7 @@ func account(ctx *server.Context) {
 			core.WriteError("accounting udp error", err)
 			continue
 		}
-		ctx.Account(core.NewClientPacket(buffer[0:n], cliaddr))
+		ctx.Account(server.NewClientPacket(buffer[0:n], cliaddr))
 	}
 }
 
@@ -150,7 +150,7 @@ func main() {
 	if err != nil {
 		core.Fatal("unable to load config", err)
 	}
-	conf := &core.Configuration{}
+	conf := &server.Configuration{}
 	if err := yaml.Unmarshal(b, conf); err != nil {
 		core.Fatal("unable to parse config", err)
 	}
@@ -171,23 +171,23 @@ func main() {
 
 	ctx := &server.Context{Debug: p.Debug}
 	ctx.FromConfig(conf.Dir, conf)
-	pCtx := core.NewPluginContext(conf)
+	pCtx := server.NewPluginContext(conf)
 	for _, p := range conf.Plugins {
 		core.WriteInfo("loading plugin", p)
 		obj, err := plugins.LoadPlugin(p, pCtx)
 		if err != nil {
 			core.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
 		}
-		if i, ok := obj.(core.Accounting); ok {
+		if i, ok := obj.(server.Accounting); ok {
 			ctx.AddAccounting(i)
 		}
-		if i, ok := obj.(core.Tracing); ok {
+		if i, ok := obj.(server.Tracing); ok {
 			ctx.AddTrace(i)
 		}
-		if i, ok := obj.(core.PreAuth); ok {
+		if i, ok := obj.(server.PreAuth); ok {
 			ctx.AddPreAuth(i)
 		}
-		if i, ok := obj.(core.PostAuth); ok {
+		if i, ok := obj.(server.PostAuth); ok {
 			ctx.AddPostAuth(i)
 		}
 		ctx.AddModule(obj)
@@ -201,7 +201,7 @@ func main() {
 				if ctx.Debug {
 					core.WriteDebug("flushing logs")
 				}
-				core.WritePluginMessages(conf.Log, p.Instance)
+				server.WritePluginMessages(conf.Log, p.Instance)
 			}
 		}()
 	}
@@ -252,6 +252,6 @@ func main() {
 	case <-lifecycle:
 		core.WriteInfo("lifecyle...")
 	}
-	core.WritePluginMessages(conf.Log, p.Instance)
+	server.WritePluginMessages(conf.Log, p.Instance)
 	os.Exit(0)
 }

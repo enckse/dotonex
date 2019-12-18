@@ -9,7 +9,7 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/server"
 )
 
 func TestDebug(t *testing.T) {
@@ -26,7 +26,7 @@ func testDebug(t *testing.T, hostAddr string) {
 		}
 		addr = taddr
 	}
-	p := core.NewClientPacket(nil, addr)
+	p := server.NewClientPacket(nil, addr)
 	var secret = []byte("secret")
 	p.Packet = radius.New(radius.CodeAccessRequest, secret)
 	p.Packet.Identifier = 100
@@ -35,7 +35,7 @@ func testDebug(t *testing.T, hostAddr string) {
 	}
 	b := &logTrace{}
 	tm := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
-	write(b, "testmode", core.TraceRequest, p, tm)
+	write(b, "testmode", server.TraceRequest, p, tm)
 	expect := &logTrace{}
 	expect.Write([]byte("TraceType = 1\n"))
 	expect.Write([]byte("Mode = testmode\n"))

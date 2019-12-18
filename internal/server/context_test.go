@@ -7,7 +7,6 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/core"
 )
 
 type MockModule struct {
@@ -27,31 +26,31 @@ func (m *MockModule) Name() string {
 	return "mock"
 }
 
-func (m *MockModule) Post(p *core.ClientPacket) bool {
+func (m *MockModule) Post(p *ClientPacket) bool {
 	m.post++
 	return !m.fail
 }
 
-func (m *MockModule) Setup(c *core.PluginContext) error {
+func (m *MockModule) Setup(c *PluginContext) error {
 	return nil
 }
 
-func (m *MockModule) Pre(p *core.ClientPacket) bool {
+func (m *MockModule) Pre(p *ClientPacket) bool {
 	m.pre++
 	return !m.fail
 }
 
-func (m *MockModule) Trace(t core.TraceType, p *core.ClientPacket) {
+func (m *MockModule) Trace(t TraceType, p *ClientPacket) {
 	m.trace++
 	switch t {
-	case core.TraceRequest:
+	case TraceRequest:
 		m.preAuth++
 		m.postAuth++
 		break
 	}
 }
 
-func (m *MockModule) Account(p *core.ClientPacket) {
+func (m *MockModule) Account(p *ClientPacket) {
 	m.acct++
 }
 
@@ -107,7 +106,7 @@ func checkAuthMode(t *testing.T, mode authingMode) {
 	m := &MockModule{}
 	ctx.AddTrace(m)
 	// invalid packet
-	if ctx.authorize(core.NewClientPacket(nil, nil), mode) != successCode {
+	if ctx.authorize(NewClientPacket(nil, nil), mode) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 0 {
@@ -179,7 +178,7 @@ func TestPreAuth(t *testing.T) {
 	checkAuthMode(t, preMode)
 }
 
-func getPacket(t *testing.T) (*Context, *core.ClientPacket) {
+func getPacket(t *testing.T) (*Context, *ClientPacket) {
 	c := &Context{}
 	c.secret = []byte("secret")
 	p := radius.New(radius.CodeAccessRequest, c.secret)
@@ -193,7 +192,7 @@ func getPacket(t *testing.T) (*Context, *core.ClientPacket) {
 	if err != nil {
 		t.Error("unable to encode")
 	}
-	return c, core.NewClientPacket(b, nil)
+	return c, NewClientPacket(b, nil)
 }
 
 func checkOneSecret(dir, filename, ip, secret string, t *testing.T) {
@@ -268,13 +267,13 @@ func TestSecretParsing(t *testing.T) {
 
 func TestAcctNoMods(t *testing.T) {
 	ctx := &Context{}
-	ctx.Account(core.NewClientPacket(nil, nil))
+	ctx.Account(NewClientPacket(nil, nil))
 }
 
 func TestAcct(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
-	ctx.Account(core.NewClientPacket(nil, nil))
+	ctx.Account(NewClientPacket(nil, nil))
 	if m.acct != 0 {
 		t.Error("didn't account")
 	}

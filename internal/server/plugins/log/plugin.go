@@ -3,7 +3,7 @@ package log
 import (
 	"fmt"
 
-	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/server"
 )
 
 var (
@@ -21,34 +21,34 @@ func (l *logger) Name() string {
 	return "logger"
 }
 
-func (l *logger) Setup(ctx *core.PluginContext) error {
-	modes = core.DisabledModes(l, ctx)
+func (l *logger) Setup(ctx *server.PluginContext) error {
+	modes = server.DisabledModes(l, ctx)
 	return nil
 }
 
-func (l *logger) Pre(packet *core.ClientPacket) bool {
-	return core.NoopPre(packet, write)
+func (l *logger) Pre(packet *server.ClientPacket) bool {
+	return server.NoopPre(packet, write)
 }
 
-func (l *logger) Post(packet *core.ClientPacket) bool {
-	return core.NoopPost(packet, write)
+func (l *logger) Post(packet *server.ClientPacket) bool {
+	return server.NoopPost(packet, write)
 }
 
-func (l *logger) Trace(t core.TraceType, packet *core.ClientPacket) {
-	write(core.TracingMode, t, packet)
+func (l *logger) Trace(t server.TraceType, packet *server.ClientPacket) {
+	write(server.TracingMode, t, packet)
 }
 
-func (l *logger) Account(packet *core.ClientPacket) {
-	write(core.AccountingMode, core.NoTrace, packet)
+func (l *logger) Account(packet *server.ClientPacket) {
+	write(server.AccountingMode, server.NoTrace, packet)
 }
 
-func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
+func write(mode string, objType server.TraceType, packet *server.ClientPacket) {
 	go func() {
-		if core.Disabled(mode, modes) {
+		if server.Disabled(mode, modes) {
 			return
 		}
-		dump := core.NewRequestDump(packet, mode)
-		messages := dump.DumpPacket(core.KeyValue{Key: "Info", Value: fmt.Sprintf("%d", int(objType))})
-		core.LogPluginMessages(&Plugin, messages)
+		dump := server.NewRequestDump(packet, mode)
+		messages := dump.DumpPacket(server.KeyValue{Key: "Info", Value: fmt.Sprintf("%d", int(objType))})
+		server.LogPluginMessages(&Plugin, messages)
 	}()
 }

@@ -1,7 +1,8 @@
-package core
+package server
 
 import (
 	"testing"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 func TestDefaults(t *testing.T) {
@@ -33,7 +34,7 @@ func TestDefaults(t *testing.T) {
 	}
 	l := c.Internals.LifeHours
 	for _, o := range []int{22, 23, 0, 1, 2, 3, 4, 5} {
-		if !IntegerIn(o, l) {
+		if !core.IntegerIn(o, l) {
 			t.Error("invalid hour defaults")
 		}
 	}

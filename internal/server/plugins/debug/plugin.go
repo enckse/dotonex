@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/server"
 )
 
 type (
@@ -30,25 +30,25 @@ func (t *tracer) Name() string {
 	return "debugger"
 }
 
-func (t *tracer) Setup(ctx *core.PluginContext) error {
-	modes = core.DisabledModes(t, ctx)
+func (t *tracer) Setup(ctx *server.PluginContext) error {
+	modes = server.DisabledModes(t, ctx)
 	return nil
 }
 
-func (t *tracer) Pre(packet *core.ClientPacket) bool {
-	return core.NoopPre(packet, dump)
+func (t *tracer) Pre(packet *server.ClientPacket) bool {
+	return server.NoopPre(packet, dump)
 }
 
-func (t *tracer) Post(packet *core.ClientPacket) bool {
-	return core.NoopPost(packet, dump)
+func (t *tracer) Post(packet *server.ClientPacket) bool {
+	return server.NoopPost(packet, dump)
 }
 
-func (t *tracer) Trace(objType core.TraceType, packet *core.ClientPacket) {
-	dump(core.TracingMode, objType, packet)
+func (t *tracer) Trace(objType server.TraceType, packet *server.ClientPacket) {
+	dump(server.TracingMode, objType, packet)
 }
 
-func (t *tracer) Account(packet *core.ClientPacket) {
-	dump(core.AccountingMode, core.NoTrace, packet)
+func (t *tracer) Account(packet *server.ClientPacket) {
+	dump(server.AccountingMode, server.NoTrace, packet)
 }
 
 func (t *logTrace) Write(b []byte) (int, error) {
@@ -59,9 +59,9 @@ func (t *logTrace) dump() {
 	log.Println(t.data.String())
 }
 
-func dump(mode string, objType core.TraceType, packet *core.ClientPacket) {
+func dump(mode string, objType server.TraceType, packet *server.ClientPacket) {
 	go func() {
-		if core.Disabled(mode, modes) {
+		if server.Disabled(mode, modes) {
 			return
 		}
 		t := &logTrace{}
@@ -70,9 +70,9 @@ func dump(mode string, objType core.TraceType, packet *core.ClientPacket) {
 	}()
 }
 
-func write(tracing io.Writer, mode string, objType core.TraceType, packet *core.ClientPacket, t time.Time) {
-	dump := core.NewRequestDump(packet, mode)
-	for _, m := range dump.DumpPacket(core.KeyValue{Key: "TraceType", Value: fmt.Sprintf("%d", objType)}) {
+func write(tracing io.Writer, mode string, objType server.TraceType, packet *server.ClientPacket, t time.Time) {
+	dump := server.NewRequestDump(packet, mode)
+	for _, m := range dump.DumpPacket(server.KeyValue{Key: "TraceType", Value: fmt.Sprintf("%d", objType)}) {
 		tracing.Write([]byte(fmt.Sprintf("%s\n", m)))
 	}
 }

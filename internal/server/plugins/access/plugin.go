@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/server"
 )
 
 var (
@@ -22,30 +22,30 @@ func (l *access) Name() string {
 	return "access"
 }
 
-func (l *access) Setup(ctx *core.PluginContext) error {
-	modes = core.DisabledModes(l, ctx)
+func (l *access) Setup(ctx *server.PluginContext) error {
+	modes = server.DisabledModes(l, ctx)
 	return nil
 }
 
-func (l *access) Pre(packet *core.ClientPacket) bool {
-	return core.NoopPre(packet, write)
+func (l *access) Pre(packet *server.ClientPacket) bool {
+	return server.NoopPre(packet, write)
 }
 
-func (l *access) Post(packet *core.ClientPacket) bool {
-	return core.NoopPost(packet, write)
+func (l *access) Post(packet *server.ClientPacket) bool {
+	return server.NoopPost(packet, write)
 }
 
-func (l *access) Trace(t core.TraceType, packet *core.ClientPacket) {
-	write(core.TracingMode, t, packet)
+func (l *access) Trace(t server.TraceType, packet *server.ClientPacket) {
+	write(server.TracingMode, t, packet)
 }
 
-func (l *access) Account(packet *core.ClientPacket) {
-	write(core.AccountingMode, core.NoTrace, packet)
+func (l *access) Account(packet *server.ClientPacket) {
+	write(server.AccountingMode, server.NoTrace, packet)
 }
 
-func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
+func write(mode string, objType server.TraceType, packet *server.ClientPacket) {
 	go func() {
-		if core.Disabled(mode, modes) {
+		if server.Disabled(mode, modes) {
 			return
 		}
 		username, err := rfc2865.UserName_LookupString(packet.Packet)
@@ -56,13 +56,13 @@ func write(mode string, objType core.TraceType, packet *core.ClientPacket) {
 		if err != nil {
 			calling = ""
 		}
-		kv := core.KeyValueStore{}
+		kv := server.KeyValueStore{}
 		kv.DropEmpty = true
 		kv.Add("Mode", fmt.Sprintf("%s", mode))
 		kv.Add("Code", packet.Packet.Code.String())
 		kv.Add("Id", strconv.Itoa(int(packet.Packet.Identifier)))
 		kv.Add("User-Name", username)
 		kv.Add("Calling-Station-Id", calling)
-		core.LogPluginMessages(&Plugin, kv.Strings())
+		server.LogPluginMessages(&Plugin, kv.Strings())
 	}()
 }

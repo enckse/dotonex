@@ -1,4 +1,4 @@
-package core
+package server
 
 import (
 	"bytes"
@@ -13,6 +13,7 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/debug"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (
@@ -92,6 +93,18 @@ type (
 		Buffer     []byte
 		Packet     *radius.Packet
 		Error      error
+	}
+
+	// KeyValue represents a simple key/value object
+	KeyValue struct {
+		Key   string
+		Value string
+	}
+
+	// KeyValueStore represents a store of KeyValue objects
+	KeyValueStore struct {
+		KeyValues []KeyValue
+		DropEmpty bool
 	}
 )
 
@@ -211,7 +224,7 @@ func newFile(path, instance string, appending bool) *os.File {
 	logPath := filepath.Join(path, fmt.Sprintf("%s.%s", inst, t.Format("2006-01-02")))
 	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0660)
 	if err != nil {
-		WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
+		core.WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
 		return nil
 	}
 	return f
@@ -248,4 +261,28 @@ func LogPluginMessages(mod Module, messages []string) {
 		pluginLogs = append(pluginLogs, fmt.Sprintf("%s [%s] (%d) %s\n", t, name, idx, m))
 	}
 	pluginLID++
+}
+
+// Add adds a key value object to the store
+func (kv *KeyValueStore) Add(key, val string) {
+	kv.KeyValues = append(kv.KeyValues, KeyValue{Key: key, Value: val})
+}
+
+// String converts the KeyValue to a string representation
+func (kv KeyValue) String() string {
+	return fmt.Sprintf("%s = %s", kv.Key, kv.Value)
+}
+
+// Strings gets all strings from a store
+func (kv KeyValueStore) Strings() []string {
+	var objs []string
+	offset := ""
+	for _, k := range kv.KeyValues {
+		if kv.DropEmpty && len(k.Value) == 0 {
+			continue
+		}
+		objs = append(objs, fmt.Sprintf("%s%s", offset, k.String()))
+		offset = "  "
+	}
+	return objs
 }
