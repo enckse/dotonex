@@ -12,8 +12,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/plugins"
 	"voidedtech.com/radiucal/internal/server"
+	"voidedtech.com/radiucal/internal/server/plugins"
 )
 
 var (

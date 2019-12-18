@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/plugins/access"
-	"voidedtech.com/radiucal/internal/plugins/debug"
-	"voidedtech.com/radiucal/internal/plugins/log"
-	"voidedtech.com/radiucal/internal/plugins/usermac"
+	"voidedtech.com/radiucal/internal/server/plugins/access"
+	"voidedtech.com/radiucal/internal/server/plugins/debug"
+	"voidedtech.com/radiucal/internal/server/plugins/log"
+	"voidedtech.com/radiucal/internal/server/plugins/usermac"
 )
 
 // LoadPlugin loads a plugin from the name and into a module object
