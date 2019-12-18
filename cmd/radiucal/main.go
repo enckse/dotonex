@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
 	"voidedtech.com/radiucal/internal/core"
 	"voidedtech.com/radiucal/internal/server"
@@ -24,5 +25,6 @@ func main() {
 		if err := cmd.Run(); err != nil {
 			core.WriteWarn(fmt.Sprintf("radiucal runner ended %s (%v)", i, err))
 		}
+		time.Sleep(100 * time.Millisecond)
 	}
 }
