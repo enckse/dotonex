@@ -23,3 +23,9 @@ func TestIn(t *testing.T) {
 		t.Error("in should be right...")
 	}
 }
+
+func TestManifestEntry(t *testing.T) {
+	if NewManifestEntry("test", "object") != "test.object" {
+		t.Error("invalid manifest entry")
+	}
+}

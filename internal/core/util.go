@@ -40,3 +40,8 @@ func IntegerIn(i int, list []int) bool {
 	}
 	return false
 }
+
+// NewManifestEntry creates a new manifest entry object
+func NewManifestEntry(user, mac string) string {
+	return fmt.Sprintf("%s.%s", user, mac)
+}

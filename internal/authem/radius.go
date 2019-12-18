@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-)
 
-// NewManifestEntry creates a new manifest entry object
-func NewManifestEntry(user, mac string) string {
-	return fmt.Sprintf("%s.%s", user, mac)
-}
+	"voidedtech.com/radiucal/internal/core"
+)
 
 // UserAddRADIUS creates an user entry for RADIUS
 func UserAddRADIUS(user, md4 string, vlan int) string {
@@ -170,7 +167,7 @@ func (u User) ForRADIUS(vlans []*VLAN, systems []*System, options RADIUSOptions)
 	for mac, mab := range trackMACs {
 		r.MACs = append(r.MACs, mac)
 		if mab {
-			r.Manifest = append(r.Manifest, NewManifestEntry(mac, mac))
+			r.Manifest = append(r.Manifest, core.NewManifestEntry(mac, mac))
 		}
 		for _, uVLAN := range append([]string{""}, u.VLANs...) {
 			credentials := login
@@ -178,7 +175,7 @@ func (u User) ForRADIUS(vlans []*VLAN, systems []*System, options RADIUSOptions)
 				credentials = fmt.Sprintf("%s.%s", uVLAN, credentials)
 			}
 			if u.Perms.IsPEAP {
-				r.Manifest = append(r.Manifest, NewManifestEntry(credentials, mac))
+				r.Manifest = append(r.Manifest, core.NewManifestEntry(credentials, mac))
 			}
 		}
 	}
