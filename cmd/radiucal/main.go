@@ -17,6 +17,7 @@ func main() {
 	if flags.Debug {
 		core.WriteDebug(fmt.Sprintf("flags: %v", args))
 	}
+	lastError := time.Now()
 	for {
 		core.WriteInfo("starting " + i)
 		cmd := exec.Command("radiucal-runner", args...)
@@ -25,6 +26,13 @@ func main() {
 		if err := cmd.Run(); err != nil {
 			core.WriteWarn(fmt.Sprintf("radiucal runner ended %s (%v)", i, err))
 		}
-		time.Sleep(100 * time.Millisecond)
+		now := time.Now()
+		sleep := 100 * time.Millisecond
+		if now.Sub(lastError).Seconds() < 30 {
+			core.WriteWarn("cool down for restart")
+			sleep = 5 * time.Second
+		}
+		time.Sleep(sleep)
+		lastError = now
 	}
 }
