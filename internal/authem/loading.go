@@ -21,8 +21,7 @@ const (
 	// SystemsDir is where hardware information is stored
 	SystemsDir = "hardware"
 	// TempDir is a locally working directory
-	TempDir      = "bin"
-	maxTreeDepth = 20
+	TempDir = "bin"
 )
 
 type (
@@ -205,10 +204,7 @@ func newTrustTree(u *User) *trustTree {
 	return &trustTree{u, []*trustTree{}}
 }
 
-func (t *trustTree) assign(users []*User, depth int) error {
-	if depth == maxTreeDepth {
-		return fmt.Errorf("max depth reached, circular?")
-	}
+func (t *trustTree) assign(ancestry map[string]bool, users []*User, depth int) error {
 	for _, c := range t.children {
 		for _, u := range users {
 			if c.node.UserName == u.UserName {
@@ -220,8 +216,22 @@ func (t *trustTree) assign(users []*User, depth int) error {
 				}
 			}
 		}
-		if err := c.assign(users, depth+1); err != nil {
-			return err
+		parents := make(map[string]bool)
+		for k, v := range ancestry {
+			parents[k] = v
+		}
+		nest := true
+		for k := range ancestry {
+			if c.node.UserName == k {
+				nest = false
+				break
+			}
+		}
+		if nest {
+			parents[c.node.UserName] = true
+			if err := c.assign(parents, users, depth+1); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -249,7 +259,7 @@ func (l LoadingOptions) BuildTrust(users []*User) error {
 			root.children = append(root.children, newTrustTree(u))
 		}
 	}
-	if err := root.assign(users, 0); err != nil {
+	if err := root.assign(make(map[string]bool), users, 0); err != nil {
 		return err
 	}
 	for _, u := range users {
