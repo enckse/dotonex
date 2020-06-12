@@ -3,8 +3,8 @@ module voidedtech.com/radiucal
 go 1.14
 
 require (
-	github.com/google/go-cmp v0.4.0
-	golang.org/x/crypto v0.0.0-20200406173513-056763e48d71
-	gopkg.in/yaml.v2 v2.2.8
-	layeh.com/radius v0.0.0-20200407174255-3e43fd4ead92
+	github.com/google/go-cmp v0.4.1
+	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+	gopkg.in/yaml.v2 v2.3.0
+	layeh.com/radius v0.0.0-20200602234601-d796d70b09d7
 )
