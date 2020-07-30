@@ -3,7 +3,7 @@ FLAGS   := -ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w -X main.ver
 EXES    := $(shell ls cmd/)
 UTESTS  := $(shell find . -type f -name "*_test.go" | xargs dirname | sort -u)
 SRC     := $(shell find . -type f -name "*.go" | grep -v "test")
-PACKED  := deb
+PACKED  := deb rpm
 
 .PHONY: $(UTESTS) build test lint clean
 
