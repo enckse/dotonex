@@ -1,0 +1,13 @@
+certs/bootstrap /etc/radiucal/certs/
+certs/ca.cnf /etc/radiucal/certs/
+certs/Makefile /etc/radiucal/certs/
+certs/renew.sh /etc/radiucal/certs/
+certs/server.cnf /etc/radiucal/certs/
+certs/xpextensions /etc/radiucal/certs/
+configs/accounting.conf.example /etc/radiucal/
+configs/full.conf.example /etc/radiucal/
+configs/proxy.conf.example /etc/radiucal/
+configs/systemd/radiucal@.service /lib/systemd/system/
+configs/systemd/radiucal.conf /usr/lib/tmpfiles.d/
+radiucal /usr/bin/
+radiucal-runner /usr/bin/
