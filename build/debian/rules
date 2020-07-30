@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_build:
+	make radiucal authem-configurator authem-passwd radiucal-runner
+
+override_dh_auto_test:
+	@echo

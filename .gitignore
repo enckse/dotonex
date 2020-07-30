@@ -5,8 +5,7 @@ tests/plugins/
 tests/log/
 tests/admin/config/
 plugins/**/tests/
-target/
-*.rd
 radiucal
 authem-*
 radiucal-runner
+*.deb
