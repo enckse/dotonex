@@ -13,7 +13,6 @@ import (
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal/core"
 	"voidedtech.com/radiucal/internal/server"
-	"voidedtech.com/radiucal/internal/server/plugins"
 )
 
 var (
@@ -171,12 +170,12 @@ func main() {
 
 	ctx := &server.Context{Debug: p.Debug}
 	ctx.FromConfig(conf.Dir, conf)
-	pCtx := server.NewPluginContext(conf)
+	pCtx := server.NewModuleContext(conf)
 	for _, p := range conf.Plugins {
-		core.WriteInfo("loading plugin", p)
-		obj, err := plugins.LoadPlugin(p, pCtx)
+		core.WriteInfo("loading module", p)
+		obj, err := server.LoadModule(p, pCtx)
 		if err != nil {
-			core.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
+			core.Fatal(fmt.Sprintf("unable to load module: %s", p), err)
 		}
 		if i, ok := obj.(server.Accounting); ok {
 			ctx.AddAccounting(i)
@@ -201,7 +200,7 @@ func main() {
 				if ctx.Debug {
 					core.WriteDebug("flushing logs")
 				}
-				server.WritePluginMessages(conf.Log, p.Instance)
+				server.WriteModuleMessages(conf.Log, p.Instance)
 			}
 		}()
 	}
@@ -252,6 +251,6 @@ func main() {
 	case <-lifecycle:
 		core.WriteInfo("lifecyle...")
 	}
-	server.WritePluginMessages(conf.Log, p.Instance)
+	server.WriteModuleMessages(conf.Log, p.Instance)
 	os.Exit(0)
 }

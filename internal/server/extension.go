@@ -49,8 +49,8 @@ type (
 	// NoopCall represents module calls that perform no operation (mocks)
 	NoopCall func(string, TraceType, *ClientPacket)
 
-	// PluginContext is the context given to a plugin module
-	PluginContext struct {
+	// ModuleContext is the context given to a module
+	ModuleContext struct {
 		// Backing config
 		config *Configuration
 		// Lib represents the library path for radiucal
@@ -59,7 +59,7 @@ type (
 
 	// Module represents a plugin module for packet checking
 	Module interface {
-		Setup(*PluginContext) error
+		Setup(*ModuleContext) error
 		Name() string
 	}
 
@@ -113,17 +113,17 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
 }
 
-// NewPluginContext prepares a context from a configuration
-func NewPluginContext(config *Configuration) *PluginContext {
-	p := &PluginContext{}
+// NewModuleContext prepares a context from a configuration
+func NewModuleContext(config *Configuration) *ModuleContext {
+	p := &ModuleContext{}
 	p.config = config
 	p.Lib = config.Dir
 	return p
 }
 
 // CloneContext a plugin context to a copy for use in other plugins
-func (p *PluginContext) CloneContext() *PluginContext {
-	return NewPluginContext(p.config)
+func (p *ModuleContext) CloneContext() *ModuleContext {
+	return NewModuleContext(p.config)
 }
 
 // NewRequestDump prepares a packet request for dumping
@@ -189,7 +189,7 @@ func isFlagged(list []string, name string) bool {
 }
 
 // DisabledModes returns the modes disable for module
-func DisabledModes(m Module, ctx *PluginContext) []string {
+func DisabledModes(m Module, ctx *ModuleContext) []string {
 	name := m.Name()
 	noAccounting := isFlagged(ctx.config.Disable.Accounting, name)
 	noTracing := isFlagged(ctx.config.Disable.Trace, name)
@@ -230,8 +230,8 @@ func newFile(path, instance string, appending bool) *os.File {
 	return f
 }
 
-// WritePluginMessages supports writing plugin messages to disk
-func WritePluginMessages(path, instance string) {
+// WriteModuleMessages supports writing plugin messages to disk
+func WriteModuleMessages(path, instance string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
 	var f *os.File
@@ -250,8 +250,8 @@ func WritePluginMessages(path, instance string) {
 	pluginLID = 0
 }
 
-// LogPluginMessages adds messages to the plugin log queue
-func LogPluginMessages(mod Module, messages []string) {
+// LogModuleMessages adds messages to the plugin log queue
+func LogModuleMessages(mod Module, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
 	name := strings.ToUpper(mod.Name())
