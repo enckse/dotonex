@@ -22,16 +22,19 @@ const (
 	// PreAuthMode for pre-auth
 	PreAuthMode = "preauth"
 	// PostAuthMode for post-auth
-	PostAuthMode                 = "postauth"
-	PreProcess        ModuleMode = 1
-	PostProcess       ModuleMode = 2
+	PostAuthMode = "postauth"
+	// PreProcess is the "pre" packet processing before full EAP/RADIUS
+	PreProcess ModuleMode = 1
+	// PostProcess is the "post" packet processing after full EAP/RADIUS
+	PostProcess ModuleMode = 2
+	// AccountingProcess is for accounting processing
 	AccountingProcess ModuleMode = 3
 )
 
 var (
-	pluginLock *sync.Mutex = new(sync.Mutex)
-	pluginLogs             = []string{}
-	pluginLID  int
+	moduleLock *sync.Mutex = new(sync.Mutex)
+	moduleLogs             = []string{}
+	moduleLID  int
 )
 
 type (
@@ -41,6 +44,7 @@ type (
 		mode string
 	}
 
+	// ModuleMode is the processing mode for the packet (e.g. pre, post, accounting)
 	ModuleMode int
 
 	// ModuleContext is the context given to a module
@@ -51,7 +55,7 @@ type (
 		Lib string
 	}
 
-	// Module represents a plugin module for packet checking
+	// Module represents a module module for packet checking
 	Module interface {
 		Setup(*ModuleContext) error
 		Name() string
@@ -92,7 +96,7 @@ func NewModuleContext(config *Configuration) *ModuleContext {
 	return p
 }
 
-// CloneContext a plugin context to a copy for use in other plugins
+// CloneContext a module context to a copy for use in other modules
 func (p *ModuleContext) CloneContext() *ModuleContext {
 	return NewModuleContext(p.config)
 }
@@ -141,12 +145,12 @@ func newFile(path, instance string, appending bool) *os.File {
 	return f
 }
 
-// WriteModuleMessages supports writing plugin messages to disk
+// WriteModuleMessages supports writing module messages to disk
 func WriteModuleMessages(path, instance string) {
-	pluginLock.Lock()
-	defer pluginLock.Unlock()
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
 	var f *os.File
-	if len(pluginLogs) == 0 {
+	if len(moduleLogs) == 0 {
 		return
 	}
 	f = newFile(path, instance, true)
@@ -154,24 +158,24 @@ func WriteModuleMessages(path, instance string) {
 		return
 	}
 	defer f.Close()
-	for _, m := range pluginLogs {
+	for _, m := range moduleLogs {
 		f.Write([]byte(m))
 	}
-	pluginLogs = pluginLogs[:0]
-	pluginLID = 0
+	moduleLogs = moduleLogs[:0]
+	moduleLID = 0
 }
 
-// LogModuleMessages adds messages to the plugin log queue
+// LogModuleMessages adds messages to the module log queue
 func LogModuleMessages(mod Module, messages []string) {
-	pluginLock.Lock()
-	defer pluginLock.Unlock()
+	moduleLock.Lock()
+	defer moduleLock.Unlock()
 	name := strings.ToUpper(mod.Name())
 	t := time.Now().Format("2006-01-02T15:04:05.000")
-	idx := pluginLID
+	idx := moduleLID
 	for _, m := range messages {
-		pluginLogs = append(pluginLogs, fmt.Sprintf("%s [%s] (%d) %s\n", t, name, idx, m))
+		moduleLogs = append(moduleLogs, fmt.Sprintf("%s [%s] (%d) %s\n", t, name, idx, m))
 	}
-	pluginLID++
+	moduleLID++
 }
 
 // Add adds a key value object to the store

@@ -130,6 +130,7 @@ func updatePwd(user, email, pwd string, show, force bool, length int) error {
 	return nil
 }
 
+// Password handles user secret management
 func Password(user, email, pwd *string, show, force *bool, length *int) {
 	home := strings.TrimSpace(os.Getenv("AUTHEM_HOME"))
 	if home != "" {

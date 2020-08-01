@@ -256,6 +256,7 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 	return nil
 }
 
+// Configurate processes configuration for actual deployment/production
 func Configurate(cfg string, scripts []string, verbose, forceScript bool) {
 	err := configurate(cfg, scripts, verbose, forceScript)
 	if err != nil {
