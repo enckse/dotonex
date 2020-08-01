@@ -18,15 +18,6 @@ func TestCloneContext(t *testing.T) {
 	}
 }
 
-func TestDisabled(t *testing.T) {
-	if !Disabled("mode", []string{"mode"}) {
-		t.Error("mode should be disabled")
-	}
-	if Disabled("modes", []string{"mode"}) {
-		t.Error("mode should be enabled")
-	}
-}
-
 func TestKeyValueStrings(t *testing.T) {
 	c := KeyValueStore{}
 	c.KeyValues = append(c.KeyValues, KeyValue{Key: "key", Value: "val"})

@@ -11,7 +11,6 @@ import (
 
 type MockModule struct {
 	acct   int
-	trace  int
 	pre    int
 	fail   bool
 	reload int
@@ -26,32 +25,20 @@ func (m *MockModule) Name() string {
 	return "mock"
 }
 
-func (m *MockModule) Post(p *ClientPacket) bool {
-	m.post++
-	return !m.fail
-}
-
 func (m *MockModule) Setup(c *ModuleContext) error {
 	return nil
 }
 
-func (m *MockModule) Pre(p *ClientPacket) bool {
-	m.pre++
-	return !m.fail
-}
-
-func (m *MockModule) Trace(t TraceType, p *ClientPacket) {
-	m.trace++
-	switch t {
-	case TraceRequest:
-		m.preAuth++
-		m.postAuth++
-		break
+func (m *MockModule) Process(p *ClientPacket, mode ModuleMode) bool {
+	switch mode {
+	case PreProcess:
+		m.pre++
+	case AccountingProcess:
+		m.acct++
+	case PostProcess:
+		m.post++
 	}
-}
-
-func (m *MockModule) Account(p *ClientPacket) {
-	m.acct++
+	return !m.fail
 }
 
 func TestPreAuthNoMods(t *testing.T) {
@@ -104,69 +91,52 @@ func TestSecrets(t *testing.T) {
 func checkAuthMode(t *testing.T, mode authingMode) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
-	ctx.AddTrace(m)
+	ctx.AddModule(m)
+	ctx.preauth = mode == preMode
+	ctx.postauth = mode == postMode
 	// invalid packet
 	if ctx.authorize(NewClientPacket(nil, nil), mode) != successCode {
 		t.Error("didn't authorize")
 	}
-	if m.trace != 0 {
-		t.Error("did auth")
-	}
 	if ctx.authorize(p, mode) != successCode {
 		t.Error("didn't authorize")
 	}
-	if m.trace != 1 {
-		t.Error("didn't auth")
-	}
-	var getCounts func() (int, int)
+	var getCounts func() int
 	var reasonCode ReasonCode
 	if mode == preMode {
-		getCounts = func() (int, int) {
-			return m.pre, m.preAuth
+		getCounts = func() int {
+			return m.pre
 		}
 		reasonCode = preAuthCode
-		ctx.AddPreAuth(m)
+		ctx.AddModule(m)
 	} else {
-		getCounts = func() (int, int) {
-			return m.post, m.postAuth
+		getCounts = func() int {
+			return m.post
 		}
 		reasonCode = postAuthCode
-		ctx.AddPostAuth(m)
+		ctx.AddModule(m)
 	}
 	if ctx.authorize(p, mode) != successCode {
 		t.Error("didn't authorize")
 	}
-	if m.trace != 2 {
-		t.Error("didn't auth again")
-	}
-	cnt, sum := getCounts()
-	if cnt != 1 {
+	cnt := getCounts()
+	if cnt != 3 {
 		t.Error("didn't mod auth")
 	}
 	m.fail = true
 	if ctx.authorize(p, mode) != reasonCode {
 		t.Error("did authorize")
 	}
-	if m.trace != 3 {
-		t.Error("didn't auth again")
-	}
-	cnt, sum = getCounts()
-	if cnt != 2 {
+	cnt = getCounts()
+	if cnt != 5 {
 		t.Error("didn't mod auth")
 	}
-	ctx.trace = false
 	if ctx.authorize(p, mode) != reasonCode {
 		t.Error("did authorize")
 	}
-	if m.trace != 3 {
-		t.Error("didn't auth again")
-	}
-	cnt, sum = getCounts()
-	if cnt != 3 {
+	cnt = getCounts()
+	if cnt != 7 {
 		t.Error("didn't mod auth")
-	}
-	if sum != 3 {
-		t.Error("not enough mod auth types")
 	}
 }
 
@@ -272,12 +242,13 @@ func TestAcctNoMods(t *testing.T) {
 
 func TestAcct(t *testing.T) {
 	ctx, p := getPacket(t)
+	ctx.acct = true
 	m := &MockModule{}
 	ctx.Account(NewClientPacket(nil, nil))
 	if m.acct != 0 {
 		t.Error("didn't account")
 	}
-	ctx.AddAccounting(m)
+	ctx.AddModule(m)
 	ctx.Account(p)
 	if m.acct != 1 {
 		t.Error("didn't account")
