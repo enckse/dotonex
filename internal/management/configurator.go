@@ -27,11 +27,10 @@ var (
 type (
 	// Config is the configurator specific handler
 	Config struct {
-		Verbose bool
-		Key     string
-		Cache   string
-		Diffs   bool
-		Deploy  bool
+		Key    string
+		Cache  string
+		Diffs  bool
+		Deploy bool
 	}
 
 	configuratorError struct {
@@ -53,9 +52,6 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 	hostapdBytes := append(radius.Hostapd, []byte("\n")...)
 	core.WriteInfo("[overall]")
 	for _, f := range trackedFiles {
-		if cfg.Verbose {
-			core.WriteInfoDetail(f)
-		}
 		path := filepath.Join(TempDir, f)
 		if core.PathExists(path) {
 			b, err := ioutil.ReadFile(path)
@@ -64,9 +60,6 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 			}
 			if err := ioutil.WriteFile(path+".prev", b, 0644); err != nil {
 				return false, err
-			}
-			if cfg.Verbose {
-				core.WriteInfoDetail("performing diff")
 			}
 			switch f {
 			case manifest:
@@ -97,9 +90,6 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 		}
 		for _, f := range paths {
 			p := filepath.Join(f, k)
-			if cfg.Verbose {
-				core.WriteInfoDetail(fmt.Sprintf("writing %s (%s)", k, p))
-			}
 			data := v
 			if f != TempDir && k == usersCfg && cfg.Deploy {
 				data = rawConfig
@@ -112,17 +102,16 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 	return valid == len(trackedFiles), nil
 }
 
-func getConfig(f string, verbose bool) (*Config, error) {
+func getConfig(f string) (*Config, error) {
 	if !core.PathExists(f) {
 		k, err := GetKey(true)
 		if err != nil {
 			return nil, err
 		}
 		return &Config{
-			Key:     k,
-			Verbose: verbose,
-			Diffs:   true,
-			Deploy:  false,
+			Key:    k,
+			Diffs:  true,
+			Deploy: false,
 		}, nil
 	}
 	c := &Config{}
@@ -133,8 +122,6 @@ func getConfig(f string, verbose bool) (*Config, error) {
 	if err := yaml.Unmarshal(b, &c); err != nil {
 		return nil, err
 	}
-	c.Verbose = c.Verbose || verbose
-	c.Diffs = c.Diffs || verbose
 	return c, nil
 }
 
@@ -142,16 +129,14 @@ func hash(value string) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(value)))
 }
 
-func configurate(cfg string, scripts []string, verbose, scripting bool) error {
-	config, err := getConfig(cfg, verbose)
+func configurate(cfg string, scripts []string, scripting bool) error {
+	config, err := getConfig(cfg)
 	if err != nil {
 		return err
 	}
 	loader := LoadingOptions{
-		Verbose: config.Verbose,
-		Sync:    config.Verbose,
-		Key:     config.Key,
-		NoKey:   config.Key == "",
+		Key:   config.Key,
+		NoKey: config.Key == "",
 	}
 	vlans, err := loader.LoadVLANs()
 	if err != nil {
@@ -252,8 +237,8 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 }
 
 // Configurate processes configuration for actual deployment/production
-func Configurate(cfg string, scripts []string, verbose, forceScript bool) {
-	err := configurate(cfg, scripts, verbose, forceScript)
+func Configurate(cfg string, scripts []string, forceScript bool) {
+	err := configurate(cfg, scripts, forceScript)
 	if err != nil {
 		if _, ok := err.(*configuratorError); !ok {
 			core.ExitNow("unable to configure", err)
