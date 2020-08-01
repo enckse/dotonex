@@ -30,7 +30,6 @@ type (
 		Verbose bool
 		Key     string
 		Cache   string
-		Scripts []string
 		Diffs   bool
 		Deploy  bool
 	}
@@ -113,7 +112,7 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 	return valid == len(trackedFiles), nil
 }
 
-func getConfig(f string, scripts []string, verbose bool) (*Config, error) {
+func getConfig(f string, verbose bool) (*Config, error) {
 	if !core.PathExists(f) {
 		k, err := GetKey(true)
 		if err != nil {
@@ -122,7 +121,6 @@ func getConfig(f string, scripts []string, verbose bool) (*Config, error) {
 		return &Config{
 			Key:     k,
 			Verbose: verbose,
-			Scripts: scripts,
 			Diffs:   true,
 			Deploy:  false,
 		}, nil
@@ -137,9 +135,6 @@ func getConfig(f string, scripts []string, verbose bool) (*Config, error) {
 	}
 	c.Verbose = c.Verbose || verbose
 	c.Diffs = c.Diffs || verbose
-	if len(scripts) > 0 {
-		c.Scripts = append(c.Scripts, scripts...)
-	}
 	return c, nil
 }
 
@@ -148,7 +143,7 @@ func hash(value string) string {
 }
 
 func configurate(cfg string, scripts []string, verbose, scripting bool) error {
-	config, err := getConfig(cfg, scripts, verbose)
+	config, err := getConfig(cfg, verbose)
 	if err != nil {
 		return err
 	}
@@ -189,8 +184,8 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 		return err
 	}
 	var postProcess []BashRunner
-	if len(config.Scripts) > 0 {
-		for _, f := range config.Scripts {
+	if len(scripts) > 0 {
+		for _, f := range scripts {
 			if len(f) == 0 {
 				continue
 			}
