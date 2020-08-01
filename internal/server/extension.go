@@ -17,12 +17,6 @@ import (
 )
 
 const (
-	// AccountingMode for accounting
-	AccountingMode = "accounting"
-	// PreAuthMode for pre-auth
-	PreAuthMode = "preauth"
-	// PostAuthMode for post-auth
-	PostAuthMode = "postauth"
 	// PreProcess is the "pre" packet processing before full EAP/RADIUS
 	PreProcess ModuleMode = 1
 	// PostProcess is the "post" packet processing after full EAP/RADIUS
