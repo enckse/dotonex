@@ -1,12 +1,12 @@
 package server
 
 import (
-	"fmt"
 	"bytes"
+	"fmt"
 	"io"
 	"log"
-	"time"
 	"strconv"
+	"time"
 
 	"io/ioutil"
 	"net"
@@ -14,39 +14,39 @@ import (
 	"strings"
 	"sync"
 
-	"voidedtech.com/radiucal/internal/core"
 	"layeh.com/radius/rfc2865"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 type (
 	tracer struct {
-	modes  []string
+		modes []string
 	}
 
 	logTrace struct {
 		io.Writer
-		data bytes.Buffer
-	modes  []string
+		data  bytes.Buffer
+		modes []string
 	}
 	logger struct {
-	modes  []string
+		modes []string
 	}
 	umac struct {
-	modes  []string
+		modes []string
 	}
-	access struct{
-	modes  []string
-}
+	access struct {
+		modes []string
+	}
 )
 
 var (
-	ModuleDebug tracer
-	ModuleLog   logger
-	lockMAC        = &sync.Mutex{}
-	fileMAC    string
-	manifest = make(map[string]bool)
+	ModuleDebug   tracer
+	ModuleLog     logger
+	lockMAC       = &sync.Mutex{}
+	fileMAC       string
+	manifest      = make(map[string]bool)
 	ModuleUserMAC umac
-	ModuleAccess access
+	ModuleAccess  access
 )
 
 func (l *access) Name() string {
@@ -97,7 +97,6 @@ func (l *access) write(mode string, objType TraceType, packet *ClientPacket) {
 		LogModuleMessages(l, kv.Strings())
 	}()
 }
-
 
 func (t *tracer) Name() string {
 	return "debugger"
