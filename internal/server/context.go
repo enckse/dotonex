@@ -1,13 +1,8 @@
 package server
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"net"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal/core"
@@ -19,10 +14,9 @@ const (
 	localKey             = "127.0.0.1"
 	allKey               = "0.0.0.0"
 	// failure of auth reasons
-	successCode   ReasonCode = 0
-	badSecretCode ReasonCode = 1
-	preAuthCode   ReasonCode = 2
-	postAuthCode  ReasonCode = 3
+	successCode  ReasonCode = 0
+	preAuthCode  ReasonCode = 1
+	postAuthCode ReasonCode = 2
 )
 
 type (
@@ -43,7 +37,6 @@ type (
 		Debug   bool
 		secret  []byte
 		modules []Module
-		secrets map[string][]byte
 		// shortcuts
 		postauth bool
 		preauth  bool
@@ -93,12 +86,6 @@ func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode
 		// especially during initial EAP phases
 		// we let that go
 		if packet.Error == nil {
-			if preauthing {
-				if err := ctx.checkSecret(packet); err != nil {
-					core.WriteError("invalid radius secret", err)
-					valid = badSecretCode
-				}
-			}
 			var checks []Module
 			var checking authCheck
 			var code ReasonCode
@@ -150,137 +137,11 @@ func checkAuthMods(modules []Module, packet *ClientPacket, fxn authCheck) bool {
 	return failure
 }
 
-// FromConfig parses config data into a Context object
-func (ctx *Context) FromConfig(libPath string, c *Configuration) {
-	secrets := filepath.Join(libPath, "secrets")
-	ctx.parseSecrets(secrets)
-	ctx.secrets = make(map[string][]byte)
-	secrets = filepath.Join(libPath, "clients")
-	if core.PathExists(secrets) {
-		mappings, err := parseSecretMappings(secrets)
-		if err != nil {
-			core.Fatal("invalid client secret mappings", err)
-		}
-		for k, v := range mappings {
-			ctx.secrets[k] = []byte(v)
-		}
-	}
-}
-
-func parseSecretMappings(filename string) (map[string][]byte, error) {
-	mappings, err := parseSecretFromFile(filename, true)
-	if err != nil {
-		return nil, err
-	}
-	m := make(map[string][]byte)
-	for k, v := range mappings {
-		m[k] = []byte(v)
-	}
-	return m, nil
-}
-
-func (ctx *Context) parseSecrets(secretFile string) {
-	s, err := parseSecretFile(secretFile)
-	if err != nil {
-		core.Fatal(fmt.Sprintf("unable to read secrets: %s", secretFile), err)
-	}
-	ctx.secret = []byte(s)
-}
-
-func parseSecretFile(secretFile string) (string, error) {
-	s, err := parseSecretFromFile(secretFile, false)
-	if err != nil {
-		return "", err
-	}
-	return s[localKey], nil
-}
-
-func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
-	if !core.PathExists(secretFile) {
-		return nil, fmt.Errorf("no secrets file")
-	}
-	f, err := os.Open(secretFile)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	lines := make(map[string]string)
-	for scanner.Scan() {
-		l := scanner.Text()
-		if strings.HasPrefix(l, "#") {
-			continue
-		}
-		if mapping || strings.HasPrefix(l, localKey) {
-			parts := strings.Split(l, " ")
-			secret := strings.TrimSpace(strings.Join(parts[1:], " "))
-			if len(secret) > 0 {
-				if mapping {
-					lines[parts[0]] = secret
-				} else {
-					lines[localKey] = secret
-					break
-				}
-			}
-		}
-	}
-	if len(lines) == 0 && !mapping {
-		return nil, fmt.Errorf("no secrets found")
-	}
-	return lines, nil
-}
-
 // DebugDump dumps context information for debugging
 func (ctx *Context) DebugDump() {
 	if ctx.Debug {
 		core.WriteDebug("secret", string(ctx.secret))
-		if len(ctx.secrets) > 0 {
-			core.WriteDebug("client mappings")
-			for k, v := range ctx.secrets {
-				core.WriteDebug(k, string(v))
-			}
-		}
 	}
-}
-
-func (ctx *Context) checkSecret(p *ClientPacket) error {
-	var inSecret []byte
-	if p == nil || p.Packet == nil {
-		return fmt.Errorf("no packet information")
-	}
-	inSecret = p.Packet.Secret
-	if inSecret == nil {
-		return fmt.Errorf("no secret input")
-	}
-	if len(ctx.secrets) > 0 {
-		if p.ClientAddr == nil {
-			return fmt.Errorf("no client addr")
-		}
-		ip := p.ClientAddr.String()
-		h, _, err := net.SplitHostPort(ip)
-		if err != nil {
-			return err
-		}
-		ip = h
-		good := false
-		core.WriteInfo(ip)
-		for k, v := range ctx.secrets {
-			if strings.HasPrefix(ip, k) || k == allKey {
-				if bytes.Equal(v, inSecret) {
-					good = true
-					break
-				}
-			}
-		}
-		if !good {
-			return fmt.Errorf("matches no secrets")
-		}
-	} else {
-		if !bytes.Equal(ctx.secret, inSecret) {
-			return fmt.Errorf("does not match shared secret")
-		}
-	}
-	return nil
 }
 
 func (ctx *Context) packet(p *ClientPacket) {
