@@ -16,7 +16,6 @@ const (
 func main() {
 	configurate := flag.NewFlagSet("configurate", flag.ContinueOnError)
 	cfg := configurate.String("config", "/etc/authem/configurator.yaml", "config file (server mode)")
-	forceScript := configurate.Bool("run-scripts", false, "run the scripts regardless of configuration changes")
 	password := flag.NewFlagSet("passwd", flag.ContinueOnError)
 	user := password.String("user", "", "user to change")
 	email := password.String("email", "", "user's email address")
@@ -36,7 +35,7 @@ func main() {
 			core.Fatal("invalid flags for configurate", err)
 		}
 		scripts := configurate.Args()
-		management.Configurate(*cfg, scripts, *forceScript)
+		management.Configurate(*cfg, scripts)
 	case "passwd":
 		if err := password.Parse(args); err == nil {
 			core.Fatal("invalid flags for passwd", err)
