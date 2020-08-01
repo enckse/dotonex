@@ -10,6 +10,6 @@ clean:
 
 run:
 	cp $(EXPECT)* $(BIN)
-	AUTHEM_KEY=$(AUTHEM_KEY) ../../authem-configurator --run-scripts=true test.sh
+	AUTHEM_KEY=$(AUTHEM_KEY) ../../grad configurate --run-scripts=true test.sh
 	diff -u $(EXPECT)test.stdout $(BIN)script.stdout
-	AUTHEM_KEY=$(AUTHEM_KEY) ../../authem-configurator
+	AUTHEM_KEY=$(AUTHEM_KEY) ../../grad configurate

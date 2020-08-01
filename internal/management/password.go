@@ -1,7 +1,6 @@
-package main
+package management
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -10,14 +9,12 @@ import (
 	"strings"
 
 	yaml "gopkg.in/yaml.v2"
-	"voidedtech.com/radiucal/internal/authem"
 	"voidedtech.com/radiucal/internal/core"
 )
 
 const (
-	targetDir = "bin"
-	alphaNum  = "abcdefghijklmnopqrstuvwxyz0123456789"
-	userBase  = `username: %s
+	alphaNum = "abcdefghijklmnopqrstuvwxyz0123456789"
+	userBase = `username: %s
 fullname:
 vlans: []
 perms:
@@ -26,10 +23,6 @@ perms:
     isroot: false
 systems: []
 `
-)
-
-var (
-	vers = "master"
 )
 
 func newUserSecret(l int, pass bool) (string, error) {
@@ -73,7 +66,7 @@ func passwd(user, email, userFile, key, pwd string, force bool, length int) erro
 			password = p
 		}
 	}
-	s := authem.Secret{
+	s := Secret{
 		UserName: user,
 		Password: password,
 		Email:    email,
@@ -90,7 +83,7 @@ func passwd(user, email, userFile, key, pwd string, force bool, length int) erro
 	if err := ioutil.WriteFile(userFile, []byte(enc), 0644); err != nil {
 		return err
 	}
-	userDef := filepath.Join(authem.UserDir, user+".yaml")
+	userDef := filepath.Join(UserDir, user+".yaml")
 	core.WriteInfoDetail(userDef)
 	if !core.PathExists(userDef) {
 		if err := ioutil.WriteFile(userDef, []byte(fmt.Sprintf(userBase, user)), 0644); err != nil {
@@ -118,14 +111,14 @@ func showObject(userFile, key string) error {
 }
 
 func updatePwd(user, email, pwd string, show, force bool, length int) error {
-	k, err := authem.GetKey(false)
+	k, err := GetKey(false)
 	if err != nil {
 		return err
 	}
 	if len(user) == 0 {
 		return fmt.Errorf("no user given")
 	}
-	userFile := filepath.Join(authem.SecretsDir, user+".yaml")
+	userFile := filepath.Join(SecretsDir, user+".yaml")
 	if !show {
 		if err := passwd(user, email, userFile, k, pwd, force, length); err != nil {
 			return err
@@ -137,14 +130,7 @@ func updatePwd(user, email, pwd string, show, force bool, length int) error {
 	return nil
 }
 
-func main() {
-	user := flag.String("user", "", "user to change")
-	email := flag.String("email", "", "user's email address")
-	force := flag.Bool("force", false, "force change a user's secret")
-	show := flag.Bool("show", false, "show the user's secrets, perform no changes")
-	pwd := flag.String("password", "", "use this password")
-	length := flag.Int("length", 64, "default password length")
-	flag.Parse()
+func Password(user, email, pwd *string, show, force *bool, length *int) {
 	home := strings.TrimSpace(os.Getenv("AUTHEM_HOME"))
 	if home != "" {
 		if !core.PathExists(home) {
@@ -152,7 +138,6 @@ func main() {
 		}
 		os.Chdir(home)
 	}
-	core.Version(vers)
 	if err := updatePwd(*user, *email, *pwd, *show, *force, *length); err != nil {
 		core.ExitNow("failed to perform operation", err)
 	}
