@@ -1,7 +1,0 @@
-configs/scripts/lib/radiucal.sh /usr/lib/authem/scripts/
-configs/scripts/lib/samba.sh /usr/lib/authem/scripts/
-configs/scripts/authem-sync /usr/bin/
-configs/systemd/authem-sync.service /lib/systemd/system/
-configs/systemd/authem-sync.timer /lib/systemd/system/
-configs/systemd/authem-sync.conf /usr/lib/tmpfiles.d/
-configs/configurator.yaml.example /etc/authem/
