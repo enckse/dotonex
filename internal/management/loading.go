@@ -161,7 +161,7 @@ func loadUser(b []byte, opts LoadingOptions, vlan []*VLAN, sys []*System, secret
 		return nil, nil, err
 	}
 	if u.Perms.IsRADIUS {
-		radiusUser, err := u.ForRADIUS(vlan, sys, RADIUSOptions{})
+		radiusUser, err := u.ForRADIUS(vlan, sys)
 		if err != nil {
 			return nil, nil, err
 		}

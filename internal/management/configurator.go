@@ -189,7 +189,7 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 			if len(f) == 0 {
 				continue
 			}
-			var scriptables = ToScriptable(u, vlans, systems, secrets)
+			var scriptables = ToScriptable(u, vlans, systems)
 			scriptBytes, err := ioutil.ReadFile(f)
 			if err != nil {
 				return err

@@ -45,12 +45,7 @@ type (
 		IsRADIUS bool
 		IsPEAP   bool
 		IsRoot   bool
-		Extended []string
 		Trusts   []string
-	}
-
-	// RADIUSOptions controls user configuraion on RADIUS from configuration tooling
-	RADIUSOptions struct {
 	}
 
 	// MACMap represents mac control for control within a VLAN for auth

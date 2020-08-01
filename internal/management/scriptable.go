@@ -19,8 +19,6 @@ type (
 		UserName  string
 		FullName  string
 		LoginName string
-		Password  string
-		Perms     []string
 		VLANs     []string
 		Trusts    []string
 		Systems   []*ScriptableSystem
@@ -41,7 +39,7 @@ type (
 )
 
 // ToScriptable converts a set of objects for script usage
-func ToScriptable(users UserConfig, vlans []*VLAN, systems []*System, secrets []*Secret) *Scriptable {
+func ToScriptable(users UserConfig, vlans []*VLAN, systems []*System) *Scriptable {
 	scriptable := &Scriptable{
 		Systems: systems,
 		VLANs:   vlans,
@@ -52,13 +50,7 @@ func ToScriptable(users UserConfig, vlans []*VLAN, systems []*System, secrets []
 		user.FullName = u.FullName
 		user.LoginName = u.LoginName()
 		user.VLANs = u.VLANs
-		user.Perms = u.Perms.Extended
 		user.Trusts = u.Perms.Trusts
-		for _, s := range secrets {
-			if s.UserName == user.UserName {
-				user.Password = s.Password
-			}
-		}
 		for _, s := range systems {
 			for _, userSys := range u.Systems {
 				if s.Type == userSys.Type {

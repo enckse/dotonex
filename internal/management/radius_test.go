@@ -70,86 +70,86 @@ func testUser() User {
 }
 
 func TestForRADIUS(t *testing.T) {
-	_, err := User{Perms: UserPermissions{IsRADIUS: false}}.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err := User{Perms: UserPermissions{IsRADIUS: false}}.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "user disabled in RADIUS" {
 		t.Error("disabled")
 	}
 	u := testUser()
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "no user name" {
 		t.Error("user")
 	}
 	u.UserName = "test"
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "no md4" {
 		t.Error("md4")
 	}
 	u.MD4 = "test"
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "no VLANs" {
 		t.Error("vlans")
 	}
 	u.VLANs = []string{"test1"}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "no MACs" {
 		t.Error("macs")
 	}
 	u.VLANs = []string{"test1", "test1TEST"}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "unknown VLAN: test1TEST" {
 		t.Error("vlan?")
 	}
 	u.VLANs = []string{"test1"}
 	u.Systems = []UserSystem{UserSystem{}}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "system without id (idx: 0)" {
 		t.Error("system id")
 	}
 	u.Systems = []UserSystem{UserSystem{ID: "test"}}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "system type unknown:  (id test)" {
 		t.Error("system type")
 	}
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1"}}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "no MACs" {
 		t.Error("system macs")
 	}
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{VLAN: ""}}}}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "invalid VLAN  for []" {
 		t.Error("system vlans")
 	}
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{VLAN: "test1", MACs: []string{"aabbccddeeff"}}}}}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "missing hostapd and/or manifest entries, user can NOT login" {
 		t.Error("user has no permissions")
 	}
 	u.Perms.IsPEAP = true
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err != nil {
 		t.Error("user has no permissions")
 	}
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{MAB: true, VLAN: "test1", MACs: []string{"aabbccddeeff", "aabbccddeeff"}}}}}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "MAC already added for user: aabbccddeeff" {
 		t.Error(err.Error())
 	}
 	u.Perms.IsPEAP = false
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "MAC already added for user: aabbccddeeff" {
 		t.Error(err.Error())
 	}
 	u.VLANs = []string{"test1", "test2"}
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{MAB: true, VLAN: "test1", MACs: []string{"aabbccddeeff"}}, MACMap{MAB: true, VLAN: "test2", MACs: []string{"aabbccddeeff"}}}}}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err == nil || err.Error() != "MAC already added for user: aabbccddeeff" {
 		t.Error(err.Error())
 	}
 	u.VLANs = []string{"test1"}
 	u.Perms.IsPEAP = true
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{VLAN: "test1", MACs: []string{"aabbccddeeff"}}}}}
-	_, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	_, err = u.ForRADIUS(vlans, systems)
 	if err != nil {
 		t.Error("valid")
 	}
@@ -162,7 +162,7 @@ func TestLoginAs(t *testing.T) {
 	u.VLANs = []string{"test1"}
 	u.Perms.IsPEAP = true
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{VLAN: "test1", MACs: []string{"aabbccddeeff"}}}}}
-	o, err := u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	o, err := u.ForRADIUS(vlans, systems)
 	if err != nil {
 		t.Error("valid")
 	}
@@ -187,7 +187,7 @@ radius_accept_attr=81:s:1]` {
 		t.Error("invalid hostapd")
 	}
 	u.LoginAs = "a"
-	o, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	o, err = u.ForRADIUS(vlans, systems)
 	if err != nil {
 		t.Error("valid")
 	}
@@ -220,7 +220,7 @@ func TestRADIUSOutputs(t *testing.T) {
 	u.Perms.IsPEAP = true
 	u.VLANs = []string{"test1", "test2"}
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{MAB: true, VLAN: "test1", MACs: []string{"aabbc1ddeeff"}}, MACMap{MAB: true, VLAN: "test2", MACs: []string{"aabbccddeeff"}}}}}
-	o, err := u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	o, err := u.ForRADIUS(vlans, systems)
 	if err != nil {
 		t.Error("valid")
 	}
@@ -263,7 +263,7 @@ radius_accept_attr=81:s:2]` {
 		t.Error("invalid hostapd")
 	}
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{VLAN: "test1", MACs: []string{"aabbc1ddeeff"}}, MACMap{VLAN: "test2", MACs: []string{"aabbccddeeff"}}}}}
-	o, err = u.ForRADIUS(vlans, systems, RADIUSOptions{})
+	o, err = u.ForRADIUS(vlans, systems)
 	if err != nil {
 		t.Error("valid")
 	}
