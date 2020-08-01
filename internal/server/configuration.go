@@ -14,7 +14,6 @@ type (
 		To         int
 		Bind       int
 		Dir        string
-		NoReject   bool
 		Log        string
 		Plugins    []string
 		Internals  struct {

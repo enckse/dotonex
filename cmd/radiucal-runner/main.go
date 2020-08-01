@@ -79,9 +79,7 @@ func runConnection(ctx *server.Context, conn *connection) {
 }
 
 func checkAuth(name string, fxn server.AuthorizePacket, ctx *server.Context, b []byte, addr, client *net.UDPAddr) bool {
-	auth := server.HandleAuth(fxn, ctx, b, addr, func(buffer []byte) {
-		proxy.WriteToUDP(buffer, client)
-	})
+	auth := server.HandleAuth(fxn, ctx, b, addr)
 	if !auth {
 		core.WriteDebug("client failed auth check", name)
 	}

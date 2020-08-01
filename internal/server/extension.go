@@ -22,9 +22,9 @@ const (
 	// PreAuthMode for pre-auth
 	PreAuthMode = "preauth"
 	// PostAuthMode for post-auth
-	PostAuthMode = "postauth"
-	PreProcess ModuleMode = 1
-	PostProcess ModuleMode = 2
+	PostAuthMode                 = "postauth"
+	PreProcess        ModuleMode = 1
+	PostProcess       ModuleMode = 2
 	AccountingProcess ModuleMode = 3
 )
 
