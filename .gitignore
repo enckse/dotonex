@@ -2,3 +2,5 @@ hostap/hostap/
 log/
 bin/
 grad
+grad-daemon.sh
+hostapd.conf
