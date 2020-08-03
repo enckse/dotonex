@@ -1,0 +1,25 @@
+#!/bin/bash
+
+_randomstring() {
+    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
+}
+
+_init() {
+    local pass
+    pass=$(_randomstring)
+    mkdir -p HOSTAPD
+    chmod 600 HOSTAPD
+    cp TEMPLATE* HOSTAPD/
+    sed -i "s/{PASSWORD}/$pass/g" HOSTAPD/*.cnf
+    pass=$(_randomstring)
+    echo "127.0.0.1 $pass" > CLIENTS
+    echo "$pass" > GRADKEY
+}
+
+if [ ! -d HOSTAPD ]; then
+    _init
+fi
+
+while [ 1 -eq 1]; do
+    sleep 30;
+done
