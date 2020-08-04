@@ -6,25 +6,26 @@ import (
 )
 
 type (
+	// Endpoint is a hosted endpoint (e.g. auth/acct)
 	Endpoint struct {
-		Host string
-		Port int
-		To   int
-		Mods []string
+		Host   string
+		Port   int
+		To     int
+		Mods   []string
 		Enable bool
 	}
 	// Configuration is the configuration definition
 	Configuration struct {
-		Auth      Endpoint
-		Acct      Endpoint
-		Dir       string
+		Auth    Endpoint
+		Acct    Endpoint
+		Dir     string
 		Logging struct {
 			Dir   string
 			Flush int
 		}
-		Secret    string
-		Users     string
-		Debug     bool
+		Secret string
+		Users  string
+		Debug  bool
 		Gitlab struct {
 			URL    string
 			Token  string

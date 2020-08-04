@@ -4,20 +4,6 @@ import (
 	"testing"
 )
 
-func TestNewModuleContext(t *testing.T) {
-	c := NewModuleContext(&Configuration{Dir: "test"})
-	if c.Lib != "test" {
-		t.Error("invalid context")
-	}
-}
-
-func TestCloneContext(t *testing.T) {
-	c := NewModuleContext(&Configuration{Dir: "test"}).CloneContext()
-	if c.Lib != "test" {
-		t.Error("invalid context")
-	}
-}
-
 func TestKeyValueStrings(t *testing.T) {
 	c := KeyValueStore{}
 	c.KeyValues = append(c.KeyValues, KeyValue{Key: "key", Value: "val"})

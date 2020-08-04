@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	authClients                   = make(map[string]*connection)
+	authClients             = make(map[string]*connection)
 	authLock    *sync.Mutex = new(sync.Mutex)
 )
 
@@ -131,6 +131,7 @@ func account(proxy *net.UDPConn, ctx *Context) {
 	}
 }
 
+// Run the serving of proxy endpoints
 func Run(config string) {
 	b, err := ioutil.ReadFile(config)
 	if err != nil {

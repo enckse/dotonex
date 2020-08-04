@@ -87,11 +87,6 @@ func NewModuleContext(config *Configuration) *ModuleContext {
 	return p
 }
 
-// CloneContext a module context to a copy for use in other modules
-func (p *ModuleContext) CloneContext() *ModuleContext {
-	return NewModuleContext(p.config)
-}
-
 // NewRequestDump prepares a packet request for dumping
 func NewRequestDump(packet *ClientPacket, mode string) *RequestDump {
 	return &RequestDump{data: packet, mode: mode}
