@@ -21,12 +21,22 @@ type (
 	connection struct {
 		client *net.UDPAddr
 		server *net.UDPConn
+		nas    string
 	}
 )
+
+func stripHost(addr *net.UDPAddr) string {
+	h, _, err := net.SplitHostPort(addr.String())
+	if err == nil {
+		return h
+	}
+	return ""
+}
 
 func newConnection(srv, cli *net.UDPAddr) *connection {
 	conn := new(connection)
 	conn.client = cli
+	conn.nas = stripHost(cli)
 	serverUDP, err := net.DialUDP("udp", nil, srv)
 	if err != nil {
 		core.WriteError("dial udp", err)
@@ -61,7 +71,7 @@ func runConnection(proxy *net.UDPConn, ctx *Context, conn *connection) {
 			continue
 		}
 		buffered := []byte(buffer[0:n])
-		if !checkAuth("post", PostAuthorize, ctx, buffered, conn.client, conn.client) {
+		if !checkAuth("post", PostAuthorize, ctx, buffered, conn.nas) {
 			continue
 		}
 		if _, err := proxy.WriteToUDP(buffer[0:n], conn.client); err != nil {
@@ -70,8 +80,8 @@ func runConnection(proxy *net.UDPConn, ctx *Context, conn *connection) {
 	}
 }
 
-func checkAuth(name string, fxn AuthorizePacket, ctx *Context, b []byte, addr, client *net.UDPAddr) bool {
-	auth := HandleAuth(fxn, ctx, b, addr)
+func checkAuth(name string, fxn AuthorizePacket, ctx *Context, b []byte, nas string) bool {
+	auth := HandleAuth(fxn, ctx, b, nas)
 	if !auth {
 		core.WriteDebug("client failed auth check", name)
 	}
@@ -79,7 +89,7 @@ func checkAuth(name string, fxn AuthorizePacket, ctx *Context, b []byte, addr, c
 }
 
 func runProxy(proxy *net.UDPConn, server *net.UDPAddr, ctx *Context) {
-	if ctx.Debug {
+	if ctx.Config.Debug {
 		core.WriteInfo("=============WARNING==================")
 		core.WriteInfo("debugging is enabled!")
 		core.WriteInfo("dumps from debugging may contain secrets")
@@ -110,7 +120,7 @@ func runProxy(proxy *net.UDPConn, server *net.UDPAddr, ctx *Context) {
 			authLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		if !checkAuth("pre", PreAuthorize, ctx, buffered, cliaddr, conn.client) {
+		if !checkAuth("pre", PreAuthorize, ctx, buffered, stripHost(cliaddr)) {
 			continue
 		}
 		if _, err := conn.server.Write(buffer[0:n]); err != nil {
@@ -127,7 +137,7 @@ func account(proxy *net.UDPConn, ctx *Context) {
 			core.WriteError("accounting udp error", err)
 			continue
 		}
-		ctx.Account(NewClientPacket(buffer[0:n], cliaddr))
+		ctx.Account(NewClientPacket(buffer[0:n], stripHost(cliaddr)))
 	}
 }
 
@@ -173,17 +183,7 @@ func serveEndpoint(endpoint Endpoint, config *Configuration, accounting bool) {
 		core.Fatal("proxy setup", err)
 	}
 
-	ctx := &Context{Debug: config.Debug}
-	pCtx := NewModuleContext(config)
-	for _, p := range endpoint.Mods {
-		core.WriteInfo("loading module", p)
-		obj, err := LoadModule(p, pCtx)
-		if err != nil {
-			core.Fatal(fmt.Sprintf("unable to load module: %s", p), err)
-		}
-		ctx.AddModule(obj)
-	}
-
+	ctx := &Context{Config: config}
 	if accounting {
 		account(proxy, ctx)
 	} else {

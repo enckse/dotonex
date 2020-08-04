@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,10 +55,10 @@ type (
 
 	// ClientPacket represents the radius packet from the client
 	ClientPacket struct {
-		ClientAddr *net.UDPAddr
-		Buffer     []byte
-		Packet     *radius.Packet
-		Error      error
+		NASIP  string
+		Buffer []byte
+		Packet *radius.Packet
+		Error  error
 	}
 
 	// KeyValue represents a simple key/value object
@@ -76,8 +75,8 @@ type (
 )
 
 // NewClientPacket creates a client packet from an input data packet
-func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
-	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
+func NewClientPacket(buffer []byte, nas string) *ClientPacket {
+	return &ClientPacket{Buffer: buffer, NASIP: nas}
 }
 
 // NewModuleContext prepares a context from a configuration
@@ -96,8 +95,8 @@ func NewRequestDump(packet *ClientPacket, mode string) *RequestDump {
 func (packet *RequestDump) DumpPacket(kv KeyValue) []string {
 	var w bytes.Buffer
 	io.WriteString(&w, fmt.Sprintf(fmt.Sprintf("Mode = %s\n", packet.mode)))
-	if packet.data.ClientAddr != nil {
-		io.WriteString(&w, fmt.Sprintf("UDPAddr = %s\n", packet.data.ClientAddr.String()))
+	if packet.data.NASIP != "" {
+		io.WriteString(&w, fmt.Sprintf("UDPAddr = %s\n", packet.data.NASIP))
 	}
 	conf := &debug.Config{}
 	conf.Dictionary = debug.IncludedDictionary
@@ -148,10 +147,9 @@ func WriteModuleMessages(path string) {
 }
 
 // LogModuleMessages adds messages to the module log queue
-func LogModuleMessages(mod Module, messages []string) {
+func LogModuleMessages(name string, messages []string) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
-	name := strings.ToUpper(mod.Name())
 	t := time.Now().Format("2006-01-02T15:04:05.000")
 	idx := moduleLID
 	for _, m := range messages {

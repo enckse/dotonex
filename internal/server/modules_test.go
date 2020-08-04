@@ -2,65 +2,58 @@ package server
 
 import (
 	"testing"
+	"time"
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 )
 
-func TestUserMacBasics(t *testing.T) {
-	newTestSet(t, "test", "11-22-33-44-55-66", true)
-	newTestSet(t, "test", "12-22-33-44-55-66", false)
-}
-
-func ErrorIfNotPre(t *testing.T, m *userAuth, p *ClientPacket, message string) {
-	err := m.checkUserMac(p)
-	if err == nil {
-		if message != "" {
-			t.Errorf("expected to fail with: %s", message)
-		}
-	} else {
-		if err.Error() != message {
-			t.Errorf("'%s' != '%s'", err.Error(), message)
-		}
+func TestAccess(t *testing.T) {
+	moduleLogs = []string{}
+	packet := getModulePacket(t)
+	Access(AccountingProcess, packet)
+	time.Sleep(100 * time.Millisecond)
+	if len(moduleLogs) != 5 {
+		t.Error("should have logged a packet")
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) (*ClientPacket, *userAuth) {
-	m := setupUserMac()
-	if m.Name() != "usermac" {
-		t.Error("invalid/wrong name")
+func TestLogPacket(t *testing.T) {
+	moduleLogs = []string{}
+	packet := getModulePacket(t)
+	LogPacket(AccountingProcess, packet)
+	time.Sleep(100 * time.Millisecond)
+	if len(moduleLogs) != 6 {
+		t.Error("should have logged a packet")
 	}
-	var secret = []byte("secret")
-	p := NewClientPacket(nil, nil)
-	p.Packet = radius.New(radius.CodeAccessRequest, secret)
-	ErrorIfNotPre(t, m, p, "radius: attribute not found")
-	if err := rfc2865.UserName_AddString(p.Packet, user); err != nil {
+}
+
+func getModulePacket(t *testing.T) *ClientPacket {
+	p := radius.New(radius.CodeAccessRequest, []byte("secret"))
+	if err := rfc2865.UserName_AddString(p, "user"); err != nil {
 		t.Error("unable to add user name")
 	}
-	ErrorIfNotPre(t, m, p, "radius: attribute not found")
-	if err := rfc2865.CallingStationID_AddString(p.Packet, mac); err != nil {
-		t.Error("unable to add calling station")
+	if err := rfc2865.CallingStationID_AddString(p, "11-22-33-44-55-66"); err != nil {
+		t.Error("unable to add calling statiron")
 	}
-	if valid {
-		ErrorIfNotPre(t, m, p, "")
-	}
-	if !valid {
-		ErrorIfNotPre(t, m, p, "failed preauth: test "+clean(mac))
-	}
-	return p, m
+	packet := NewClientPacket([]byte{}, "127.0.0.1")
+	packet.Packet = p
+	return packet
 }
 
-func setupUserMac() *userAuth {
-	m := &userAuth{}
-	userAuthManifest = make(map[string]bool)
-	userAuthManifest["test.112233445566"] = true
-	return m
-}
+func TestUserMAC(t *testing.T) {
+	SetUserAuths([]string{})
+	if AuthorizeUserMAC(getModulePacket(t)) {
+		t.Error("should not have authorized")
+	}
 
-func TestUserMacCache(t *testing.T) {
-	pg, m := newTestSet(t, "test", "11-22-33-44-55-66", true)
-	pb, _ := newTestSet(t, "test", "11-22-33-44-55-68", false)
-	first := "failed preauth: test 112233445568"
-	ErrorIfNotPre(t, m, pg, "")
-	ErrorIfNotPre(t, m, pb, first)
+	SetUserAuths([]string{"use2r.112233445566"})
+	if AuthorizeUserMAC(getModulePacket(t)) {
+		t.Error("should not have authorized")
+	}
+
+	SetUserAuths([]string{"user.112233445566"})
+	if !AuthorizeUserMAC(getModulePacket(t)) {
+		t.Error("should have authorized")
+	}
 }
