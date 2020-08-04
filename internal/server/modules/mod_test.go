@@ -1,4 +1,4 @@
-package server
+package modules
 
 import (
 	"testing"
@@ -6,29 +6,30 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
+	"voidedtech.com/radiucal/internal/server/processing"
 )
 
 func TestAccess(t *testing.T) {
-	moduleLogs = []string{}
+	processing.WriteModuleMessages("")
 	packet := getModulePacket(t)
-	Access(AccountingProcess, packet)
+	Access(processing.AccountingProcess, packet)
 	time.Sleep(100 * time.Millisecond)
-	if len(moduleLogs) != 5 {
+	if processing.WriteModuleMessages("") != 5 {
 		t.Error("should have logged a packet")
 	}
 }
 
 func TestLogPacket(t *testing.T) {
-	moduleLogs = []string{}
+	processing.WriteModuleMessages("")
 	packet := getModulePacket(t)
-	LogPacket(AccountingProcess, packet)
+	LogPacket(processing.AccountingProcess, packet)
 	time.Sleep(100 * time.Millisecond)
-	if len(moduleLogs) != 6 {
+	if processing.WriteModuleMessages("") != 6 {
 		t.Error("should have logged a packet")
 	}
 }
 
-func getModulePacket(t *testing.T) *ClientPacket {
+func getModulePacket(t *testing.T) *processing.ClientPacket {
 	p := radius.New(radius.CodeAccessRequest, []byte("secret"))
 	if err := rfc2865.UserName_AddString(p, "user"); err != nil {
 		t.Error("unable to add user name")
@@ -36,7 +37,7 @@ func getModulePacket(t *testing.T) *ClientPacket {
 	if err := rfc2865.CallingStationID_AddString(p, "11-22-33-44-55-66"); err != nil {
 		t.Error("unable to add calling statiron")
 	}
-	packet := NewClientPacket([]byte{}, "127.0.0.1")
+	packet := processing.NewClientPacket([]byte{}, "127.0.0.1")
 	packet.Packet = p
 	return packet
 }
