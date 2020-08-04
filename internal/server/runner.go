@@ -9,8 +9,8 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
-	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/server/processing"
+	"voidedtech.com/grad/internal/core"
+	"voidedtech.com/grad/internal/server/processing"
 )
 
 var (

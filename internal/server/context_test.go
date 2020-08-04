@@ -7,9 +7,9 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/external"
-	"voidedtech.com/radiucal/internal/server/processing"
+	"voidedtech.com/grad/internal/core"
+	"voidedtech.com/grad/internal/external"
+	"voidedtech.com/grad/internal/server/processing"
 )
 
 func TestPostAuth(t *testing.T) {

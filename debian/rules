@@ -3,7 +3,7 @@
 	dh $@
 
 override_dh_auto_build:
-	make radiucal authem-configurator authem-passwd radiucal-runner
+	make package
 
 override_dh_auto_test:
 	@echo

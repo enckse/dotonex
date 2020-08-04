@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/external"
-	"voidedtech.com/radiucal/internal/server/processing"
+	"voidedtech.com/grad/internal/external"
+	"voidedtech.com/grad/internal/server/processing"
 )
 
 // Access logging of requests for auth endpoints

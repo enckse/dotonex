@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"layeh.com/radius"
-	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/server/modules"
-	"voidedtech.com/radiucal/internal/server/processing"
+	"voidedtech.com/grad/internal/core"
+	"voidedtech.com/grad/internal/server/modules"
+	"voidedtech.com/grad/internal/server/processing"
 )
 
 type (

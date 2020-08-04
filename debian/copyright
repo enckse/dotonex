@@ -1,9 +1,9 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: radiucal
-Source: https://cgit.voidedtech.com/radiucal
+Upstream-Name: grad
+Source: https://cgit.voidedtech.com/grad
 
 Files: *
-Copyright: 2018-2019 Sean Enck <enckse@voidedtech.com>
+Copyright: 2018-2020 Sean Enck <enckse@voidedtech.com>
 License: GPL-3
 
 Files: debian/*
