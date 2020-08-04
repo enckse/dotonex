@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/core"
 	"voidedtech.com/radiucal/internal/server/processing"
 )
 
@@ -83,7 +82,7 @@ func checkUserMAC(p *processing.ClientPacket) error {
 	}
 	username = clean(username)
 	calling = clean(calling)
-	fqdn := core.NewManifestEntry(username, calling)
+	fqdn := newManifestEntry(username, calling)
 	success := true
 	var failure error
 	lockUserAuth.Lock()
@@ -125,4 +124,8 @@ func mark(success bool, user, calling string, p *processing.ClientPacket, cached
 	kv.Add("NAS-Port", fmt.Sprintf("%d", nasport))
 	kv.Add("Id", strconv.Itoa(int(p.Packet.Identifier)))
 	processing.LogModuleMessages("USERMAC", kv.Strings())
+}
+
+func newManifestEntry(user, mac string) string {
+	return fmt.Sprintf("%s.%s", user, mac)
 }
