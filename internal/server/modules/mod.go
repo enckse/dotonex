@@ -4,26 +4,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 
 	"layeh.com/radius/rfc2865"
+	"voidedtech.com/radiucal/internal/external"
 	"voidedtech.com/radiucal/internal/server/processing"
 )
-
-var (
-	lockUserAuth     = &sync.Mutex{}
-	userAuthManifest = make(map[string]bool)
-)
-
-// SetUserAuths does a lock-safe update the set of user+mac combinations
-func SetUserAuths(set []string) {
-	lockUserAuth.Lock()
-	defer lockUserAuth.Unlock()
-	userAuthManifest = make(map[string]bool)
-	for _, u := range set {
-		userAuthManifest[u] = true
-	}
-}
 
 // Access logging of requests for auth endpoints
 func Access(mode processing.ModuleMode, packet *processing.ClientPacket) {
@@ -82,13 +67,9 @@ func checkUserMAC(p *processing.ClientPacket) error {
 	}
 	username = clean(username)
 	calling = clean(calling)
-	fqdn := newManifestEntry(username, calling)
 	success := true
 	var failure error
-	lockUserAuth.Lock()
-	_, ok := userAuthManifest[fqdn]
-	lockUserAuth.Unlock()
-	if !ok {
+	if !external.AuthorizeUser(external.NewAuth(username, calling)) {
 		failure = fmt.Errorf("failed preauth: %s %s", username, calling)
 		success = false
 	}
