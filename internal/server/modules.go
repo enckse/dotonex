@@ -3,10 +3,7 @@ package server
 import (
 	"fmt"
 	"strconv"
-
-	"io/ioutil"
 	"net"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -17,16 +14,15 @@ import (
 type (
 	logger struct {
 	}
-	umac struct {
+	userMAC struct {
 	}
 	access struct {
 	}
 )
 
 var (
-	lockMAC  = &sync.Mutex{}
-	fileMAC  string
-	manifest = make(map[string]bool)
+	lockUserMAC  = &sync.Mutex{}
+	manifest     = make(map[string]bool)
 )
 
 func (l *access) Name() string {
@@ -84,46 +80,18 @@ func (l *logger) write(mode ModuleMode, packet *ClientPacket) {
 	}()
 }
 
-func (l *umac) Name() string {
+func (l *userMAC) Name() string {
 	return "usermac"
 }
 
-func (l *umac) load() error {
-	if !core.PathExists(fileMAC) {
-		return fmt.Errorf("%s is missing", fileMAC)
-	}
-	lockMAC.Lock()
-	defer lockMAC.Unlock()
-	b, err := ioutil.ReadFile(fileMAC)
-	if err != nil {
-		return err
-	}
-	manifest = make(map[string]bool)
-	data := strings.Split(string(b), "\n")
-	kv := KeyValueStore{}
-	kv.Add("Manfiest", "load")
-	idx := 0
-	for _, d := range data {
-		if strings.TrimSpace(d) == "" {
-			continue
-		}
-		kv.Add(fmt.Sprintf("Manifest-%d", idx), d)
-		manifest[d] = true
-		idx++
-	}
-	LogModuleMessages(l, kv.Strings())
-	return nil
-}
-
-func (l *umac) Setup(ctx *ModuleContext) error {
-	fileMAC = filepath.Join(ctx.Lib, "manifest")
-	if err := l.load(); err != nil {
-		return err
+func (l *userMAC) Setup(ctx *ModuleContext) error {
+	if !ctx.config.Gitlab.Enable {
+		return fmt.Errorf("Gitlab integration required for user MAC control")
 	}
 	return nil
 }
 
-func (l *umac) Process(packet *ClientPacket, mode ModuleMode) bool {
+func (l *userMAC) Process(packet *ClientPacket, mode ModuleMode) bool {
 	if mode == PreProcess {
 		return l.checkUserMac(packet) == nil
 	}
@@ -140,7 +108,7 @@ func clean(in string) string {
 	return result
 }
 
-func (l *umac) checkUserMac(p *ClientPacket) error {
+func (l *userMAC) checkUserMac(p *ClientPacket) error {
 	username, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
@@ -154,9 +122,9 @@ func (l *umac) checkUserMac(p *ClientPacket) error {
 	fqdn := core.NewManifestEntry(username, calling)
 	success := true
 	var failure error
-	lockMAC.Lock()
+	lockUserMAC.Lock()
 	_, ok := manifest[fqdn]
-	lockMAC.Unlock()
+	lockUserMAC.Unlock()
 	if !ok {
 		failure = fmt.Errorf("failed preauth: %s %s", username, calling)
 		success = false
@@ -165,7 +133,7 @@ func (l *umac) checkUserMac(p *ClientPacket) error {
 	return failure
 }
 
-func (l *umac) mark(success bool, user, calling string, p *ClientPacket, cached bool) {
+func (l *userMAC) mark(success bool, user, calling string, p *ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -213,7 +181,7 @@ func LoadModule(name string, ctx *ModuleContext) (Module, error) {
 func getModule(name string) (Module, error) {
 	switch name {
 	case "usermac":
-		return &umac{}, nil
+		return &userMAC{}, nil
 	case "log":
 		return &logger{}, nil
 	case "access":
