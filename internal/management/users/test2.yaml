@@ -1,0 +1,14 @@
+username: test2
+email:
+vlans: ["prod"]
+perms:
+    mustlogin: true
+    isradius: true
+    ispeap: true
+systems:
+    - id: a
+      type: y
+      primary: true
+      macs:
+          - vlan: prod
+            macs: [aabbccddee11]

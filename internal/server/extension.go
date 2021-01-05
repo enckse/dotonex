@@ -45,6 +45,8 @@ type (
 	ModuleContext struct {
 		// Backing config
 		config *Configuration
+		// Lib represents the library path for radiucal
+		Lib string
 	}
 
 	// Module represents a module module for packet checking
@@ -84,6 +86,7 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 func NewModuleContext(config *Configuration) *ModuleContext {
 	p := &ModuleContext{}
 	p.config = config
+	p.Lib = config.Dir
 	return p
 }
 
@@ -117,13 +120,17 @@ func (packet *RequestDump) DumpPacket(kv KeyValue) []string {
 	return results
 }
 
-func newFile(path string, appending bool) *os.File {
+func newFile(path, instance string, appending bool) *os.File {
 	flags := os.O_RDWR | os.O_CREATE
 	if appending {
 		flags = flags | os.O_APPEND
 	}
 	t := time.Now()
-	logPath := filepath.Join(path, t.Format("2006-01-02"))
+	inst := instance
+	if len(inst) == 0 {
+		inst = fmt.Sprintf("default.%d", t.UnixNano())
+	}
+	logPath := filepath.Join(path, fmt.Sprintf("%s.%s", inst, t.Format("2006-01-02")))
 	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0660)
 	if err != nil {
 		core.WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
@@ -133,14 +140,14 @@ func newFile(path string, appending bool) *os.File {
 }
 
 // WriteModuleMessages supports writing module messages to disk
-func WriteModuleMessages(path string) {
+func WriteModuleMessages(path, instance string) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
 	var f *os.File
 	if len(moduleLogs) == 0 {
 		return
 	}
-	f = newFile(path, true)
+	f = newFile(path, instance, true)
 	if f == nil {
 		return
 	}

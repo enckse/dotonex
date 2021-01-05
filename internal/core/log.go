@@ -15,12 +15,16 @@ const (
 
 var (
 	debugging = false
+	instance  = ""
 )
 
 // ConfigureLogging will configure the underlying logging options
 // (this should be called at startup)
-func ConfigureLogging(dbg bool) {
+func ConfigureLogging(dbg bool, inst string) {
 	debugging = dbg
+	if len(inst) > 0 {
+		instance = fmt.Sprintf("- %s - ", inst)
+	}
 }
 
 func init() {
@@ -70,7 +74,7 @@ func write(cat, message string, messages ...string) {
 	if len(messages) > 0 {
 		vars = fmt.Sprintf(" (%s)", messages)
 	}
-	msg := fmt.Sprintf("%s%s%s", category, message, vars)
+	msg := fmt.Sprintf("%s%s%s%s", category, instance, message, vars)
 	log.Print(msg)
 }
 

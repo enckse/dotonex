@@ -1,20 +1,25 @@
-package server
+package main
 
 import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"os"
 	"sync"
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/server"
 )
 
 var (
-	authClients                   = make(map[string]*connection)
-	authLock    *sync.Mutex = new(sync.Mutex)
+	vers          = "master"
+	proxy         *net.UDPConn
+	serverAddress *net.UDPAddr
+	clients                   = make(map[string]*connection)
+	clientLock    *sync.Mutex = new(sync.Mutex)
 )
 
 type (
@@ -36,23 +41,25 @@ func newConnection(srv, cli *net.UDPAddr) *connection {
 	return conn
 }
 
-func setup(hostport string, port int) (*net.UDPConn, *net.UDPAddr, error) {
+func setup(hostport string, port int) error {
 	proxyAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 	proxyUDP, err := net.ListenUDP("udp", proxyAddr)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
+	proxy = proxyUDP
 	serverAddr, err := net.ResolveUDPAddr("udp", hostport)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
-	return proxyUDP, serverAddr, nil
+	serverAddress = serverAddr
+	return nil
 }
 
-func runConnection(proxy *net.UDPConn, ctx *Context, conn *connection) {
+func runConnection(ctx *server.Context, conn *connection) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, err := conn.server.Read(buffer[0:])
@@ -61,7 +68,7 @@ func runConnection(proxy *net.UDPConn, ctx *Context, conn *connection) {
 			continue
 		}
 		buffered := []byte(buffer[0:n])
-		if !checkAuth("post", PostAuthorize, ctx, buffered, conn.client, conn.client) {
+		if !checkAuth("post", server.PostAuthorize, ctx, buffered, conn.client, conn.client) {
 			continue
 		}
 		if _, err := proxy.WriteToUDP(buffer[0:n], conn.client); err != nil {
@@ -70,15 +77,15 @@ func runConnection(proxy *net.UDPConn, ctx *Context, conn *connection) {
 	}
 }
 
-func checkAuth(name string, fxn AuthorizePacket, ctx *Context, b []byte, addr, client *net.UDPAddr) bool {
-	auth := HandleAuth(fxn, ctx, b, addr)
+func checkAuth(name string, fxn server.AuthorizePacket, ctx *server.Context, b []byte, addr, client *net.UDPAddr) bool {
+	auth := server.HandleAuth(fxn, ctx, b, addr)
 	if !auth {
 		core.WriteDebug("client failed auth check", name)
 	}
 	return auth
 }
 
-func runProxy(proxy *net.UDPConn, server *net.UDPAddr, ctx *Context) {
+func runProxy(ctx *server.Context) {
 	if ctx.Debug {
 		core.WriteInfo("=============WARNING==================")
 		core.WriteInfo("debugging is enabled!")
@@ -95,22 +102,22 @@ func runProxy(proxy *net.UDPConn, server *net.UDPAddr, ctx *Context) {
 			continue
 		}
 		addr := cliaddr.String()
-		authLock.Lock()
-		conn, found := authClients[addr]
+		clientLock.Lock()
+		conn, found := clients[addr]
 		if !found {
-			conn = newConnection(server, cliaddr)
+			conn = newConnection(serverAddress, cliaddr)
 			if conn == nil {
-				authLock.Unlock()
+				clientLock.Unlock()
 				continue
 			}
-			authClients[addr] = conn
-			authLock.Unlock()
-			go runConnection(proxy, ctx, conn)
+			clients[addr] = conn
+			clientLock.Unlock()
+			go runConnection(ctx, conn)
 		} else {
-			authLock.Unlock()
+			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		if !checkAuth("pre", PreAuthorize, ctx, buffered, cliaddr, conn.client) {
+		if !checkAuth("pre", server.PreAuthorize, ctx, buffered, cliaddr, conn.client) {
 			continue
 		}
 		if _, err := conn.server.Write(buffer[0:n]); err != nil {
@@ -119,7 +126,7 @@ func runProxy(proxy *net.UDPConn, server *net.UDPAddr, ctx *Context) {
 	}
 }
 
-func account(proxy *net.UDPConn, ctx *Context) {
+func account(ctx *server.Context) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
@@ -127,65 +134,66 @@ func account(proxy *net.UDPConn, ctx *Context) {
 			core.WriteError("accounting udp error", err)
 			continue
 		}
-		ctx.Account(NewClientPacket(buffer[0:n], cliaddr))
+		ctx.Account(server.NewClientPacket(buffer[0:n], cliaddr))
 	}
 }
 
-func Run(config string) {
-	b, err := ioutil.ReadFile(config)
+func main() {
+	p := server.Flags()
+	core.ConfigureLogging(p.Debug, p.Instance)
+	core.WriteInfo(vers)
+	b, err := ioutil.ReadFile(p.Config)
 	if err != nil {
 		core.Fatal("unable to load config", err)
 	}
-	conf := &Configuration{}
+	conf := &server.Configuration{}
 	if err := yaml.Unmarshal(b, conf); err != nil {
 		core.Fatal("unable to parse config", err)
 	}
-	core.ConfigureLogging(conf.Debug)
-	if conf.Debug {
+	conf.Defaults()
+	if p.Debug {
 		conf.Dump()
 	}
-	go serveEndpoint(conf.Auth, conf, false)
-	go serveEndpoint(conf.Acct, conf, true)
-	logBuffer := time.Duration(conf.Logging.Flush) * time.Second
-	go func() {
-		for {
-			time.Sleep(logBuffer)
-			if conf.Debug {
-				core.WriteDebug("flushing logs")
-			}
-			WriteModuleMessages(conf.Logging.Dir)
+	to := 1814
+	if !conf.Accounting {
+		if conf.To > 0 {
+			to = conf.To
 		}
-	}()
-
-	for {
-		time.Sleep(30 * time.Second)
 	}
-}
-
-func serveEndpoint(endpoint Endpoint, config *Configuration, accounting bool) {
-	if !endpoint.Enable {
-		return
-	}
-	addr := fmt.Sprintf("%s:%d", endpoint.Host, endpoint.Port)
-	proxy, address, err := setup(addr, endpoint.To)
-	if err != nil {
+	addr := fmt.Sprintf("%s:%d", conf.Host, to)
+	if err := setup(addr, conf.Bind); err != nil {
 		core.Fatal("proxy setup", err)
 	}
 
-	ctx := &Context{Debug: config.Debug}
-	pCtx := NewModuleContext(config)
-	for _, p := range endpoint.Mods {
+	ctx := &server.Context{Debug: p.Debug}
+	pCtx := server.NewModuleContext(conf)
+	for _, p := range conf.Plugins {
 		core.WriteInfo("loading module", p)
-		obj, err := LoadModule(p, pCtx)
+		obj, err := server.LoadModule(p, pCtx)
 		if err != nil {
 			core.Fatal(fmt.Sprintf("unable to load module: %s", p), err)
 		}
 		ctx.AddModule(obj)
 	}
 
-	if accounting {
-		account(proxy, ctx)
+	logBuffer := time.Duration(conf.Logs) * time.Second
+	go func() {
+		for {
+			time.Sleep(logBuffer)
+			if ctx.Debug {
+				core.WriteDebug("flushing logs")
+			}
+			server.WriteModuleMessages(conf.Log, p.Instance)
+		}
+	}()
+
+	if conf.Accounting {
+		core.WriteInfo("accounting mode")
+		account(ctx)
 	} else {
-		runProxy(proxy, address, ctx)
+		core.WriteInfo("proxy mode")
+		runProxy(ctx)
 	}
+	server.WriteModuleMessages(conf.Log, p.Instance)
+	os.Exit(0)
 }
