@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
-	"net"
 	"strconv"
+	"net"
 	"strings"
 	"sync"
 
@@ -21,8 +21,8 @@ type (
 )
 
 var (
-	lockUserMAC = &sync.Mutex{}
-	manifest    = make(map[string]bool)
+	lockUserMAC  = &sync.Mutex{}
+	manifest     = make(map[string]bool)
 )
 
 func (l *access) Name() string {
@@ -172,7 +172,7 @@ func LoadModule(name string, ctx *ModuleContext) (Module, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := mod.Setup(ctx); err != nil {
+	if err := mod.Setup(ctx.CloneContext()); err != nil {
 		return nil, err
 	}
 	return mod, nil

@@ -12,7 +12,7 @@ func TestUserMacBasics(t *testing.T) {
 	newTestSet(t, "test", "12-22-33-44-55-66", false)
 }
 
-func ErrorIfNotPre(t *testing.T, m *userMAC, p *ClientPacket, message string) {
+func ErrorIfNotPre(t *testing.T, m *umac, p *ClientPacket, message string) {
 	err := m.checkUserMac(p)
 	if err == nil {
 		if message != "" {
@@ -25,7 +25,7 @@ func ErrorIfNotPre(t *testing.T, m *userMAC, p *ClientPacket, message string) {
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) (*ClientPacket, *userMAC) {
+func newTestSet(t *testing.T, user, mac string, valid bool) (*ClientPacket, *umac) {
 	m := setupUserMac()
 	if m.Name() != "usermac" {
 		t.Error("invalid/wrong name")
@@ -50,10 +50,10 @@ func newTestSet(t *testing.T, user, mac string, valid bool) (*ClientPacket, *use
 	return p, m
 }
 
-func setupUserMac() *userMAC {
-	m := &userMAC{}
-	manifest = make(map[string]bool)
-	manifest["test.112233445566"] = true
+func setupUserMac() *umac {
+	fileMAC = "./test/manifest"
+	m := &umac{}
+	m.load()
 	return m
 }
 
