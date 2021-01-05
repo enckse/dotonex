@@ -1,1 +1,11 @@
-hostap/hostap/
+bin/
+certs/*
+radiucal.*
+tests/plugins/
+tests/log/
+tests/admin/config/
+plugins/**/tests/
+radiucal
+authem-*
+radiucal-runner
+*.deb
