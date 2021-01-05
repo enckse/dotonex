@@ -1,4 +1,4 @@
-package management
+package authem
 
 import (
 	"fmt"
@@ -40,7 +40,7 @@ type (
 		Net         string
 	}
 
-	// UserPermissions reflect controlled permissions for a user within all of management
+	// UserPermissions reflect controlled permissions for a user within all of authem
 	UserPermissions struct {
 		IsRADIUS bool
 		IsPEAP   bool
@@ -119,7 +119,7 @@ func (u *User) Inflate(key string, secrets []*Secret) error {
 	return fmt.Errorf("user secrets not configured")
 }
 
-// GetKey retrieves the management key used for secrets
+// GetKey retrieves the authem key used for secrets
 func GetKey(optional bool) (string, error) {
 	k := os.Getenv("AUTHEM_KEY")
 	if strings.TrimSpace(k) == "" {
