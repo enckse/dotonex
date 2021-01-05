@@ -14,26 +14,16 @@ import (
 type (
 	logger struct {
 	}
-	userAuth struct {
+	userMAC struct {
 	}
 	access struct {
 	}
 )
 
 var (
-	lockUserAuth     = &sync.Mutex{}
-	userAuthManifest = make(map[string]bool)
+	lockUserMAC = &sync.Mutex{}
+	manifest    = make(map[string]bool)
 )
-
-// SetUserAuths does a lock-safe update the set of user+mac combinations
-func SetUserAuths(set []string) {
-	lockUserAuth.Lock()
-	defer lockUserAuth.Unlock()
-	userAuthManifest = make(map[string]bool)
-	for _, u := range set {
-		userAuthManifest[u] = true
-	}
-}
 
 func (l *access) Name() string {
 	return "access"
@@ -90,18 +80,18 @@ func (l *logger) write(mode ModuleMode, packet *ClientPacket) {
 	}()
 }
 
-func (l *userAuth) Name() string {
+func (l *userMAC) Name() string {
 	return "usermac"
 }
 
-func (l *userAuth) Setup(ctx *ModuleContext) error {
+func (l *userMAC) Setup(ctx *ModuleContext) error {
 	if !ctx.config.Gitlab.Enable {
 		return fmt.Errorf("Gitlab integration required for user MAC control")
 	}
 	return nil
 }
 
-func (l *userAuth) Process(packet *ClientPacket, mode ModuleMode) bool {
+func (l *userMAC) Process(packet *ClientPacket, mode ModuleMode) bool {
 	if mode == PreProcess {
 		return l.checkUserMac(packet) == nil
 	}
@@ -118,7 +108,7 @@ func clean(in string) string {
 	return result
 }
 
-func (l *userAuth) checkUserMac(p *ClientPacket) error {
+func (l *userMAC) checkUserMac(p *ClientPacket) error {
 	username, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
@@ -132,9 +122,9 @@ func (l *userAuth) checkUserMac(p *ClientPacket) error {
 	fqdn := core.NewManifestEntry(username, calling)
 	success := true
 	var failure error
-	lockUserAuth.Lock()
-	_, ok := userAuthManifest[fqdn]
-	lockUserAuth.Unlock()
+	lockUserMAC.Lock()
+	_, ok := manifest[fqdn]
+	lockUserMAC.Unlock()
 	if !ok {
 		failure = fmt.Errorf("failed preauth: %s %s", username, calling)
 		success = false
@@ -143,7 +133,7 @@ func (l *userAuth) checkUserMac(p *ClientPacket) error {
 	return failure
 }
 
-func (l *userAuth) mark(success bool, user, calling string, p *ClientPacket, cached bool) {
+func (l *userMAC) mark(success bool, user, calling string, p *ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -191,7 +181,7 @@ func LoadModule(name string, ctx *ModuleContext) (Module, error) {
 func getModule(name string) (Module, error) {
 	switch name {
 	case "usermac":
-		return &userAuth{}, nil
+		return &userMAC{}, nil
 	case "log":
 		return &logger{}, nil
 	case "access":
