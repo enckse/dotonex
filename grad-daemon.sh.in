@@ -5,8 +5,7 @@ _randomstring() {
 }
 
 _init() {
-    local pass cwd
-    echo "performing first-time grad setup"
+    local pass
     pass=$(_randomstring)
     mkdir -p HOSTAPD
     chmod 600 HOSTAPD
@@ -14,9 +13,7 @@ _init() {
     sed -i "s/{PASSWORD}/$pass/g" HOSTAPD/*.cnf
     pass=$(_randomstring)
     echo "127.0.0.1 $pass" > CLIENTS
-    cd HOSTAPD && ./bootstrap
     echo "$pass" > GRADKEY
-    cwd=$PWD
 }
 
 if [ ! -d HOSTAPD ]; then
