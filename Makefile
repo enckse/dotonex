@@ -14,8 +14,6 @@ build: $(EXES) $(HOSTAPD) test lint
 $(UTESTS):
 	cd $@ && go test -v
 
-test: $(UTESTS)
-
 $(EXES): $(SRC)
 	go build -o $@ $(FLAGS) cmd/$@/main.go
 

@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"net"
 	"testing"
 
 	"layeh.com/radius"
@@ -43,6 +45,46 @@ func TestPreAuthNoMods(t *testing.T) {
 	ctx := &Context{}
 	if ctx.authorize(nil, preMode) != successCode {
 		t.Error("should have passed, nothing to do")
+	}
+}
+
+func TestSecrets(t *testing.T) {
+	ctx, p := getPacket(t)
+	ctx.packet(p)
+	p.Packet.Secret = []byte("test")
+	if ctx.authorize(p, preMode) != badSecretCode {
+		t.Error("different secrets")
+	}
+	ctx, p = getPacket(t)
+	if ctx.authorize(p, preMode) != successCode {
+		t.Error("same secrets")
+	}
+	ctx.secrets = make(map[string][]byte)
+	ctx.secrets["10."] = []byte("invalid")
+	ctx.secrets["10.100."] = p.Packet.Secret
+	ctx.secrets["10.10.1."] = []byte("invalid")
+	if ctx.authorize(p, preMode) != badSecretCode {
+		t.Error("no addr but secrets")
+	}
+	addr, err := net.ResolveUDPAddr("udp", "10.10.1.100:1234")
+	if err != nil {
+		t.Error("invalid udp test addr")
+	}
+	p.ClientAddr = addr
+	if ctx.authorize(p, preMode) != badSecretCode {
+		t.Error("no matching secrets")
+	}
+	ctx.secrets["10.10.1.10"] = p.Packet.Secret
+	if ctx.authorize(p, preMode) != successCode {
+		t.Error("matching secrets")
+	}
+	ctx.secrets["10.10.1.10"] = []byte("failure")
+	if ctx.authorize(p, preMode) != badSecretCode {
+		t.Error("no matching secrets, yet again")
+	}
+	ctx.secrets["0.0.0.0"] = p.Packet.Secret
+	if ctx.authorize(p, preMode) != successCode {
+		t.Error("matching secrets")
 	}
 }
 
@@ -121,6 +163,76 @@ func getPacket(t *testing.T) (*Context, *ClientPacket) {
 		t.Error("unable to encode")
 	}
 	return c, NewClientPacket(b, nil)
+}
+
+func checkOneSecret(dir, filename, ip, secret string, t *testing.T) {
+	s, err := parseSecretMappings(dir + filename)
+	if len(s) != 1 || err != nil || !bytes.Equal(s[ip], []byte(secret)) {
+		t.Error("invalid secret: " + filename)
+	}
+}
+
+func TestSecretMappings(t *testing.T) {
+	dir := "../../tests/"
+	_, err := parseSecretMappings(dir + "nofile")
+	if err.Error() != "no secrets file" {
+		t.Error("file does not exist")
+	}
+	s, err := parseSecretMappings(dir + "emptysecrets")
+	if len(s) != 0 || err != nil {
+		t.Error("file is empty")
+	}
+	checkOneSecret(dir, "nosecrets", "192.168.1.1", "nosecret", t)
+	checkOneSecret(dir, "onesecret", "127.0.0.1", "mysecretkey", t)
+	s, err = parseSecretMappings(dir + "noopsecret")
+	if len(s) != 0 || err != nil {
+		t.Error("file is empty")
+	}
+	s, err = parseSecretMappings(dir + "multisecret")
+	if err != nil {
+		t.Error("invalid mappings, error")
+	}
+	if len(s) != 4 {
+		t.Error("invalid multimapping")
+	}
+	expected := make(map[string]string)
+	expected["192.168.1.1"] = "a"
+	expected["172.168.1.1"] = "b"
+	expected["127.0.0.1"] = "test"
+	expected["10.10.10.10"] = "xyz"
+	for k, v := range expected {
+		if !bytes.Equal(s[k], []byte(v)) {
+			t.Error("mismatch mapping:" + k)
+		}
+	}
+}
+
+func TestSecretParsing(t *testing.T) {
+	dir := "../../tests/"
+	_, err := parseSecretFile(dir + "nofile")
+	if err.Error() != "no secrets file" {
+		t.Error("file does not exist")
+	}
+	_, err = parseSecretFile(dir + "emptysecrets")
+	if err.Error() != "no secrets found" {
+		t.Error("file is empty")
+	}
+	_, err = parseSecretFile(dir + "nosecrets")
+	if err.Error() != "no secrets found" {
+		t.Error("file is empty")
+	}
+	s, _ := parseSecretFile(dir + "onesecret")
+	if s != "mysecretkey" {
+		t.Error("wrong parsed key")
+	}
+	s, _ = parseSecretFile(dir + "multisecret")
+	if s != "test" {
+		t.Error("wrong parsed key")
+	}
+	_, err = parseSecretFile(dir + "noopsecret")
+	if err.Error() != "no secrets found" {
+		t.Error("empty key")
+	}
 }
 
 func TestAcctNoMods(t *testing.T) {

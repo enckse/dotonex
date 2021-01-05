@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"os/signal"
 	"sync"
 	"time"
 
@@ -150,7 +151,7 @@ func main() {
 	if err := yaml.Unmarshal(b, conf); err != nil {
 		core.Fatal("unable to parse config", err)
 	}
-	conf.Defaults()
+	conf.Defaults(b)
 	if p.Debug {
 		conf.Dump()
 	}
@@ -166,6 +167,7 @@ func main() {
 	}
 
 	ctx := &server.Context{Debug: p.Debug}
+	ctx.FromConfig(conf.Dir, conf)
 	pCtx := server.NewModuleContext(conf)
 	for _, p := range conf.Plugins {
 		core.WriteInfo("loading module", p)
@@ -176,23 +178,64 @@ func main() {
 		ctx.AddModule(obj)
 	}
 
-	logBuffer := time.Duration(conf.Logs) * time.Second
+	if !conf.Internals.NoLogs {
+		logBuffer := time.Duration(conf.Internals.Logs) * time.Second
+		go func() {
+			for {
+				time.Sleep(logBuffer)
+				if ctx.Debug {
+					core.WriteDebug("flushing logs")
+				}
+				server.WriteModuleMessages(conf.Log, p.Instance)
+			}
+		}()
+	}
+	interrupt := make(chan bool)
+	if !conf.Internals.NoInterrupt {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		go func() {
+			for range c {
+				if ctx.Debug {
+					core.WriteDebug("interrupt signal received")
+				}
+				interrupt <- true
+			}
+		}()
+	}
+	lifecycle := make(chan bool)
+	check := time.Duration(conf.Internals.SpanCheck) * time.Hour
+	end := time.Now().Add(time.Duration(conf.Internals.Lifespan) * time.Hour)
 	go func() {
 		for {
-			time.Sleep(logBuffer)
+			time.Sleep(check)
 			if ctx.Debug {
-				core.WriteDebug("flushing logs")
+				core.WriteDebug("lifespan wakeup")
 			}
-			server.WriteModuleMessages(conf.Log, p.Instance)
+			now := time.Now()
+			if !core.IntegerIn(now.Hour(), conf.Internals.LifeHours) {
+				if ctx.Debug {
+					core.WriteDebug("lifespan in quiet hours")
+				}
+				continue
+			}
+			if now.After(end) {
+				lifecycle <- true
+			}
 		}
 	}()
-
 	if conf.Accounting {
 		core.WriteInfo("accounting mode")
-		account(ctx)
+		go account(ctx)
 	} else {
 		core.WriteInfo("proxy mode")
-		runProxy(ctx)
+		go runProxy(ctx)
+	}
+	select {
+	case <-interrupt:
+		core.WriteInfo("interrupt...")
+	case <-lifecycle:
+		core.WriteInfo("lifecyle...")
 	}
 	server.WriteModuleMessages(conf.Log, p.Instance)
 	os.Exit(0)

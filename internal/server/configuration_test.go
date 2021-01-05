@@ -2,11 +2,13 @@ package server
 
 import (
 	"testing"
+
+	"voidedtech.com/radiucal/internal/core"
 )
 
 func TestDefaults(t *testing.T) {
 	c := &Configuration{}
-	c.Defaults()
+	c.Defaults([]byte{})
 	if c.Host != "localhost" {
 		t.Error("invalid default host")
 	}
@@ -22,7 +24,19 @@ func TestDefaults(t *testing.T) {
 	if c.Bind != 1812 {
 		t.Error("invalid port")
 	}
-	if c.Logs != 10 {
+	if c.Internals.Logs != 10 {
 		t.Error("invalid log buffer")
+	}
+	if c.Internals.SpanCheck != 1 {
+		t.Error("invalid span check")
+	}
+	if c.Internals.Lifespan != 12 {
+		t.Error("invalid lifespan")
+	}
+	l := c.Internals.LifeHours
+	for _, o := range []int{22, 23, 0, 1, 2, 3, 4, 5} {
+		if !core.IntegerIn(o, l) {
+			t.Error("invalid hour defaults")
+		}
 	}
 }
