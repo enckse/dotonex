@@ -29,8 +29,8 @@ type (
 	Config struct {
 		Key    string
 		Cache  string
-		deploy bool
-		diffs  bool
+		Diffs  bool
+		Deploy bool
 	}
 
 	configuratorError struct {
@@ -63,15 +63,15 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 			}
 			switch f {
 			case manifest:
-				if core.Compare(b, manifestBytes, cfg.diffs) {
+				if core.Compare(b, manifestBytes, cfg.Diffs) {
 					valid++
 				}
 			case eap:
-				if core.Compare(b, hostapdBytes, cfg.diffs) {
+				if core.Compare(b, hostapdBytes, cfg.Diffs) {
 					valid++
 				}
 			case usersCfg:
-				if core.Compare(b, users, cfg.diffs) {
+				if core.Compare(b, users, cfg.Diffs) {
 					valid++
 				}
 			default:
@@ -91,7 +91,7 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 		for _, f := range paths {
 			p := filepath.Join(f, k)
 			data := v
-			if f != TempDir && k == usersCfg && cfg.deploy {
+			if f != TempDir && k == usersCfg && cfg.Deploy {
 				data = rawConfig
 			}
 			if err := ioutil.WriteFile(p, data, 0644); err != nil {
@@ -110,8 +110,8 @@ func getConfig(f string) (*Config, error) {
 		}
 		return &Config{
 			Key:    k,
-			diffs:  true,
-			deploy: false,
+			Diffs:  true,
+			Deploy: false,
 		}, nil
 	}
 	c := &Config{}
@@ -122,8 +122,6 @@ func getConfig(f string) (*Config, error) {
 	if err := yaml.Unmarshal(b, &c); err != nil {
 		return nil, err
 	}
-	c.deploy = true
-	c.diffs = false
 	return c, nil
 }
 
@@ -131,7 +129,7 @@ func hash(value string) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(value)))
 }
 
-func configurate(cfg string, scripts []string) error {
+func configurate(cfg string, scripts []string, scripting bool) error {
 	config, err := getConfig(cfg)
 	if err != nil {
 		return err
@@ -210,7 +208,7 @@ func configurate(cfg string, scripts []string) error {
 	if err != nil {
 		return err
 	}
-	postScript := false
+	postScript := scripting
 	if same {
 		core.WriteInfoDetail("no changes")
 	} else {
@@ -239,8 +237,8 @@ func configurate(cfg string, scripts []string) error {
 }
 
 // Configurate processes configuration for actual deployment/production
-func Configurate(cfg string, scripts []string) {
-	err := configurate(cfg, scripts)
+func Configurate(cfg string, scripts []string, forceScript bool) {
+	err := configurate(cfg, scripts, forceScript)
 	if err != nil {
 		if _, ok := err.(*configuratorError); !ok {
 			core.ExitNow("unable to configure", err)
