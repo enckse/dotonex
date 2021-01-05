@@ -8,8 +8,8 @@ _init() {
     local pass cwd
     echo "performing first-time grad setup"
     pass=$(_randomstring)
-    mkdir -p LIBRARY HOSTAPD
-    chmod 600 LIBRARY
+    mkdir -p HOSTAPD
+    chmod 600 HOSTAPD
     cp TEMPLATE* HOSTAPD/
     sed -i "s/{PASSWORD}/$pass/g" HOSTAPD/*.cnf
     pass=$(_randomstring)
@@ -19,13 +19,8 @@ _init() {
     cwd=$PWD
 }
 
-if [ ! -d LIBRARY ]; then
+if [ ! -d HOSTAPD ]; then
     _init
-fi
-
-if [ ! -d LOGS ]; then
-    mkdir -p LOGS
-    chown 600 LOGS
 fi
 
 yesterday=""

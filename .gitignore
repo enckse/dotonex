@@ -4,4 +4,3 @@ bin/
 grad
 grad-daemon.sh
 hostapd.conf
-grad.conf

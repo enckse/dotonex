@@ -5,16 +5,13 @@ UTESTS      := $(shell find . -type f -name "*_test.go" | xargs dirname | sort -
 SRC         := $(shell find . -type f -name "*.go" | grep -v "test")
 HOSTAP_VERS := hostap_2_9
 HOSTAPD     := hostap/hostap/hostapd/hostapd
-CONFIG_IN   := $(shell find . -type f -name "*.in" | xargs -n1 basename | sed "s/\.in//g")
+CONFIG_IN   := grad-daemon.sh hostap/hostapd.conf
 LIBRARY     := /var/lib/grad
 ETC         := /etc/grad
 TEMPLATE    := $(ETC)/hostapd
 LIB_HOSTAPD := $(LIBRARY)/hostapd
-SRCAUTHPORT := 1812
-SRCACCTPORT := 1813
-DSTACCTPORT := 1815
-DSTAUTHPORT := 1814
-LOGS        := /var/log/grad
+ACCTPORT    := 1815
+AUTHPORT    := 1814
 
 .PHONY: $(UTESTS) $(CONFIG_IN) build test lint clean
 
@@ -26,13 +23,9 @@ $(CONFIG_IN):
 	   -DTEMPLATE=$(TEMPLATE) \
 	   -DCLIENTS=$(LIB_HOSTAPD)/clients \
 	   -DGRADKEYS=$(LIBRARY)key \
-	   -DSRCAUTHPORT=$(SRCAUTHPORT) \
-	   -DDSTAUTHPORT=$(DSTAUTHPORT) \
-	   -DSRCACCTPORT=$(SRCACCTPORT) \
+	   -DAUTHPORT=$(AUTHPORT) \
 	   -DETCGRAD=$(ETC) \
-	   -DLOGS=$(LOGS) \
-	   -DLIBRARY=$(LIBRARY) \
-	   -DDSTACCTPORT=$(DSTACCTPORT) $@.in > $@
+	   -DACCTPORT=$(ACCTPOR) $@.in > $@
 
 $(UTESTS):
 	cd $@ && go test -v
