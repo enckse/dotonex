@@ -1,4 +1,7 @@
 # hostapd configuration for use with grad
+define(WORKDIR, /var/lib/grad/hostapd)dnl
+define(AUTHPORT, 1814)dnl
+define(ACCTPORT, 1815)dnl
 
 # driver none, we just want to be a server
 driver=none
@@ -10,15 +13,15 @@ logger_stdout_level=4
 
 # we _do_ want to handle EAP please
 eap_server=1 
-eap_user_file=HOSTAPD/eap_users
+eap_user_file=WORKDIR/eap_users
 
 # and we want to be a radius server, cause that's cool
-radius_server_clients=CLIENTS
+radius_server_clients=WORKDIR/clients
 radius_server_auth_port=AUTHPORT
 radius_server_acct_port=ACCTPORT
 
 # we have some certs we'll generate
-ca_cert=HOSTAPD/ca.pem
-server_cert=HOSTAPD/server.pem
-private_key=HOSTAPD/server.key
+ca_cert=WORKDIR/ca.pem
+server_cert=WORKDIR/server.pem
+private_key=WORKDIR/server.key
 private_key_passwd={password}
