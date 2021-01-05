@@ -4,15 +4,15 @@ import (
 	"testing"
 )
 
-func TestNewModuleContext(t *testing.T) {
-	c := NewModuleContext(&Configuration{Dir: "test"})
+func TestNewPluginContext(t *testing.T) {
+	c := NewPluginContext(&Configuration{Dir: "test"})
 	if c.Lib != "test" {
 		t.Error("invalid context")
 	}
 }
 
 func TestCloneContext(t *testing.T) {
-	c := NewModuleContext(&Configuration{Dir: "test"}).CloneContext()
+	c := NewPluginContext(&Configuration{Dir: "test"}).CloneContext()
 	if c.Lib != "test" {
 		t.Error("invalid context")
 	}
