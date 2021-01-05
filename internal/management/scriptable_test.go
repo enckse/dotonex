@@ -34,16 +34,18 @@ func TestToScriptable(t *testing.T) {
 	u.Systems = []UserSystem{UserSystem{ID: "test", Type: "sys1", MACs: []MACMap{MACMap{VLAN: "test1", MACs: []string{"aabbccddeeff", "112233445566"}}, MACMap{VLAN: "test2", MACs: []string{"aabbccddeeff"}}}}}
 	u2 := &User{}
 	u2.LoginAs = "test1"
-	scriptable := ToScriptable(UserConfig{[]*User{u, u2}}, sVlans, sSystems)
+	secrets := []*Secret{}
+	secrets = append(secrets, &Secret{UserName: "test", Password: "pass"})
+	scriptable := ToScriptable(UserConfig{[]*User{u, u2}}, sVlans, sSystems, secrets)
 	if len(scriptable.VLANs) != 2 || len(scriptable.Systems) != 2 || len(scriptable.Users) != 2 {
 		t.Error("invalid conversion")
 	}
 	user := scriptable.Users[1]
-	if user.UserName != "" || user.LoginName != "test1" {
+	if user.UserName != "" || user.LoginName != "test1" || user.Password != "" {
 		t.Error("invalid user conversion - login")
 	}
 	user = scriptable.Users[0]
-	if user.UserName != "test" || user.LoginName != "test" {
+	if user.UserName != "test" || user.LoginName != "test" || user.Password != "pass" {
 		t.Error("invalid user conversion")
 	}
 	if len(user.VLANs) != 3 || len(user.Systems) != 1 {

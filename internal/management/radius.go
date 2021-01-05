@@ -87,7 +87,7 @@ func MergeRADIUS(u []*UserRADIUS) (*RADIUSConfig, error) {
 }
 
 // ForRADIUS converts a user for radius usage
-func (u User) ForRADIUS(vlans []*VLAN, systems []*System) (*UserRADIUS, error) {
+func (u User) ForRADIUS(vlans []*VLAN, systems []*System, options RADIUSOptions) (*UserRADIUS, error) {
 	if !u.Perms.IsRADIUS {
 		return nil, fmt.Errorf("user disabled in RADIUS")
 	}

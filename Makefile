@@ -6,6 +6,7 @@ SRC         := $(shell find . -type f -name "*.go" | grep -v "test")
 HOSTAP_VERS := hostap_2_9
 HOSTAPD     := hostap/hostap/hostapd/hostapd
 
+
 .PHONY: $(UTESTS) build test lint clean
 
 build: $(EXES) $(HOSTAPD) test lint
@@ -26,4 +27,4 @@ clean:
 	rm -rf hostap/hostap
 
 $(HOSTAPD):
-	cd hostap && ./configure $(HOSTAP_VERS)
+	cd hostap && ./configure $(HOSTAP_VERSION)
