@@ -7,8 +7,7 @@ HOSTAP_VERS := hostap_2_9
 HOSTAPD     := hostap/hostap/hostapd/hostapd
 CONFIG_IN   := grad-daemon.sh hostap/hostapd.conf
 LIBRARY     := /var/lib/grad
-ETC         := /etc/grad
-TEMPLATE    := $(ETC)/hostapd
+TEMPLATE    := /etc/grad/hostapd
 LIB_HOSTAPD := $(LIBRARY)/hostapd
 ACCTPORT    := 1815
 AUTHPORT    := 1814
@@ -24,7 +23,6 @@ $(CONFIG_IN):
 	   -DCLIENTS=$(LIB_HOSTAPD)/clients \
 	   -DGRADKEYS=$(LIBRARY)key \
 	   -DAUTHPORT=$(AUTHPORT) \
-	   -DETCGRAD=$(ETC) \
 	   -DACCTPORT=$(ACCTPOR) $@.in > $@
 
 $(UTESTS):

@@ -24,13 +24,5 @@ if [ ! -d HOSTAPD ]; then
 fi
 
 while [ 1 -eq 1]; do
-    if ! pgrep hostapd > /dev/null; then
-        echo "starting hostapd"
-        hostapd HOSTAPD/hostapd.conf
-    fi
-    if ! pgrep grad > /dev/null; then
-        echo "starting grad"
-        grad serve ETCGRAD/grad.conf
-    fi
     sleep 30;
 done
