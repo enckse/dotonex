@@ -1,0 +1,113 @@
+users:
+- username: test
+  fullname: ""
+  md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
+  vlans:
+  - dev
+  - prod
+  systems:
+  - type: "y"
+    id: a
+    macs:
+    - vlan: dev
+      macs:
+      - aabbccddeeff
+      mab: true
+  perms:
+    isradius: true
+    ispeap: true
+    isroot: false
+    extended: []
+    trusts:
+    - test3
+    - test4
+  loginas: ""
+- username: test2
+  fullname: ""
+  md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
+  vlans:
+  - prod
+  systems:
+  - type: "y"
+    id: a
+    macs:
+    - vlan: prod
+      macs:
+      - aabbccddee11
+      mab: false
+  perms:
+    isradius: true
+    ispeap: true
+    isroot: true
+    extended: []
+    trusts:
+    - test
+    - test5
+  loginas: ""
+- username: test3
+  fullname: ""
+  md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
+  vlans: []
+  systems: []
+  perms:
+    isradius: false
+    ispeap: false
+    isroot: false
+    extended: []
+    trusts: []
+  loginas: ""
+- username: test4
+  fullname: ""
+  md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
+  vlans:
+  - dev
+  - prod
+  systems:
+  - type: "y"
+    id: a
+    macs:
+    - vlan: dev
+      macs:
+      - aa11ccddeeff
+      mab: true
+  perms:
+    isradius: true
+    ispeap: false
+    isroot: false
+    extended: []
+    trusts:
+    - test6
+  loginas: ""
+- username: test5
+  fullname: ""
+  md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
+  vlans: []
+  systems: []
+  perms:
+    isradius: false
+    ispeap: false
+    isroot: false
+    extended: []
+    trusts: []
+  loginas: ""
+- username: test6
+  fullname: ""
+  md4: 179fb8ff64e23a44b9b70b22b3c6759b39c841f62da80adbdba97aa2804aeefe
+  vlans:
+  - dev
+  - prod
+  systems:
+  - type: "y"
+    id: a
+    macs:
+    - vlan: dev
+      macs:
+      - aabbccddee12
+      mab: true
+  perms:
+    isradius: false
+    ispeap: true
+    isroot: false
+    extended: []
+    trusts: []
+  loginas: ""

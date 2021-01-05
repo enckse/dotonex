@@ -17,15 +17,18 @@ import (
 )
 
 const (
+	// NoTrace indicates no tracing to occur
+	NoTrace TraceType = 0
+	// TraceRequest indicate to trace the request
+	TraceRequest TraceType = 1
 	// AccountingMode for accounting
 	AccountingMode = "accounting"
+	// TracingMode for tracing
+	TracingMode = "trace"
 	// PreAuthMode for pre-auth
 	PreAuthMode = "preauth"
 	// PostAuthMode for post-auth
 	PostAuthMode = "postauth"
-	PreProcess ModuleMode = 1
-	PostProcess ModuleMode = 2
-	AccountingProcess ModuleMode = 3
 )
 
 var (
@@ -40,8 +43,11 @@ type (
 		data *ClientPacket
 		mode string
 	}
+	// TraceType indicates how to trace a request
+	TraceType int
 
-	ModuleMode int
+	// NoopCall represents module calls that perform no operation (mocks)
+	NoopCall func(string, TraceType, *ClientPacket)
 
 	// ModuleContext is the context given to a module
 	ModuleContext struct {
@@ -55,7 +61,30 @@ type (
 	Module interface {
 		Setup(*ModuleContext) error
 		Name() string
-		Process(*ClientPacket, ModuleMode) bool
+	}
+
+	// PreAuth represents the interface required to pre-authorize a packet
+	PreAuth interface {
+		Module
+		Pre(*ClientPacket) bool
+	}
+
+	// PostAuth represents the interface required to post-authorize a packet
+	PostAuth interface {
+		Module
+		Post(*ClientPacket) bool
+	}
+
+	// Tracing represents the interface required to trace requests
+	Tracing interface {
+		Module
+		Trace(TraceType, *ClientPacket)
+	}
+
+	// Accounting represents the interface required to handle accounting
+	Accounting interface {
+		Module
+		Account(*ClientPacket)
 	}
 
 	// ClientPacket represents the radius packet from the client
@@ -120,6 +149,66 @@ func (packet *RequestDump) DumpPacket(kv KeyValue) []string {
 		results = append(results, m)
 	}
 	return results
+}
+
+// Disabled indicates if a given mode is disabled
+func Disabled(mode string, modes []string) bool {
+	if len(modes) == 0 {
+		return false
+	}
+	for _, m := range modes {
+		if m == mode {
+			return true
+		}
+	}
+	return false
+}
+
+// NoopPost is a no-operation post authorization call
+func NoopPost(packet *ClientPacket, call NoopCall) bool {
+	return noopAuth(PostAuthMode, packet, call)
+}
+
+// NoopPre is a no-operation pre authorization call
+func NoopPre(packet *ClientPacket, call NoopCall) bool {
+	return noopAuth(PreAuthMode, packet, call)
+}
+
+func noopAuth(mode string, packet *ClientPacket, call NoopCall) bool {
+	call(mode, NoTrace, packet)
+	return true
+}
+
+func isFlagged(list []string, name string) bool {
+	for _, v := range list {
+		if name == v {
+			return true
+		}
+	}
+	return false
+}
+
+// DisabledModes returns the modes disable for module
+func DisabledModes(m Module, ctx *ModuleContext) []string {
+	name := m.Name()
+	noAccounting := isFlagged(ctx.config.Disable.Accounting, name)
+	noTracing := isFlagged(ctx.config.Disable.Trace, name)
+	noPreauth := isFlagged(ctx.config.Disable.Preauth, name)
+	noPostauth := isFlagged(ctx.config.Disable.Postauth, name)
+	var modes []string
+	if noAccounting {
+		modes = append(modes, AccountingMode)
+	}
+	if noTracing {
+		modes = append(modes, TracingMode)
+	}
+	if noPreauth {
+		modes = append(modes, PreAuthMode)
+	}
+	if noPostauth {
+		modes = append(modes, PostAuthMode)
+	}
+	return modes
 }
 
 func newFile(path, instance string, appending bool) *os.File {

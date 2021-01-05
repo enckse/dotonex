@@ -42,6 +42,10 @@ type (
 	Context struct {
 		Debug     bool
 		secret    []byte
+		preauths  []PreAuth
+		postauths []PostAuth
+		accts     []Accounting
+		traces    []Tracing
 		modules   []Module
 		secrets   map[string][]byte
 		noReject  bool
@@ -49,14 +53,39 @@ type (
 		postauth bool
 		preauth  bool
 		acct     bool
+		trace    bool
 		module   bool
 	}
 )
+
+// AddTrace adds a tracing check to the context
+func (ctx *Context) AddTrace(t Tracing) {
+	ctx.trace = true
+	ctx.traces = append(ctx.traces, t)
+}
+
+// AddPreAuth adds a pre-authorization check to the context
+func (ctx *Context) AddPreAuth(p PreAuth) {
+	ctx.preauth = true
+	ctx.preauths = append(ctx.preauths, p)
+}
+
+// AddPostAuth adds a post-authorization check to the context
+func (ctx *Context) AddPostAuth(p PostAuth) {
+	ctx.postauth = true
+	ctx.postauths = append(ctx.postauths, p)
+}
 
 // AddModule adds a general model to the context
 func (ctx *Context) AddModule(m Module) {
 	ctx.module = true
 	ctx.modules = append(ctx.modules, m)
+}
+
+// AddAccounting adds an accounting check to the context
+func (ctx *Context) AddAccounting(a Accounting) {
+	ctx.acct = true
+	ctx.accts = append(ctx.accts, a)
 }
 
 // PostAuthorize performs packet post-authorization (after radius check)
@@ -79,6 +108,7 @@ func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode
 		return successCode
 	}
 	valid := successCode
+	traceMode := NoTrace
 	preauthing := false
 	receiving := false
 	postauthing := false
@@ -86,11 +116,14 @@ func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode
 	case preMode:
 		receiving = true
 		preauthing = ctx.preauth
+		traceMode = TraceRequest
 		break
 	case postMode:
 		postauthing = ctx.postauth
+		traceMode = TraceRequest
 	}
-	if preauthing || postauthing || receiving {
+	tracing := ctx.trace && traceMode != NoTrace
+	if preauthing || postauthing || tracing || receiving {
 		ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
@@ -107,14 +140,14 @@ func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode
 			var code ReasonCode
 			if preauthing {
 				checking = getAuthChecker(true)
-				for _, m := range ctx.modules {
+				for _, m := range ctx.preauths {
 					checks = append(checks, m)
 				}
 				code = preAuthCode
 			}
 			if postauthing {
 				checking = getAuthChecker(false)
-				for _, m := range ctx.modules {
+				for _, m := range ctx.postauths {
 					checks = append(checks, m)
 				}
 				code = postAuthCode
@@ -127,6 +160,11 @@ func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode
 					}
 				}
 			}
+			if tracing {
+				for _, mod := range ctx.traces {
+					mod.Trace(traceMode, packet)
+				}
+			}
 		}
 	}
 	return valid
@@ -135,9 +173,9 @@ func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode
 func getAuthChecker(preauthing bool) authCheck {
 	return func(m Module, p *ClientPacket) bool {
 		if preauthing {
-			return m.Process(p, PreProcess)
+			return m.(PreAuth).Pre(p)
 		}
-		return m.Process(p, PostProcess)
+		return m.(PostAuth).Post(p)
 	}
 }
 
@@ -303,13 +341,13 @@ func (ctx *Context) Account(packet *ClientPacket) {
 		return
 	}
 	if ctx.acct {
-		for _, mod := range ctx.modules {
-			mod.Process(packet, AccountingProcess)
+		for _, mod := range ctx.accts {
+			mod.Account(packet)
 		}
 	}
 }
 
-// HandleAuth handles the actual authorization checks (e.g. pre, post, etc.)
+// HandleAuth handles the actual authorization checks (e.g. pre, post, trace, etc.)
 func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
 	packet, authCode := fxn(ctx, b, addr)
 	authed := authCode == successCode

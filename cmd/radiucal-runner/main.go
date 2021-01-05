@@ -177,6 +177,18 @@ func main() {
 		if err != nil {
 			core.Fatal(fmt.Sprintf("unable to load module: %s", p), err)
 		}
+		if i, ok := obj.(server.Accounting); ok {
+			ctx.AddAccounting(i)
+		}
+		if i, ok := obj.(server.Tracing); ok {
+			ctx.AddTrace(i)
+		}
+		if i, ok := obj.(server.PreAuth); ok {
+			ctx.AddPreAuth(i)
+		}
+		if i, ok := obj.(server.PostAuth); ok {
+			ctx.AddPostAuth(i)
+		}
 		ctx.AddModule(obj)
 	}
 

@@ -1,8 +1,12 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"log"
 	"strconv"
+	"time"
 
 	"io/ioutil"
 	"net"
@@ -15,15 +19,28 @@ import (
 )
 
 type (
+	tracer struct {
+		modes []string
+	}
+
+	logTrace struct {
+		io.Writer
+		data  bytes.Buffer
+		modes []string
+	}
 	logger struct {
+		modes []string
 	}
 	umac struct {
+		modes []string
 	}
 	access struct {
+		modes []string
 	}
 )
 
 var (
+	ModuleDebug   tracer
 	ModuleLog     logger
 	lockMAC       = &sync.Mutex{}
 	fileMAC       string
@@ -37,16 +54,31 @@ func (l *access) Name() string {
 }
 
 func (l *access) Setup(ctx *ModuleContext) error {
+	l.modes = DisabledModes(l, ctx)
 	return nil
 }
 
-func (l *access) Process(packet *ClientPacket, mode ModuleMode) bool {
-	l.write(mode, packet)
-	return true
+func (l *access) Pre(packet *ClientPacket) bool {
+	return NoopPre(packet, l.write)
 }
 
-func (l *access) write(mode ModuleMode, packet *ClientPacket) {
+func (l *access) Post(packet *ClientPacket) bool {
+	return NoopPost(packet, l.write)
+}
+
+func (l *access) Trace(t TraceType, packet *ClientPacket) {
+	l.write(TracingMode, t, packet)
+}
+
+func (l *access) Account(packet *ClientPacket) {
+	l.write(AccountingMode, NoTrace, packet)
+}
+
+func (l *access) write(mode string, objType TraceType, packet *ClientPacket) {
 	go func() {
+		if Disabled(mode, l.modes) {
+			return
+		}
 		username, err := rfc2865.UserName_LookupString(packet.Packet)
 		if err != nil {
 			username = ""
@@ -57,7 +89,7 @@ func (l *access) write(mode ModuleMode, packet *ClientPacket) {
 		}
 		kv := KeyValueStore{}
 		kv.DropEmpty = true
-		kv.Add("Mode", fmt.Sprintf("%d", mode))
+		kv.Add("Mode", fmt.Sprintf("%s", mode))
 		kv.Add("Code", packet.Packet.Code.String())
 		kv.Add("Id", strconv.Itoa(int(packet.Packet.Identifier)))
 		kv.Add("User-Name", username)
@@ -66,23 +98,89 @@ func (l *access) write(mode ModuleMode, packet *ClientPacket) {
 	}()
 }
 
+func (t *tracer) Name() string {
+	return "debugger"
+}
+
+func (t *tracer) Setup(ctx *ModuleContext) error {
+	t.modes = DisabledModes(t, ctx)
+	return nil
+}
+
+func (t *tracer) Pre(packet *ClientPacket) bool {
+	return NoopPre(packet, t.write)
+}
+
+func (t *tracer) Post(packet *ClientPacket) bool {
+	return NoopPost(packet, t.write)
+}
+
+func (t *tracer) Trace(objType TraceType, packet *ClientPacket) {
+	t.write(TracingMode, objType, packet)
+}
+
+func (t *tracer) Account(packet *ClientPacket) {
+	t.write(AccountingMode, NoTrace, packet)
+}
+
+func (t *logTrace) Write(b []byte) (int, error) {
+	return t.data.Write(b)
+}
+
+func (t *logTrace) dump() {
+	log.Println(t.data.String())
+}
+
+func (l *tracer) write(mode string, objType TraceType, packet *ClientPacket) {
+	go func() {
+		if Disabled(mode, l.modes) {
+			return
+		}
+		t := &logTrace{}
+		writeTrace(t, mode, objType, packet, time.Now())
+		t.dump()
+	}()
+}
+
+func writeTrace(tracing io.Writer, mode string, objType TraceType, packet *ClientPacket, t time.Time) {
+	dump := NewRequestDump(packet, mode)
+	for _, m := range dump.DumpPacket(KeyValue{Key: "TraceType", Value: fmt.Sprintf("%d", objType)}) {
+		tracing.Write([]byte(fmt.Sprintf("%s\n", m)))
+	}
+}
+
 func (l *logger) Name() string {
 	return "logger"
 }
 
 func (l *logger) Setup(ctx *ModuleContext) error {
+	l.modes = DisabledModes(l, ctx)
 	return nil
 }
 
-func (l *logger) Process(packet *ClientPacket, mode ModuleMode) bool {
-	l.write(mode, packet)
-	return true
+func (l *logger) Pre(packet *ClientPacket) bool {
+	return NoopPre(packet, l.write)
 }
 
-func (l *logger) write(mode ModuleMode, packet *ClientPacket) {
+func (l *logger) Post(packet *ClientPacket) bool {
+	return NoopPost(packet, l.write)
+}
+
+func (l *logger) Trace(t TraceType, packet *ClientPacket) {
+	l.write(TracingMode, t, packet)
+}
+
+func (l *logger) Account(packet *ClientPacket) {
+	l.write(AccountingMode, NoTrace, packet)
+}
+
+func (l *logger) write(mode string, objType TraceType, packet *ClientPacket) {
 	go func() {
-		dump := NewRequestDump(packet, fmt.Sprintf("%d", mode))
-		messages := dump.DumpPacket(KeyValue{})
+		if Disabled(mode, l.modes) {
+			return
+		}
+		dump := NewRequestDump(packet, mode)
+		messages := dump.DumpPacket(KeyValue{Key: "Info", Value: fmt.Sprintf("%d", int(objType))})
 		LogModuleMessages(l, messages)
 	}()
 }
@@ -126,11 +224,8 @@ func (l *umac) Setup(ctx *ModuleContext) error {
 	return nil
 }
 
-func (l *umac) Process(packet *ClientPacket, mode ModuleMode) bool {
-	if mode == PreProcess {
-		return l.checkUserMac(packet) == nil
-	}
-	return true
+func (l *umac) Pre(packet *ClientPacket) bool {
+	return l.checkUserMac(packet) == nil
 }
 
 func clean(in string) string {
@@ -219,6 +314,8 @@ func getModule(name string) (Module, error) {
 		return &ModuleUserMAC, nil
 	case "log":
 		return &ModuleLog, nil
+	case "debug":
+		return &ModuleDebug, nil
 	case "access":
 		return &ModuleAccess, nil
 	}
