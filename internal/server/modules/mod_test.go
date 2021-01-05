@@ -6,8 +6,8 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/grad/internal/external"
-	"voidedtech.com/grad/internal/server/processing"
+	"voidedtech.com/radiucal/internal/external"
+	"voidedtech.com/radiucal/internal/server/processing"
 )
 
 func TestAccess(t *testing.T) {

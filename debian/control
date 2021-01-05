@@ -1,14 +1,31 @@
-Source: grad
+Source: radiucal
 Section: admin
 Priority: optional
 Maintainer: Sean Enck <enckse@voidedtech.com>
 Build-Depends: debhelper (>= 11),git (>=2.19.1),golang-go (>=1.11) | golang-1.13 (>=1.13)
 Standards-Version: 4.1.3
-Homepage: https://cgit.voidedtech.com/grad
+Homepage: https://cgit.voidedtech.com/radiucal
 
-Package: grad
+Package: radiucal
 Architecture: amd64
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-Description: radius/802.1x proxy for hostapd using gitlab backend for user management
+         hostapd (>=2.4),
+         authem-sync,
+Description: radius/802.1x proxy for hostapd
  provides a proxy with plugin-support overtop hostapd EAP/radius servers
+
+Package: authem-utils
+Architecture: amd64
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: utilities for managing authem instances
+ integrates tooling to manage authem and connected tools
+
+Package: authem-sync
+Architecture: amd64
+Depends: ${misc:Depends},
+         authem-utils,
+         git
+Description: provides facility to synchronize authem configurations
+ provides polling, updating, and execution for authem git configurations

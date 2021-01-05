@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"voidedtech.com/grad/internal/core"
-	"voidedtech.com/grad/internal/server"
+	"voidedtech.com/radiucal/internal/core"
+	"voidedtech.com/radiucal/internal/server"
 )
 
 const (

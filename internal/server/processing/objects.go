@@ -12,7 +12,7 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/debug"
-	"voidedtech.com/grad/internal/core"
+	"voidedtech.com/radiucal/internal/core"
 )
 
 const (
