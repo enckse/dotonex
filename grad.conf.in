@@ -2,28 +2,12 @@ auth:
     host: localhost
     port: SRCAUTHPORT
     to: DSTAUTHPORT
-    enable: true
-    mods: [access, usermac]
 
 acct:
     host: localhost
     port: SRCACCTPORT
     to: DSTACCTPORT
-    enable: true
-    mods: [logger]
 
-dir: LIBRARY
+directory: LIBRARY
 
-log:
-    dir: LOGS
-    flush: 10
-
-secret: GRADKEY
-users: USERS 
-
-debug: false
-
-gitlab:
-    enable: true
-    token: gitlab-api-token
-    url: http://gitlab.host/api/endpoint    
+log: LOGS
