@@ -2,64 +2,112 @@ package server
 
 import (
 	"fmt"
+	"net"
 
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal/core"
 )
 
+const (
+	preMode  authingMode = 0
+	postMode authingMode = 1
+	// failure of auth reasons
+	successCode  ReasonCode = 0
+	preAuthCode  ReasonCode = 1
+	postAuthCode ReasonCode = 2
+)
+
 type (
 	writeBack func([]byte)
 
+	authingMode int
+
+	// ReasonCode for authorization state
+	ReasonCode int
+
 	// AuthorizePacket handles determining whether a packet is authorized to continue
-	AuthorizePacket func(*Context, []byte, string) bool
+	AuthorizePacket func(*Context, []byte, *net.UDPAddr) ReasonCode
 
 	authCheck func(Module, *ClientPacket) bool
 
 	// Context is the server's operating context
 	Context struct {
-		Config *Configuration
-		secret []byte
+		Debug   bool
+		secret  []byte
+		modules []Module
+		// shortcuts
+		postauth bool
+		preauth  bool
+		acct     bool
+		module   bool
 	}
 )
 
+// AddModule adds a general model to the context
+func (ctx *Context) AddModule(m Module) {
+	ctx.module = true
+	ctx.modules = append(ctx.modules, m)
+}
+
 // PostAuthorize performs packet post-authorization (after radius check)
-func PostAuthorize(ctx *Context, b []byte, nas string) bool {
-	return ctx.doAuthing(b, nas, PostProcess)
+func PostAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) ReasonCode {
+	return ctx.doAuthing(b, addr, postMode)
 }
 
 // PreAuthorize performs a packet pre-check (before radius check)
-func PreAuthorize(ctx *Context, b []byte, nas string) bool {
-	return ctx.doAuthing(b, nas, PreProcess)
+func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) ReasonCode {
+	return ctx.doAuthing(b, addr, preMode)
 }
 
-func (ctx *Context) doAuthing(b []byte, nas string, mode ModuleMode) bool {
-	p := NewClientPacket(b, nas)
+func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) ReasonCode {
+	p := NewClientPacket(b, addr)
 	return ctx.authorize(p, mode)
 }
 
-func (ctx *Context) authorize(packet *ClientPacket, mode ModuleMode) bool {
+func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode {
 	if packet == nil {
-		return true
+		return successCode
 	}
-	pre := mode == PreProcess
-	post := mode == PostProcess
-	valid := true
-	if pre || post {
+	valid := successCode
+	preauthing := false
+	postauthing := false
+	switch mode {
+	case preMode:
+		preauthing = ctx.preauth
+		break
+	case postMode:
+		postauthing = ctx.postauth
+	}
+	if preauthing || postauthing {
 		ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
 		// we let that go
 		if packet.Error == nil {
-			if pre {
-				Access(PreProcess, packet)
-				if ctx.Config.Gitlab.Enable {
-					valid = AuthorizeUserMAC(packet)
-				} else {
-					core.WriteWarn("Gitlab integration required for user MAC control")
+			var checks []Module
+			var checking authCheck
+			var code ReasonCode
+			if preauthing {
+				checking = getAuthChecker(true)
+				for _, m := range ctx.modules {
+					checks = append(checks, m)
 				}
+				code = preAuthCode
 			}
-			if post {
-				Access(PostProcess, packet)
+			if postauthing {
+				checking = getAuthChecker(false)
+				for _, m := range ctx.modules {
+					checks = append(checks, m)
+				}
+				code = postAuthCode
+			}
+			if len(checks) > 0 {
+				failure := checkAuthMods(checks, packet, checking)
+				if failure {
+					if valid == successCode {
+						valid = code
+					}
+				}
 			}
 		}
 	}
@@ -89,7 +137,7 @@ func checkAuthMods(modules []Module, packet *ClientPacket, fxn authCheck) bool {
 
 // DebugDump dumps context information for debugging
 func (ctx *Context) DebugDump() {
-	if ctx.Config.Debug {
+	if ctx.Debug {
 		core.WriteDebug("secret", string(ctx.secret))
 	}
 }
@@ -109,10 +157,16 @@ func (ctx *Context) Account(packet *ClientPacket) {
 		// unable to parse, exit early
 		return
 	}
-	LogPacket(AccountingProcess, packet)
+	if ctx.acct {
+		for _, mod := range ctx.modules {
+			mod.Process(packet, AccountingProcess)
+		}
+	}
 }
 
 // HandleAuth supports checking if a packet if allowed to continue on
-func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, nas string) bool {
-	return fxn(ctx, b, nas)
+func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr) bool {
+	authCode := fxn(ctx, b, addr)
+	authed := authCode == successCode
+	return authed
 }
