@@ -34,16 +34,17 @@ type (
 	ReasonCode int
 
 	// AuthorizePacket handles determining whether a packet is authorized to continue
-	AuthorizePacket func(*Context, []byte, *net.UDPAddr) ReasonCode
+	AuthorizePacket func(*Context, []byte, *net.UDPAddr) (*ClientPacket, ReasonCode)
 
 	authCheck func(Module, *ClientPacket) bool
 
 	// Context is the server's operating context
 	Context struct {
-		Debug   bool
-		secret  []byte
-		modules []Module
-		secrets map[string][]byte
+		Debug     bool
+		secret    []byte
+		modules   []Module
+		secrets   map[string][]byte
+		noReject  bool
 		// shortcuts
 		postauth bool
 		preauth  bool
@@ -59,18 +60,18 @@ func (ctx *Context) AddModule(m Module) {
 }
 
 // PostAuthorize performs packet post-authorization (after radius check)
-func PostAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) ReasonCode {
+func PostAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*ClientPacket, ReasonCode) {
 	return ctx.doAuthing(b, addr, postMode)
 }
 
 // PreAuthorize performs a packet pre-check (before radius check)
-func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) ReasonCode {
+func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*ClientPacket, ReasonCode) {
 	return ctx.doAuthing(b, addr, preMode)
 }
 
-func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) ReasonCode {
+func (ctx *Context) doAuthing(b []byte, addr *net.UDPAddr, mode authingMode) (*ClientPacket, ReasonCode) {
 	p := NewClientPacket(b, addr)
-	return ctx.authorize(p, mode)
+	return p, ctx.authorize(p, mode)
 }
 
 func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode {
@@ -154,6 +155,7 @@ func checkAuthMods(modules []Module, packet *ClientPacket, fxn authCheck) bool {
 
 // FromConfig parses config data into a Context object
 func (ctx *Context) FromConfig(libPath string, c *Configuration) {
+	ctx.noReject = c.NoReject
 	secrets := filepath.Join(libPath, "secrets")
 	ctx.parseSecrets(secrets)
 	ctx.secrets = make(map[string][]byte)
@@ -307,8 +309,30 @@ func (ctx *Context) Account(packet *ClientPacket) {
 	}
 }
 
-func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr) bool {
-	authCode := fxn(ctx, b, addr)
+// HandleAuth handles the actual authorization checks (e.g. pre, post, etc.)
+func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
+	packet, authCode := fxn(ctx, b, addr)
 	authed := authCode == successCode
+	if !authed {
+		if !ctx.noReject && write != nil && authCode != badSecretCode {
+			if packet.Error == nil {
+				p := packet.Packet
+				p = p.Response(radius.CodeAccessReject)
+				rej, err := p.Encode()
+				if err == nil {
+					core.WriteDebug("rejecting client")
+					write(rej)
+				} else {
+					if ctx.Debug {
+						core.WriteError("unable to encode rejection", err)
+					}
+				}
+			} else {
+				if ctx.Debug && packet.Error != nil {
+					core.WriteError("unable to parse packets", packet.Error)
+				}
+			}
+		}
+	}
 	return authed
 }
