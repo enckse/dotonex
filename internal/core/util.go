@@ -31,6 +31,16 @@ func Compare(prev, now []byte, show bool) bool {
 	return true
 }
 
+// IntegerIn will check if an integer is in a list
+func IntegerIn(i int, list []int) bool {
+	for _, obj := range list {
+		if obj == i {
+			return true
+		}
+	}
+	return false
+}
+
 // NewManifestEntry creates a new manifest entry object
 func NewManifestEntry(user, mac string) string {
 	return fmt.Sprintf("%s.%s", user, mac)
