@@ -1,0 +1,6 @@
+[Unit]
+Description=Authem configuration synchronization
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/authem-sync
