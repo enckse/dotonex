@@ -1,4 +1,4 @@
-package modules
+package server
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 
 	"layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/server/processing"
 )
 
 var (
@@ -27,7 +26,7 @@ func SetUserAuths(set []string) {
 }
 
 // Access logging of requests for auth endpoints
-func Access(mode processing.ModuleMode, packet *processing.ClientPacket) {
+func Access(mode ModuleMode, packet *ClientPacket) {
 	go func() {
 		username, err := rfc2865.UserName_LookupString(packet.Packet)
 		if err != nil {
@@ -37,28 +36,28 @@ func Access(mode processing.ModuleMode, packet *processing.ClientPacket) {
 		if err != nil {
 			calling = ""
 		}
-		kv := processing.KeyValueStore{}
+		kv := KeyValueStore{}
 		kv.DropEmpty = true
 		kv.Add("Mode", fmt.Sprintf("%d", mode))
 		kv.Add("Code", packet.Packet.Code.String())
 		kv.Add("Id", strconv.Itoa(int(packet.Packet.Identifier)))
 		kv.Add("User-Name", username)
 		kv.Add("Calling-Station-Id", calling)
-		processing.LogModuleMessages("ACCESS", kv.Strings())
+		LogModuleMessages("ACCESS", kv.Strings())
 	}()
 }
 
 // LogPacket will log packet and mode (useful for acct and auth)
-func LogPacket(mode processing.ModuleMode, packet *processing.ClientPacket) {
+func LogPacket(mode ModuleMode, packet *ClientPacket) {
 	go func() {
-		dump := processing.NewRequestDump(packet, fmt.Sprintf("%d", mode))
-		messages := dump.DumpPacket(processing.KeyValue{})
-		processing.LogModuleMessages("LOG", messages)
+		dump := NewRequestDump(packet, fmt.Sprintf("%d", mode))
+		messages := dump.DumpPacket(KeyValue{})
+		LogModuleMessages("LOG", messages)
 	}()
 }
 
 // AuthorizeUserMAC validates if a user+MAC combo should be allowed
-func AuthorizeUserMAC(packet *processing.ClientPacket) bool {
+func AuthorizeUserMAC(packet *ClientPacket) bool {
 	return checkUserMAC(packet) == nil
 }
 
@@ -72,7 +71,7 @@ func clean(in string) string {
 	return result
 }
 
-func checkUserMAC(p *processing.ClientPacket) error {
+func checkUserMAC(p *ClientPacket) error {
 	username, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
@@ -97,7 +96,7 @@ func checkUserMAC(p *processing.ClientPacket) error {
 	return failure
 }
 
-func mark(success bool, user, calling string, p *processing.ClientPacket, cached bool) {
+func mark(success bool, user, calling string, p *ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -116,7 +115,7 @@ func mark(success bool, user, calling string, p *processing.ClientPacket, cached
 	if !success {
 		result = "FAILED"
 	}
-	kv := processing.KeyValueStore{}
+	kv := KeyValueStore{}
 	kv.Add("Result", result)
 	kv.Add("User-Name", user)
 	kv.Add("Calling-Station-Id", calling)
@@ -124,5 +123,5 @@ func mark(success bool, user, calling string, p *processing.ClientPacket, cached
 	kv.Add("NAS-IPAddress", nasip)
 	kv.Add("NAS-Port", fmt.Sprintf("%d", nasport))
 	kv.Add("Id", strconv.Itoa(int(p.Packet.Identifier)))
-	processing.LogModuleMessages("USERMAC", kv.Strings())
+	LogModuleMessages("USERMAC", kv.Strings())
 }

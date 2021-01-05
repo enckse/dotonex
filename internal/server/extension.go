@@ -1,4 +1,4 @@
-package processing
+package server
 
 import (
 	"bytes"
@@ -43,7 +43,7 @@ type (
 	// ModuleContext is the context given to a module
 	ModuleContext struct {
 		// Backing config
-		config *core.Configuration
+		config *Configuration
 	}
 
 	// Module represents a module module for packet checking
@@ -80,7 +80,7 @@ func NewClientPacket(buffer []byte, nas string) *ClientPacket {
 }
 
 // NewModuleContext prepares a context from a configuration
-func NewModuleContext(config *core.Configuration) *ModuleContext {
+func NewModuleContext(config *Configuration) *ModuleContext {
 	p := &ModuleContext{}
 	p.config = config
 	return p
@@ -127,27 +127,23 @@ func newFile(path string, appending bool) *os.File {
 }
 
 // WriteModuleMessages supports writing module messages to disk
-func WriteModuleMessages(path string) int {
+func WriteModuleMessages(path string) {
 	moduleLock.Lock()
 	defer moduleLock.Unlock()
 	var f *os.File
-	count := len(moduleLogs)
-	if count == 0 {
-		return 0
+	if len(moduleLogs) == 0 {
+		return
 	}
-	if path != "" {
-		f = newFile(path, true)
-		if f == nil {
-			return 0
-		}
-		defer f.Close()
-		for _, m := range moduleLogs {
-			f.Write([]byte(m))
-		}
+	f = newFile(path, true)
+	if f == nil {
+		return
+	}
+	defer f.Close()
+	for _, m := range moduleLogs {
+		f.Write([]byte(m))
 	}
 	moduleLogs = moduleLogs[:0]
 	moduleLID = 0
-	return count
 }
 
 // LogModuleMessages adds messages to the module log queue

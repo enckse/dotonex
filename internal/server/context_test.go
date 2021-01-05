@@ -7,33 +7,30 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/server/modules"
-	"voidedtech.com/radiucal/internal/server/processing"
 )
 
 func TestPostAuth(t *testing.T) {
-	processing.WriteModuleMessages("")
+	moduleLogs = []string{}
 	ctx, b, _ := getPacket(t)
 	if !PostAuthorize(ctx, b, "127.0.0.1") {
 		t.Error("Should have post authorized")
 	}
 	time.Sleep(100 * time.Millisecond)
-	if processing.WriteModuleMessages("") != 5 {
+	if len(moduleLogs) != 5 {
 		t.Error("should have logged a packet")
 	}
 }
 
 func TestPreAuth(t *testing.T) {
-	modules.SetUserAuths([]string{})
-	processing.WriteModuleMessages("")
+	SetUserAuths([]string{})
+	moduleLogs = []string{}
 	ctx, b, _ := getPacket(t)
-	ctx.Config = &core.Configuration{}
+	ctx.Config = &Configuration{}
 	if !PreAuthorize(ctx, b, "127.0.0.1") {
 		t.Error("Should have pre authorized")
 	}
 	time.Sleep(100 * time.Millisecond)
-	if processing.WriteModuleMessages("") != 5 {
+	if len(moduleLogs) != 5 {
 		t.Error("should have logged a packet")
 	}
 	ctx.Config.Gitlab.Enable = true
@@ -41,20 +38,20 @@ func TestPreAuth(t *testing.T) {
 		t.Error("Should have pre authorized")
 	}
 	time.Sleep(100 * time.Millisecond)
-	if processing.WriteModuleMessages("") != 12 {
+	if len(moduleLogs) != 17 {
 		t.Error("should have logged a packet")
 	}
-	modules.SetUserAuths([]string{"user.112233445566"})
+	SetUserAuths([]string{"user.112233445566"})
 	if !PreAuthorize(ctx, b, "127.0.0.1") {
 		t.Error("Should have pre authorized")
 	}
 	time.Sleep(100 * time.Millisecond)
-	if processing.WriteModuleMessages("") != 12 {
+	if len(moduleLogs) != 29 {
 		t.Error("should have logged a packet")
 	}
 }
 
-func getPacket(t *testing.T) (*Context, []byte, *processing.ClientPacket) {
+func getPacket(t *testing.T) (*Context, []byte, *ClientPacket) {
 	c := &Context{}
 	c.secret = []byte("secret")
 	p := radius.New(radius.CodeAccessRequest, c.secret)
@@ -68,21 +65,21 @@ func getPacket(t *testing.T) (*Context, []byte, *processing.ClientPacket) {
 	if err != nil {
 		t.Error("unable to encode")
 	}
-	return c, b, processing.NewClientPacket(b, "127.0.0.1")
+	return c, b, NewClientPacket(b, "127.0.0.1")
 }
 
 func TestAcct(t *testing.T) {
-	processing.WriteModuleMessages("")
+	moduleLogs = []string{}
 	ctx, _, packet := getPacket(t)
 	packet.Error = fmt.Errorf("test")
 	ctx.Account(packet)
-	if processing.WriteModuleMessages("") != 0 {
+	if len(moduleLogs) != 0 {
 		t.Error("should not have logged")
 	}
 	packet.Error = nil
 	ctx.Account(packet)
 	time.Sleep(100 * time.Millisecond)
-	if processing.WriteModuleMessages("") != 6 {
+	if len(moduleLogs) != 6 {
 		t.Error("should have logged a packet")
 	}
 }

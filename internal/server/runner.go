@@ -10,7 +10,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/server/processing"
 )
 
 var (
@@ -138,7 +137,7 @@ func account(proxy *net.UDPConn, ctx *Context) {
 			core.WriteError("accounting udp error", err)
 			continue
 		}
-		ctx.Account(processing.NewClientPacket(buffer[0:n], stripHost(cliaddr)))
+		ctx.Account(NewClientPacket(buffer[0:n], stripHost(cliaddr)))
 	}
 }
 
@@ -148,7 +147,7 @@ func Run(config string) {
 	if err != nil {
 		core.Fatal("unable to load config", err)
 	}
-	conf := &core.Configuration{}
+	conf := &Configuration{}
 	if err := yaml.Unmarshal(b, conf); err != nil {
 		core.Fatal("unable to parse config", err)
 	}
@@ -165,7 +164,7 @@ func Run(config string) {
 			if conf.Debug {
 				core.WriteDebug("flushing logs")
 			}
-			processing.WriteModuleMessages(conf.Logging.Dir)
+			WriteModuleMessages(conf.Logging.Dir)
 		}
 	}()
 
@@ -174,7 +173,7 @@ func Run(config string) {
 	}
 }
 
-func serveEndpoint(endpoint core.Endpoint, config *core.Configuration, accounting bool) {
+func serveEndpoint(endpoint Endpoint, config *Configuration, accounting bool) {
 	if !endpoint.Enable {
 		return
 	}
