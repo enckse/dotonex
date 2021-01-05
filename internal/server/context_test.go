@@ -8,7 +8,7 @@ import (
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/external"
+	"voidedtech.com/radiucal/internal/server/modules"
 	"voidedtech.com/radiucal/internal/server/processing"
 )
 
@@ -25,7 +25,7 @@ func TestPostAuth(t *testing.T) {
 }
 
 func TestPreAuth(t *testing.T) {
-	external.SetUserAuths([]external.Auth{})
+	modules.SetUserAuths([]string{})
 	processing.WriteModuleMessages("")
 	ctx, b, _ := getPacket(t)
 	ctx.Config = &core.Configuration{}
@@ -44,7 +44,7 @@ func TestPreAuth(t *testing.T) {
 	if processing.WriteModuleMessages("") != 12 {
 		t.Error("should have logged a packet")
 	}
-	external.SetUserAuths([]external.Auth{external.NewAuth("user", "112233445566")})
+	modules.SetUserAuths([]string{"user.112233445566"})
 	if !PreAuthorize(ctx, b, "127.0.0.1") {
 		t.Error("Should have pre authorized")
 	}

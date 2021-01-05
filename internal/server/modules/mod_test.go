@@ -6,7 +6,6 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/external"
 	"voidedtech.com/radiucal/internal/server/processing"
 )
 
@@ -44,17 +43,17 @@ func getModulePacket(t *testing.T) *processing.ClientPacket {
 }
 
 func TestUserMAC(t *testing.T) {
-	external.SetUserAuths([]external.Auth{})
+	SetUserAuths([]string{})
 	if AuthorizeUserMAC(getModulePacket(t)) {
 		t.Error("should not have authorized")
 	}
 
-	external.SetUserAuths([]external.Auth{external.NewAuth("user2", "aabbccdddeee")})
+	SetUserAuths([]string{"use2r.112233445566"})
 	if AuthorizeUserMAC(getModulePacket(t)) {
 		t.Error("should not have authorized")
 	}
 
-	external.SetUserAuths([]external.Auth{external.NewAuth("user", "112233445566")})
+	SetUserAuths([]string{"user.112233445566"})
 	if !AuthorizeUserMAC(getModulePacket(t)) {
 		t.Error("should have authorized")
 	}
