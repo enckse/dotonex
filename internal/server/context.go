@@ -11,6 +11,8 @@ import (
 const (
 	preMode  authingMode = 0
 	postMode authingMode = 1
+	localKey             = "127.0.0.1"
+	allKey               = "0.0.0.0"
 	// failure of auth reasons
 	successCode  ReasonCode = 0
 	preAuthCode  ReasonCode = 1
