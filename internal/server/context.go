@@ -79,21 +79,23 @@ func (ctx *Context) authorize(packet *ClientPacket, mode authingMode) ReasonCode
 	}
 	valid := successCode
 	preauthing := false
+	receiving := false
 	postauthing := false
 	switch mode {
 	case preMode:
+		receiving = true
 		preauthing = ctx.preauth
 		break
 	case postMode:
 		postauthing = ctx.postauth
 	}
-	if preauthing || postauthing {
+	if preauthing || postauthing || receiving {
 		ctx.packet(packet)
 		// we may not be able to always read a packet during conversation
 		// especially during initial EAP phases
 		// we let that go
 		if packet.Error == nil {
-			if preauthing {
+			if receiving {
 				if err := ctx.checkSecret(packet); err != nil {
 					core.WriteError("invalid radius secret", err)
 					valid = badSecretCode
@@ -305,7 +307,6 @@ func (ctx *Context) Account(packet *ClientPacket) {
 	}
 }
 
-// HandleAuth supports checking if a packet if allowed to continue on
 func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr) bool {
 	authCode := fxn(ctx, b, addr)
 	authed := authCode == successCode

@@ -24,9 +24,12 @@ type (
 )
 
 var (
-	lockMAC  = &sync.Mutex{}
-	fileMAC  string
-	manifest = make(map[string]bool)
+	ModuleLog     logger
+	lockMAC       = &sync.Mutex{}
+	fileMAC       string
+	manifest      = make(map[string]bool)
+	ModuleUserMAC umac
+	ModuleAccess  access
 )
 
 func (l *access) Name() string {
@@ -198,7 +201,7 @@ func (l *umac) mark(success bool, user, calling string, p *ClientPacket, cached 
 	LogModuleMessages(l, kv.Strings())
 }
 
-// LoadModule loads a module from the name and into a module object
+// LoadModule loads a plugin from the name and into a module object
 func LoadModule(name string, ctx *ModuleContext) (Module, error) {
 	mod, err := getModule(name)
 	if err != nil {
@@ -213,11 +216,11 @@ func LoadModule(name string, ctx *ModuleContext) (Module, error) {
 func getModule(name string) (Module, error) {
 	switch name {
 	case "usermac":
-		return &umac{}, nil
+		return &ModuleUserMAC, nil
 	case "log":
-		return &logger{}, nil
+		return &ModuleLog, nil
 	case "access":
-		return &access{}, nil
+		return &ModuleAccess, nil
 	}
-	return nil, fmt.Errorf("unknown module type %s", name)
+	return nil, fmt.Errorf("unknown plugin type %s", name)
 }
