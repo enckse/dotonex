@@ -17,7 +17,9 @@ func setup(t *testing.T) LoadingOptions {
 		}
 	}
 	return LoadingOptions{
-		Key: "aaaaaaaabbbbbbbbccccccccdddddddd",
+		Verbose: false,
+		Sync:    true,
+		Key:     "aaaaaaaabbbbbbbbccccccccdddddddd",
 	}
 }
 
@@ -92,7 +94,9 @@ func TestLoadusers(t *testing.T) {
 		t.Error("radius count wrong")
 	}
 	opts = LoadingOptions{
-		Key: "aaaaaaaabbbbbbbbccccccccdddddddd",
+		Verbose: false,
+		Sync:    false,
+		Key:     "aaaaaaaabbbbbbbbccccccccdddddddd",
 	}
 	users, radius, err = opts.LoadUsers(vlans, sys, secret)
 	if err != nil {

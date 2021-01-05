@@ -29,8 +29,10 @@ type (
 
 	// LoadingOptions control how objects are loaded
 	LoadingOptions struct {
-		Key   string
-		NoKey bool
+		Verbose bool
+		Key     string
+		Sync    bool
+		NoKey   bool
 	}
 
 	trustTree struct {
@@ -110,6 +112,12 @@ func (l LoadingOptions) LoadSystems() ([]*System, error) {
 }
 
 func (l LoadingOptions) backtrace(bt []string, err error) error {
+	if !l.Verbose {
+		core.WriteInfo("~~~BACKTRACE~~~")
+		for _, l := range bt {
+			core.WriteInfoDetail(l)
+		}
+	}
 	core.WriteInfo("^^^ ERROR ^^^")
 	return err
 }
@@ -123,6 +131,9 @@ func (l LoadingOptions) loadDirectory(dir string, load onLoad) error {
 	var bt []string
 	for _, f := range files {
 		n := f.Name()
+		if l.Verbose {
+			core.WriteInfoDetail(n)
+		}
 		bt = append(bt, n)
 		b, err := ioutil.ReadFile(filepath.Join(dir, n))
 		if err != nil {
@@ -265,9 +276,13 @@ func (l LoadingOptions) LoadUsers(vlan []*VLAN, sys []*System, secret []*Secret)
 	radius := &sync.Map{}
 	var chans []chan bool
 	err := l.loadDirectory(UserDir, func(n string, b []byte) error {
-		c := make(chan bool)
-		go asyncLoadUser(c, users, radius, n, b, l, vlan, sys, secret)
-		chans = append(chans, c)
+		if l.Sync {
+			asyncLoadUser(nil, users, radius, n, b, l, vlan, sys, secret)
+		} else {
+			c := make(chan bool)
+			go asyncLoadUser(c, users, radius, n, b, l, vlan, sys, secret)
+			chans = append(chans, c)
+		}
 		return nil
 	})
 	for _, c := range chans {
