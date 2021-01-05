@@ -1,8 +1,9 @@
-package management
+package main
 
 import (
 	"bytes"
 	"crypto/sha256"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"text/template"
 
 	yaml "gopkg.in/yaml.v2"
+	"voidedtech.com/radiucal/internal/authem"
 	"voidedtech.com/radiucal/internal/core"
 )
 
@@ -22,6 +24,7 @@ const (
 
 var (
 	trackedFiles = [...]string{manifest, eap, usersCfg}
+	vers         = "master"
 )
 
 type (
@@ -43,9 +46,9 @@ func (c *configuratorError) Error() string {
 	return "configuration change"
 }
 
-func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool, error) {
-	if !core.PathExists(TempDir) {
-		if err := os.Mkdir(TempDir, 0755); err != nil {
+func unchanged(cfg *Config, radius *authem.RADIUSConfig, users, rawConfig []byte) (bool, error) {
+	if !core.PathExists(authem.TempDir) {
+		if err := os.Mkdir(authem.TempDir, 0755); err != nil {
 			return false, err
 		}
 	}
@@ -57,7 +60,7 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 		if cfg.Verbose {
 			core.WriteInfoDetail(f)
 		}
-		path := filepath.Join(TempDir, f)
+		path := filepath.Join(authem.TempDir, f)
 		if core.PathExists(path) {
 			b, err := ioutil.ReadFile(path)
 			if err != nil {
@@ -92,7 +95,7 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 		eap:      hostapdBytes,
 		usersCfg: users,
 	} {
-		paths := []string{TempDir}
+		paths := []string{authem.TempDir}
 		if len(cfg.Cache) > 0 {
 			paths = append(paths, cfg.Cache)
 		}
@@ -102,7 +105,7 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 				core.WriteInfoDetail(fmt.Sprintf("writing %s (%s)", k, p))
 			}
 			data := v
-			if f != TempDir && k == usersCfg && cfg.Deploy {
+			if f != authem.TempDir && k == usersCfg && cfg.Deploy {
 				data = rawConfig
 			}
 			if err := ioutil.WriteFile(p, data, 0644); err != nil {
@@ -115,7 +118,7 @@ func unchanged(cfg *Config, radius *RADIUSConfig, users, rawConfig []byte) (bool
 
 func getConfig(f string, scripts []string, verbose bool) (*Config, error) {
 	if !core.PathExists(f) {
-		k, err := GetKey(true)
+		k, err := authem.GetKey(true)
 		if err != nil {
 			return nil, err
 		}
@@ -152,7 +155,7 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 	if err != nil {
 		return err
 	}
-	loader := LoadingOptions{
+	loader := authem.LoadingOptions{
 		Verbose: config.Verbose,
 		Sync:    config.Verbose,
 		Key:     config.Key,
@@ -177,24 +180,24 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 	if err := loader.BuildTrust(users); err != nil {
 		return err
 	}
-	merged, err := MergeRADIUS(radius)
+	merged, err := authem.MergeRADIUS(radius)
 	if err != nil {
 		return err
 	}
-	u := UserConfig{
+	u := authem.UserConfig{
 		Users: users,
 	}
 	b, err := yaml.Marshal(u)
 	if err != nil {
 		return err
 	}
-	var postProcess []BashRunner
+	var postProcess []authem.BashRunner
 	if len(config.Scripts) > 0 {
 		for _, f := range config.Scripts {
 			if len(f) == 0 {
 				continue
 			}
-			var scriptables = ToScriptable(u, vlans, systems, secrets)
+			var scriptables = authem.ToScriptable(u, vlans, systems, secrets)
 			scriptBytes, err := ioutil.ReadFile(f)
 			if err != nil {
 				return err
@@ -207,14 +210,14 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 			if err := tmpl.Execute(&buffer, scriptables); err != nil {
 				return err
 			}
-			postProcess = append(postProcess, BashRunner{buffer.Bytes(), filepath.Base(f)})
+			postProcess = append(postProcess, authem.BashRunner{buffer.Bytes(), filepath.Base(f)})
 		}
 	}
 	raw, err := yaml.Marshal(u)
 	if err != nil {
 		return err
 	}
-	var newUsers []*User
+	var newUsers []*authem.User
 	for _, user := range u.Users {
 		user.MD4 = hash(user.MD4)
 		newUsers = append(newUsers, user)
@@ -256,8 +259,14 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 	return nil
 }
 
-func Configurate(cfg string, scripts []string, verbose, forceScript bool) {
-	err := configurate(cfg, scripts, verbose, forceScript)
+func main() {
+	cfg := flag.String("config", "/etc/authem/configurator.yaml", "config file (server mode)")
+	verbose := flag.Bool("verbose", false, "enable verbose outputs")
+	forceScript := flag.Bool("run-scripts", false, "run the scripts regardless of configuration changes")
+	flag.Parse()
+	remainders := flag.Args()
+	core.Version(vers)
+	err := configurate(*cfg, remainders, *verbose, *forceScript)
 	if err != nil {
 		if _, ok := err.(*configuratorError); !ok {
 			core.ExitNow("unable to configure", err)
