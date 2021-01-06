@@ -2,7 +2,7 @@
 verbose: false
 
 # secret key
-key: aaaabbbbccccddddeeeeffffgggghhhh
+key: {PASSWORD}
 
 # where should authem store files from the configurator?
 cache: /var/cache/authem/
