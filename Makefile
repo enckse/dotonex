@@ -42,7 +42,6 @@ endif
 	install -d $(DESTDIR)/var/lib/radiucal
 	install -d $(DESTDIR)/etc/radiucal/hostapd
 	install -d $(DESTDIR)/usr/lib/radiucal
-	install -d $(DESTDIR)/etc/authem
 	install -d $(DESTDIR)/var/cache/radiucal
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/radiucal/clients
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/radiucal/secrets
@@ -57,8 +56,8 @@ endif
 	install -Dm644 configs/proxy.conf.example $(DESTDIR)/etc/radiucal/proxy.conf
 	install -Dm644 configs/systemd/radiucal.conf $(DESTDIR)/usr/lib/tmpfiles.d/
 	install -Dm644 configs/systemd/radiucal.service $(DESTDIR)/usr/lib/systemd/system/
-	install -Dm644 configs/configurator.yaml.example $(DESTDIR)/etc/authem/configurator.yaml
-	sed -i "s/{PASSWORD}/$(AUTHEM_KEY)/g" $(DESTDIR)/etc/authem/configurator.yaml
+	install -Dm644 configs/configurator.yaml.example $(DESTDIR)/etc/radiucal/authem.yaml
+	sed -i "s/{PASSWORD}/$(AUTHEM_KEY)/g" $(DESTDIR)/etc/radiucal/authem.yaml
 	cp -r hostap/certs $(DESTDIR)/etc/radiucal/hostapd/
 
 $(UTESTS):
