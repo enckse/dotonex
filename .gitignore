@@ -1,5 +1,4 @@
 bin/
-certs/*
 radiucal.*
 tests/plugins/
 tests/log/
@@ -10,3 +9,5 @@ target/
 radiucal
 authem-*
 radiucal-runner
+server.txt
+hostap/hostap/
