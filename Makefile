@@ -46,7 +46,7 @@ endif
 	install -Dm755 $(HOSTAPD) $(DESTDIR)/usr/lib/radiucal/hostapd
 	install -Dm755 radiucal $(DESTDIR)/usr/bin/
 	install -Dm755 radiucal-runner $(DESTDIR)/usr/bin/
-	install -Dm755 radiucal-daemon.sh $(DESTDIR)/usr/bin/radiucal-daemon
+	install -Dm755 tools/radiucal-daemon.sh $(DESTDIR)/usr/bin/radiucal-daemon
 	install -Dm644 configs/accounting.conf.example $(DESTDIR)/etc/radiucal/accounting.conf
 	install -Dm644 configs/proxy.conf.example $(DESTDIR)/etc/radiucal/proxy.conf
 	install -Dm644 configs/systemd/radiucal.conf $(DESTDIR)/usr/lib/tmpfiles.d/
