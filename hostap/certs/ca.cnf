@@ -50,9 +50,9 @@ output_password = {PASSWORD}
 countryName		= US
 stateOrProvinceName	= Radius
 localityName		= radius
-organizationName	= grad
+organizationName	= radiucal
 emailAddress		= admin@example.org
-commonName		= "grad Certificate Authority"
+commonName		= "radiucal Certificate Authority"
 
 [v3_ca]
 subjectKeyIdentifier	= hash

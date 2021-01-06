@@ -48,7 +48,7 @@ output_password = {PASSWORD}
 countryName		= US
 stateOrProvinceName	= Radius
 localityName		= radius
-organizationName	= grad
+organizationName	= radiucal
 emailAddress		= admin@example.org
-commonName		= "grad Server Certificate"
+commonName		= "radiucal Server Certificate"
 
