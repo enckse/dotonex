@@ -33,6 +33,10 @@ endif
 ifeq ($(SECRET_KEY),)
 	$(error "please set SECRET_KEY for server installation")
 endif
+	mkdir -p $(DESTDIR)/var/lib/radiucal
+	mkdir -p $(DESTDIR)/etc/radiucal/
+	echo "127.0.0.1 $(SECRET_KEY)" > $(DESTDIR)/var/lib/radiucal/clients
+	echo "RADIUCAL_REPO=$(SERVER_REPO)" > $(DESTDIR)/etc/radiucal/env
 
 $(UTESTS):
 	cd $@ && go test -v

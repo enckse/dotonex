@@ -44,6 +44,7 @@ while [ 1 -eq 1 ]; do
     if [ -e $PREV ]; then
         diff -u $PREV $COMMIT
         if [ $? -ne 0 ]; then
+            echo "configuration change detected"
             for p in $(pidof hostapd); do
                 kill -HUP $p
             done
