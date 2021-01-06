@@ -41,9 +41,10 @@ endif
 	install -d $(DESTDIR)/etc/radiucal/hostapd
 	install -d $(DESTDIR)/usr/lib/radiucal
 	install -d $(DESTDIR)/etc/authem
+	install -d $(DESTDIR)/var/cache/authem
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/radiucal/clients
 	echo "0.0.0.0 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/radiucal/secrets
-	echo "RADIUCAL_REPOSITORY=$(SERVER_REPO)" > $(DESTDIR)/etc/radiucal/env
+	git clone $(RADIUCAL_REPOSITORY) $(DESTDIR)/var/cache/authem/repo
 	install -Dm755 $(HOSTAPD) $(DESTDIR)/usr/lib/radiucal/hostapd
 	install -Dm644 hostap/hostapd.conf $(DESTDIR)/etc/radiucal/hostapd/
 	install -Dm755 radiucal $(DESTDIR)/usr/bin/

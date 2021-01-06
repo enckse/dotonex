@@ -4,17 +4,7 @@ SETUP=$LIBRARY/setup.log
 ENV=/etc/radiucal/env
 COMMIT=$LIBRARY/commit
 PREV=$COMMIT.prev
-
-if [ ! -e $ENV ]; then
-    echo "no $ENV file found"
-    exit 1
-fi
-
-source $ENV
-if [ -z "$RADIUCAL_REPOSITORY" ]; then
-    echo "missing required RADIUCAL_REPOSITORY environment setting"
-    exit 1
-fi
+RADIUCAL_REPO=/var/cache/authem/repo
 
 _random-string() {
     cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
