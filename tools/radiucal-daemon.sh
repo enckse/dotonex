@@ -23,7 +23,7 @@ _init() {
 
 if [ ! -e $SETUP ]; then
     echo "performing first-time grad setup"
-    _init >> $SETUP
+    _init >> $SETUP 2>&1
 fi
 
 _hostapd() {
