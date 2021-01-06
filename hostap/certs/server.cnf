@@ -41,14 +41,14 @@ emailAddress		= optional
 prompt			= no
 distinguished_name	= server
 default_bits		= 2048
-input_password =
-output_password =
+input_password = {PASSWORD}
+output_password = {PASSWORD}
 
 [server]
 countryName		= US
 stateOrProvinceName	= Radius
 localityName		= radius
-organizationName	= epiphyte
+organizationName	= grad
 emailAddress		= admin@example.org
-commonName		= "epiphyte Server Certificate"
+commonName		= "grad Server Certificate"
 

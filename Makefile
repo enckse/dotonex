@@ -2,10 +2,12 @@ FLAGS        := -ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trim
 EXES         := $(shell ls cmd/)
 UTESTS       := $(shell find . -type f -name "*_test.go" | xargs dirname | sort -u)
 SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
+HOSTAPD      := hostap/hostap/hostapd/hostapd
+HOSTAP_VERS  := hostap_2_9
 
-.PHONY: $(UTESTS) build test lint clean
+.PHONY: $(UTESTS) build test clean
 
-build: $(EXES) test lint
+build: $(EXES) $(HOSTAPD) test
 
 $(UTESTS):
 	cd $@ && go test -v
@@ -16,8 +18,10 @@ test: $(UTESTS)
 $(EXES): $(SRC)
 	go build -o $@ $(FLAGS) cmd/$@/main.go
 
-lint:
-	@golinter
+
+$(HOSTAPD):
+	cd hostap && ./configure $(HOSTAP_VERS)
 
 clean:
-	rm -rf $(EXES) radiucal-admin
+	rm -rf $(EXES)
+	rm -rf hostap/hostap

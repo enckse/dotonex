@@ -43,16 +43,16 @@ prompt			= no
 distinguished_name	= certificate_authority
 default_bits		= 2048
 x509_extensions		= v3_ca
-input_password =
-output_password =
+input_password = {PASSWORD}
+output_password = {PASSWORD}
 
 [certificate_authority]
 countryName		= US
 stateOrProvinceName	= Radius
 localityName		= radius
-organizationName	= epiphyte
+organizationName	= grad
 emailAddress		= admin@example.org
-commonName		= "epiphyte Certificate Authority"
+commonName		= "grad Certificate Authority"
 
 [v3_ca]
 subjectKeyIdentifier	= hash
