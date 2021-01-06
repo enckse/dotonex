@@ -13,7 +13,7 @@ _random-string() {
 _configurator() {
     local users
     users=/var/cache/authem/eap_users
-    cd $RADIUCAL_REPOSITORY
+    cd $RADIUCAL_REPO
     authem-configurator
     touch $users
     if [ -e bin/eap_users ]; then
@@ -34,7 +34,7 @@ _init() {
 
 
 if [ ! -e $SETUP ]; then
-    echo "performing first-time grad setup"
+    echo "performing first-time radiucal setup"
     _init >> $SETUP 2>&1
 fi
 
@@ -48,8 +48,8 @@ _radiucal() {
 
 cwd=$PWD
 while [ 1 -eq 1 ]; do
-    git -C $RADIUCAL_REPOSITORY pull > /dev/null 2>&1
-    git -C $RADIUCAL_REPOSITORY log -n1 --format=%h > $COMMIT
+    git -C $RADIUCAL_REPO pull > /dev/null 2>&1
+    git -C $RADIUCAL_REPO log -n1 --format=%h > $COMMIT
     if [ -e $PREV ]; then
         diff -u $PREV $COMMIT
         if [ $? -ne 0 ]; then
