@@ -43,6 +43,7 @@ endif
 	install -d $(DESTDIR)/etc/radiucal/hostapd
 	install -d $(DESTDIR)/usr/lib/radiucal
 	install -d $(DESTDIR)/var/cache/radiucal
+	install -d $(DESTDIR)/var/log/radiucal
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/radiucal/clients
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/radiucal/secrets
 	echo "0.0.0.0 $(RADIUS_KEY)" >> $(DESTDIR)/var/lib/radiucal/secrets
