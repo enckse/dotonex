@@ -14,6 +14,8 @@ AUTHEM_KEY   :=
 
 .PHONY: $(UTESTS)
 
+build: server test
+
 client: $(CLIENT)
 
 install-client:
