@@ -53,7 +53,7 @@ endif
 	install -Dm644 configs/systemd/radiucal.service $(DESTDIR)/usr/lib/systemd/system/
 	install -Dm644 configs/configurator.yaml.example $(DESTDIR)/etc/authem/configurator.yaml
 	sed -i "s/{PASSWORD}/$(AUTHEM_KEY)/g" $(DESTDIR)/etc/authem/configurator.yaml
-	cp -r hostapd/certs $(DESTDIR)/etc/radiucal/hostapd/
+	cp -r hostap/certs $(DESTDIR)/etc/radiucal/hostapd/
 
 $(UTESTS):
 	cd $@ && go test -v
