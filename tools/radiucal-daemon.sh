@@ -26,7 +26,7 @@ _init() {
     pass=$(_random-string)
     sed -i "s/{PASSWORD}/$pass/g" /etc/radiucal/hostapd/certs/*.cnf /etc/radiucal/hostapd/hostapd.conf
     cwd=$PWD
-    cd /etc/radiucal/hostapd/certs/ && ./boostrap
+    cd /etc/radiucal/hostapd/certs/ && ./bootstrap
     cd $cwd
 }
 
