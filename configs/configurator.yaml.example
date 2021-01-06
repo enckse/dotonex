@@ -5,7 +5,7 @@ verbose: false
 key: {PASSWORD}
 
 # where should authem store files from the configurator?
-cache: /var/cache/authem/
+cache: /var/cache/radiucal/
 
 # scripts are scripts that will be executed by authem configurator after processing is complete
 scripts: []

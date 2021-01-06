@@ -4,7 +4,7 @@ SETUP=$LIBRARY/setup.log
 ENV=/etc/radiucal/env
 COMMIT=$LIBRARY/commit
 PREV=$COMMIT.prev
-RADIUCAL_REPO=/var/cache/authem/repo
+RADIUCAL_REPO=/var/cache/radiucal/repo
 
 _random-string() {
     cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
@@ -12,7 +12,7 @@ _random-string() {
 
 _configurator() {
     local users manifest
-    users=/var/cache/authem/eap_users
+    users=/var/cache/radiucal/eap_users
     manifest=/var/lib/radiucal/manifest
     cd $RADIUCAL_REPO
     authem-configurator
