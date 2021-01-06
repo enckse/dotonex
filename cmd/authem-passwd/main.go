@@ -28,10 +28,6 @@ systems: []
 `
 )
 
-var (
-	vers = "master"
-)
-
 func newUserSecret(l int, pass bool) (string, error) {
 	password := ""
 	if pass {
@@ -152,7 +148,6 @@ func main() {
 		}
 		os.Chdir(home)
 	}
-	core.Version(vers)
 	if err := updatePwd(*user, *email, *pwd, *show, *force, *length); err != nil {
 		core.ExitNow("failed to perform operation", err)
 	}

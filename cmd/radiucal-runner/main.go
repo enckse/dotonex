@@ -17,7 +17,6 @@ import (
 )
 
 var (
-	vers          = "master"
 	proxy         *net.UDPConn
 	serverAddress *net.UDPAddr
 	clients                   = make(map[string]*connection)
@@ -145,7 +144,6 @@ func account(ctx *server.Context) {
 func main() {
 	p := server.Flags()
 	core.ConfigureLogging(p.Debug, p.Instance)
-	core.WriteInfo(vers)
 	b, err := ioutil.ReadFile(p.Config)
 	if err != nil {
 		core.Fatal("unable to load config", err)
