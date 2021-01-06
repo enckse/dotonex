@@ -21,7 +21,13 @@ _random-string() {
 }
 
 _init() {
+    local pass cwd
     echo "setting up hostapd/radiucal"
+    pass=$(_random-string)
+    sed -i "s/{PASSWORD}/$pass/g" /etc/radiucal/hostapd/certs/*.cnf /etc/radiucal/hostapd/hostapd.conf
+    cwd=$PWD
+    cd /etc/radiucal/hostapd/certs/ && ./boostrap
+    cd $cwd
 }
 
 
