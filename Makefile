@@ -8,6 +8,8 @@ HOSTAPD      := hostap/hostap/hostapd/hostapd
 HOSTAP_VERS  := hostap_2_9
 SERVER_FILE  := server.txt
 DESTDIR      :=
+SERVER_REPO  :=
+SECRET_KEY   :=
 
 .PHONY: $(UTESTS)
 
@@ -24,7 +26,13 @@ install:
 server: client $(HOSTAPD) $(SERVER)
 	touch $(SERVER_FILE)
 
-#build: $(EXES) $(HOSTAPD) test
+install-server:
+ifeq ($(SERVER_REPO),)
+	$(error "please set SERVER_REPO for server installion")
+endif
+ifeq ($(SECRET_KEY),)
+	$(error "please set SECRET_KEY for server installation")
+endif
 
 $(UTESTS):
 	cd $@ && go test -v
