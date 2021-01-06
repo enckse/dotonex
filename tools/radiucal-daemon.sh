@@ -10,6 +10,17 @@ _random-string() {
     cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
 }
 
+_configurator() {
+    local users
+    users=/var/cache/authem/eap_users
+    cd $RADIUCAL_REPOSITORY
+    authem-configurator
+    touch $users
+    if [ -e bin/eap_users ]; then
+        cp bin/eap_users $users
+    fi
+}
+
 _init() {
     local pass cwd
     echo "setting up hostapd/radiucal"
@@ -17,6 +28,7 @@ _init() {
     sed -i "s/{PASSWORD}/$pass/g" /etc/radiucal/hostapd/certs/*.cnf /etc/radiucal/hostapd/hostapd.conf
     cwd=$PWD
     cd /etc/radiucal/hostapd/certs/ && ./bootstrap
+    _configurator
     cd $cwd
 }
 
@@ -34,6 +46,7 @@ _radiucal() {
     /usr/bin/radiucal --config /etc/radiucal/$1.conf --instance $1 | sed "s/^/[radiucal-$1] /g"
 }
 
+cwd=$PWD
 while [ 1 -eq 1 ]; do
     git -C $RADIUCAL_REPOSITORY pull > /dev/null 2>&1
     git -C $RADIUCAL_REPOSITORY log -n1 --format=%h > $COMMIT
@@ -41,6 +54,8 @@ while [ 1 -eq 1 ]; do
         diff -u $PREV $COMMIT
         if [ $? -ne 0 ]; then
             echo "configuration change detected"
+            _configurator | sed 's/^/[configurator] /g'
+            cd $cwd
             for p in $(pidof hostapd); do
                 kill -HUP $p
             done
