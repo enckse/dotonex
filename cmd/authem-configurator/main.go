@@ -259,7 +259,7 @@ func configurate(cfg string, scripts []string, verbose, scripting bool) error {
 }
 
 func main() {
-	cfg := flag.String("config", "/etc/authem/configurator.yaml", "config file (server mode)")
+	cfg := flag.String("config", "/etc/radiucal/authem.yaml", "config file (server mode)")
 	verbose := flag.Bool("verbose", false, "enable verbose outputs")
 	forceScript := flag.Bool("run-scripts", false, "run the scripts regardless of configuration changes")
 	flag.Parse()
