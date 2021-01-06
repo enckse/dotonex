@@ -11,13 +11,17 @@ _random-string() {
 }
 
 _configurator() {
-    local users
+    local users manifest
     users=/var/cache/authem/eap_users
+    manifest=/var/lib/radiucal/manifest
     cd $RADIUCAL_REPO
     authem-configurator
     touch $users
     if [ -e bin/eap_users ]; then
         cp bin/eap_users $users
+    fi
+    if [ -e bin/manifest ]; then
+        cp bin/manifest $manifest
     fi
 }
 
