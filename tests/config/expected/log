@@ -10,34 +10,27 @@ xyz (MAB)
  -> aabbccddeeff
 xyz (MAB)
  -> aabbccddeeff
-validating inputs
-user found: user.name
-invalid: 1122334455aa
-valid
-validating inputs
-user found: user.name
-valid
 @@ -1,3 +1,27 @@
 +
-+"abc:token" PEAP
++"abc:abcdef" PEAP
 +
-+"abc:token" MSCHAPV2 hash:HASH [2]
++"abc:abcdef" MSCHAPV2 hash:HASH [2]
 +radius_accept_attr=64:d:13
 +radius_accept_attr=65:d:6
 +radius_accept_attr=81:s:1
 +
 +
-+"token" PEAP
++"abcdef" PEAP
 +
-+"token" MSCHAPV2 hash:HASH [2]
++"abcdef" MSCHAPV2 hash:HASH [2]
 +radius_accept_attr=64:d:13
 +radius_accept_attr=65:d:6
 +radius_accept_attr=81:s:1
 +
 +
-+"xyz:token" PEAP
++"xyz:abcdef" PEAP
 +
-+"xyz:token" MSCHAPV2 hash:HASH [2]
++"xyz:abcdef" MSCHAPV2 hash:HASH [2]
 +radius_accept_attr=64:d:13
 +radius_accept_attr=65:d:6
 +radius_accept_attr=81:s:2
@@ -45,7 +38,56 @@ valid
  "aabbccddeeff" MD5 "aabbccddeeff"
  radius_accept_attr=64:d:13
  radius_accept_attr=65:d:6
+validating inputs
+validation complete
+user found: user.name
+user token is new
 user.name (USER)
 xyz (MAB)
  -> aabbccddeeff
 hostapd reset
+invalid: 1122334455aa
+valid
+@@ -1,23 +1,23 @@
+ 
+-"abc:abcdef" PEAP
++"abc:token" PEAP
+ 
+-"abc:abcdef" MSCHAPV2 hash:HASH [2]
++"abc:token" MSCHAPV2 hash:HASH [2]
+ radius_accept_attr=64:d:13
+ radius_accept_attr=65:d:6
+ radius_accept_attr=81:s:1
+ 
+ 
+-"abcdef" PEAP
++"token" PEAP
+ 
+-"abcdef" MSCHAPV2 hash:HASH [2]
++"token" MSCHAPV2 hash:HASH [2]
+ radius_accept_attr=64:d:13
+ radius_accept_attr=65:d:6
+ radius_accept_attr=81:s:1
+ 
+ 
+-"xyz:abcdef" PEAP
++"xyz:token" PEAP
+ 
+-"xyz:abcdef" MSCHAPV2 hash:HASH [2]
++"xyz:token" MSCHAPV2 hash:HASH [2]
+ radius_accept_attr=64:d:13
+ radius_accept_attr=65:d:6
+ radius_accept_attr=81:s:2
+validating inputs
+validation complete
+user found: user.name
+user token is new
+user.name (USER)
+xyz (MAB)
+ -> aabbccddeeff
+hostapd reset
+valid
+validating inputs
+user found: user.name
+invalid: 1122334455aa
+valid

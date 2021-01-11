@@ -224,17 +224,19 @@ def _validate(repo, command, token, mac):
             print("lookup failed")
             print(e)
             exit(1)
-    if changed:
-        data = json.dumps(known)
-        with open(new_known, "w") as f:
-            f.write(data)
-        subprocess.call(["mv", new_known, known_file])
     if user_name is None:
         exit(1)
     print("user found: {}".format(user_name))
     user_dir = os.path.join(repo, user_name)
-    with open(_local_file(user_dir, _TOKEN), 'w') as f:
-        f.write(token)
+    if changed:
+        print("user token is new")
+        data = json.dumps(known)
+        with open(new_known, "w") as f:
+            f.write(data)
+        subprocess.call(["mv", new_known, known_file])
+        with open(_local_file(user_dir, _TOKEN), 'w') as f:
+            f.write(token)
+        _build(repo, True)
     exit_code = 0
     for f in [cleaned_mac, _VLAN_CFG]:
         if not os.path.exists(os.path.join(user_dir, f)):
