@@ -1,4 +1,4 @@
-module voidedtech.com/radiucal
+module voidedtech.com/dotonex
 
 go 1.14
 

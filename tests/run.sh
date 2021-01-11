@@ -14,15 +14,15 @@ done
 PATH="../:$PATH"
 CONF="$1"
 _run() {
-    ../radiucal --debug --config test.$CONF.conf > $OUT 2>&1
+    ../dotonex --debug --config test.$CONF.conf > $OUT 2>&1
 }
 
 _acct() {
-    ../radiucal --debug --instance acct --config test.acct.conf > $OUT.acct 2>&1
+    ../dotonex --debug --instance acct --config test.acct.conf > $OUT.acct 2>&1
 }
 
 _reset() {
-    pkill --signal 2 radiucal-runner
+    pkill --signal 2 dotonex-runner
 }
 
 echo "==========================="
@@ -44,7 +44,7 @@ sleep 1
 echo "killing..."
 _reset
 sleep 1
-pkill radiucal
+pkill dotonex
 pkill harness
 
 COMPARE="accounting proxy"

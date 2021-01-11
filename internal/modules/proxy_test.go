@@ -5,7 +5,7 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal"
+	"voidedtech.com/dotonex/internal"
 )
 
 func TestUserMacBasics(t *testing.T) {

@@ -46,8 +46,8 @@ func defaultString(given, dflt string) string {
 // Defaults will set uninitialized values to default values
 func (c *Configuration) Defaults(backing []byte) {
 	c.Host = defaultString(c.Host, "localhost")
-	c.Dir = defaultString(c.Dir, "/var/lib/radiucal/")
-	c.Log = defaultString(c.Log, "/var/log/radiucal/")
+	c.Dir = defaultString(c.Dir, "/var/lib/dotonex/")
+	c.Log = defaultString(c.Log, "/var/log/dotonex/")
 	if c.Bind <= 0 {
 		if c.Accounting {
 			c.Bind = 1813

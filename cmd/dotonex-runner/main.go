@@ -11,8 +11,8 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
-	"voidedtech.com/radiucal/internal"
-	"voidedtech.com/radiucal/internal/modules"
+	"voidedtech.com/dotonex/internal"
+	"voidedtech.com/dotonex/internal/modules"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"time"
 
-	"voidedtech.com/radiucal/internal"
+	"voidedtech.com/dotonex/internal"
 )
 
 func main() {
@@ -20,11 +20,11 @@ func main() {
 	errors := 0
 	for {
 		internal.WriteInfo("starting " + i)
-		cmd := exec.Command("radiucal-runner", args...)
+		cmd := exec.Command("dotonex-runner", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			internal.WriteWarn(fmt.Sprintf("radiucal runner ended %s (%v)", i, err))
+			internal.WriteWarn(fmt.Sprintf("dotonex runner ended %s (%v)", i, err))
 		}
 		now := time.Now()
 		sleep := 10 * time.Millisecond

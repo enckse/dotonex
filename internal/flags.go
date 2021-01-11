@@ -37,9 +37,9 @@ func (p ProcessFlags) Args() []string {
 	return args
 }
 
-// Flags parses CLI flags for radiucal
+// Flags parses CLI flags for dotonex
 func Flags() ProcessFlags {
-	var cfg = flag.String(configFlag, "/etc/radiucal/radiucal.conf", "Configuration file")
+	var cfg = flag.String(configFlag, "/etc/dotonex/dotonex.conf", "Configuration file")
 	var instance = flag.String(instanceFlag, "", "Instance name")
 	var debugging = flag.Bool(debugFlag, false, "Enable debugging")
 	flag.Parse()

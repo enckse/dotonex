@@ -3,7 +3,7 @@ package modules
 import (
 	"fmt"
 
-	"voidedtech.com/radiucal/internal"
+	"voidedtech.com/dotonex/internal"
 )
 
 var (

@@ -47,7 +47,7 @@ type (
 	PluginContext struct {
 		// Backing config
 		config *Configuration
-		// Lib represents the library path for radiucal
+		// Lib represents the library path for dotonex
 		Lib string
 	}
 

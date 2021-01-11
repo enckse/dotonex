@@ -1,7 +1,7 @@
-.PHONY: radiucal
+.PHONY: dotonex
 
-all: radiucal
+all: dotonex
 
-radiucal:
+dotonex:
 	./run.sh normal
 	./run.sh norjct
