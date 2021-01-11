@@ -1,15 +1,15 @@
 
-configuration process failed
-no password for login found
-hash update
-xyz (MAB)
- -> aabbccddeeff
-hostapd reset
-hash update
-xyz (MAB)
- -> aabbccddeeff
-xyz (MAB)
- -> aabbccddeeff
+[SCRIPTLET] configuration process failed
+[SCRIPTLET] no password for login found
+[SCRIPTLET] hash update
+[SCRIPTLET] xyz (MAB)
+[SCRIPTLET]  -> aabbccddeeff
+[SCRIPTLET] hostapd reset
+[SCRIPTLET] hash update
+[SCRIPTLET] xyz (MAB)
+[SCRIPTLET]  -> aabbccddeeff
+[SCRIPTLET] xyz (MAB)
+[SCRIPTLET]  -> aabbccddeeff
 @@ -1,3 +1,27 @@
 +
 +"abc:abcdef" PEAP
@@ -38,17 +38,17 @@ xyz (MAB)
  "aabbccddeeff" MD5 "aabbccddeeff"
  radius_accept_attr=64:d:13
  radius_accept_attr=65:d:6
-validating inputs
-inserting abcdef for user.name
-validation complete
-user found: user.name
-user token is new
-user.name (USER)
-xyz (MAB)
- -> aabbccddeeff
-hostapd reset
-invalid: 1122334455aa
-valid
+[SCRIPTLET] validating inputs
+[SCRIPTLET] inserting abcdef for user.name
+[SCRIPTLET] validation complete
+[SCRIPTLET] user found: user.name
+[SCRIPTLET] user token is new
+[SCRIPTLET] user.name (USER)
+[SCRIPTLET] xyz (MAB)
+[SCRIPTLET]  -> aabbccddeeff
+[SCRIPTLET] hostapd reset
+[SCRIPTLET] invalid: 1122334455aa
+[SCRIPTLET] valid
 @@ -1,23 +1,23 @@
  
 -"abc:abcdef" PEAP
@@ -79,17 +79,17 @@ valid
  radius_accept_attr=64:d:13
  radius_accept_attr=65:d:6
  radius_accept_attr=81:s:2
-validating inputs
-inserting token for user.name
-validation complete
-user found: user.name
-user token is new
-user.name (USER)
-xyz (MAB)
- -> aabbccddeeff
-hostapd reset
-valid
-validating inputs
-user found: user.name
-invalid: 1122334455aa
-valid
+[SCRIPTLET] validating inputs
+[SCRIPTLET] inserting token for user.name
+[SCRIPTLET] validation complete
+[SCRIPTLET] user found: user.name
+[SCRIPTLET] user token is new
+[SCRIPTLET] user.name (USER)
+[SCRIPTLET] xyz (MAB)
+[SCRIPTLET]  -> aabbccddeeff
+[SCRIPTLET] hostapd reset
+[SCRIPTLET] valid
+[SCRIPTLET] validating inputs
+[SCRIPTLET] user found: user.name
+[SCRIPTLET] invalid: 1122334455aa
+[SCRIPTLET] valid

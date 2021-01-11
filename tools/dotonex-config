@@ -16,6 +16,10 @@ def _local_file(repo, name):
     return os.path.join(repo, name + _LOCAL)
 
 
+def _stdout(message):
+    print("[SCRIPTLET] {}".format(message))
+
+
 class ConfigException(Exception):
     pass
 
@@ -44,11 +48,11 @@ def _users(repo, vlan_names):
         mab = f in vlan_names
         cfg_dir = os.path.join(repo, f)
         if mab:
-            print("{} (MAB)".format(f))
+            _stdout("{} (MAB)".format(f))
             for mac in os.listdir(cfg_dir):
                 if _is_mac(mac) is None:
                     continue
-                print(" -> {}".format(mac))
+                _stdout(" -> {}".format(mac))
                 users.append(Hostapd(mac, mac, f))
         else:
             possible = os.path.join(cfg_dir, _VLAN_CFG)
@@ -57,7 +61,7 @@ def _users(repo, vlan_names):
             secret = _local_file(cfg_dir, _TOKEN)
             if not os.path.exists(secret):
                 continue
-            print("{} (USER)".format(f))
+            _stdout("{} (USER)".format(f))
             user_name = ""
             with open(secret, 'r') as data:
                 user_name = data.read().strip()
@@ -121,11 +125,11 @@ def _build_configuration(repo):
     for u in users:
         vlan_id = [x[1] for x in vlans if x[0] == u.vlan]
         if len(vlan_id) != 1:
-            print("invalid vlan configuration")
+            _stdout("invalid vlan configuration")
             continue
         hostapd.append(u.to_string(vlan_id[0]))
     if len(hostapd) == 0:
-        print("no hostapd data found")
+        _stdout("no hostapd data found")
         return
     eap_user = os.path.join(repo, "eap_users")
     next_eap = eap_user + ".next" + _LOCAL
@@ -135,7 +139,7 @@ def _build_configuration(repo):
         if subprocess.call(["diff", "-u", eap_user, next_eap]) == 0:
             return
     subprocess.call(["mv", next_eap, eap_user])
-    print("hostapd reset")
+    _stdout("hostapd reset")
     _reset_hostapd()
 
 
@@ -143,7 +147,7 @@ def _reset_hostapd():
     pids = _run_piped(["pidof", "hostapd"])
     for p in [x.strip() for x in pids.split("\n")]:
         if p:
-            print("signaling {}".format(p))
+            _stdout("signaling {}".format(p))
             subprocess.call(["kill", "-HUP", p])
 
 
@@ -153,7 +157,7 @@ def _server(repo, pass_hash):
         with open(hash_file, 'r') as f:
             if f.read().strip() == pass_hash:
                 return
-    print("hash update")
+    _stdout("hash update")
     with open(hash_file, 'w') as f:
         f.write(pass_hash)
     _build(repo, True)
@@ -163,8 +167,8 @@ def _run_piped(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     o, e = p.communicate()
     if e is not None and e != b'':
-        print(cmd)
-        print(e)
+        _stdout(cmd)
+        _stdout(e)
         raise ConfigException("command failed")
     return o.decode("utf-8").strip()
 
@@ -178,7 +182,7 @@ def _build(repo, force):
         if os.path.exists(last_file):
             with open(last_file, 'r') as f:
                 if f.read().strip() == last:
-                    print("no configuration changes found")
+                    _stdout("no configuration changes found")
                     return
         with open(last_file, 'w') as f:
             f.write(last)
@@ -194,10 +198,10 @@ def _fetch(repo):
 
 def _validate(repo, command, token, mac):
     """Validate a user."""
-    print('validating inputs')
+    _stdout('validating inputs')
     cleaned_mac = _is_mac(mac)
     if cleaned_mac is None:
-        print("invalid mac: {}".format(mac))
+        _stdout("invalid mac: {}".format(mac))
         return
     known_file = _local_file(repo, "known")
     new_known = known_file + ".next" + _LOCAL
@@ -214,23 +218,23 @@ def _validate(repo, command, token, mac):
             o = _run_piped(shlex.split(command.format(token)))
             j = json.loads(o)
             if "name" not in j:
-                print(o)
+                _stdout(o)
                 raise ConfigException("key not found in response")
             user_name = j["name"]
-            print("inserting {} for {}".format(token, user_name))
+            _stdout("inserting {} for {}".format(token, user_name))
             known[token] = user_name
             changed = True
-            print('validation complete')
+            _stdout('validation complete')
         except Exception as e:
-            print("lookup failed")
-            print(e)
+            _stdout("lookup failed")
+            _stdout(e)
             exit(1)
     if user_name is None:
         exit(1)
-    print("user found: {}".format(user_name))
+    _stdout("user found: {}".format(user_name))
     user_dir = os.path.join(repo, user_name)
     if changed:
-        print("user token is new")
+        _stdout("user token is new")
         data = json.dumps(known)
         with open(new_known, "w") as f:
             f.write(data)
@@ -241,9 +245,9 @@ def _validate(repo, command, token, mac):
     exit_code = 0
     for f in [cleaned_mac, _VLAN_CFG]:
         if not os.path.exists(os.path.join(user_dir, f)):
-            print("invalid: {}".format(f))
+            _stdout("invalid: {}".format(f))
             exit_code = 1
-    print("valid")
+    _stdout("valid")
     exit(exit_code)
 
 
@@ -276,8 +280,8 @@ def main():
         else:
             raise ConfigException("unknown mode: {}".format(args.mode))
     except Exception as e:
-        print("configuration process failed")
-        print(e)
+        _stdout("configuration process failed")
+        _stdout(e)
         exit(1)
 
 
