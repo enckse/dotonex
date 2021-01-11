@@ -62,7 +62,7 @@ func (c *Configuration) Defaults(backing []byte) {
 			c.Bind = 1812
 		}
 	}
-	c.Configurator.Repository = defaultString(c.Configurator.Repository, "/var/lib/cache/dotonex")
+	c.Configurator.Repository = defaultString(c.Configurator.Repository, "/var/cache/dotonex/config")
 	if c.Configurator.Refresh <= 0 {
 		c.Configurator.Refresh = 5
 	}
