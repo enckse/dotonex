@@ -7,7 +7,7 @@ HOSTAP_VERS  := hostap_2_9
 
 .PHONY: $(UTESTS)
 
-build: $(EXES) test
+build: $(HOSTAPD) $(EXES) test
 
 $(UTESTS):
 	cd $@ && go test -v
