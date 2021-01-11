@@ -217,6 +217,7 @@ def _validate(repo, command, token, mac):
                 print(o)
                 raise ConfigException("key not found in response")
             user_name = j["name"]
+            print("inserting {} for {}".format(token, user_name))
             known[token] = user_name
             changed = True
             print('validation complete')

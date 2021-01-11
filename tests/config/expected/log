@@ -39,6 +39,7 @@ xyz (MAB)
  radius_accept_attr=64:d:13
  radius_accept_attr=65:d:6
 validating inputs
+inserting abcdef for user.name
 validation complete
 user found: user.name
 user token is new
@@ -79,6 +80,7 @@ valid
  radius_accept_attr=65:d:6
  radius_accept_attr=81:s:2
 validating inputs
+inserting token for user.name
 validation complete
 user found: user.name
 user token is new
