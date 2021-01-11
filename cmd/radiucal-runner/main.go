@@ -168,9 +168,9 @@ func main() {
 	internal.WriteInfo("loading plugins")
 	var plugin internal.Module
 	if conf.Accounting {
-		plugin = &usermac.Plugin
-	} else {
 		plugin = &log.Plugin
+	} else {
+		plugin = &usermac.Plugin
 	}
 
 	if err := plugin.Setup(internal.NewPluginContext(conf)); err != nil {

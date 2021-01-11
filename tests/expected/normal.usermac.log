@@ -1,9 +1,5 @@
 Manfiest = load
   Manifest-0 = test.112233445566
-Manfiest = load
-  Manifest-0 = test.112233445566
-Manfiest = load
-  Manifest-0 = test.112233445566
 Result = PASSED
   User-Name = test
   Calling-Station-Id = 112233445566

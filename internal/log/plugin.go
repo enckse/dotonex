@@ -24,10 +24,6 @@ func (l *logger) Setup(ctx *internal.PluginContext) error {
 	return nil
 }
 
-func (l *logger) Pre(packet *internal.ClientPacket) bool {
-	return internal.NoopPre(packet, write)
-}
-
 func (l *logger) Trace(t internal.TraceType, packet *internal.ClientPacket) {
 	write(internal.TracingMode, t, packet)
 }

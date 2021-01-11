@@ -43,9 +43,6 @@ type (
 	// TraceType indicates how to trace a request
 	TraceType int
 
-	// NoopCall represents module calls that perform no operation (mocks)
-	NoopCall func(string, TraceType, *ClientPacket)
-
 	// PluginContext is the context given to a plugin module
 	PluginContext struct {
 		// Backing config
@@ -140,25 +137,6 @@ func (packet *RequestDump) DumpPacket(kv KeyValue) []string {
 		results = append(results, m)
 	}
 	return results
-}
-
-// NoopPre is a no-operation pre authorization call
-func NoopPre(packet *ClientPacket, call NoopCall) bool {
-	return noopAuth(PreAuthMode, packet, call)
-}
-
-func noopAuth(mode string, packet *ClientPacket, call NoopCall) bool {
-	call(mode, NoTrace, packet)
-	return true
-}
-
-func isFlagged(list []string, name string) bool {
-	for _, v := range list {
-		if name == v {
-			return true
-		}
-	}
-	return false
 }
 
 func newFile(path, instance string, appending bool) *os.File {
