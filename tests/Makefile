@@ -1,10 +1,7 @@
-.PHONY: radiucal authem
+.PHONY: radiucal
 
-all: radiucal authem
+all: radiucal
 
 radiucal:
 	./run.sh normal
 	./run.sh norjct
-
-authem:
-	make -C authem

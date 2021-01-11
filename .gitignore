@@ -5,9 +5,6 @@ tests/log/
 tests/admin/config/
 plugins/**/tests/
 target/
-*.rd
 radiucal
-authem-*
 radiucal-runner
-server.txt
 hostap/hostap/

@@ -91,18 +91,6 @@ run (with a socket listening to be proxied to, e.g. hostapd)
 ./radiucal
 ```
 
-## administration
-
-included within radiucal is the administrative stack: `authem`
-
-### authem
-
-authem is composed a set of 3 utilities:
-
-- authem-passwd for managing user accounts/credentials
-- authem-configurator for handling configuration file generation and process management on a server system
-- authem-sync to read from remote repositories and automatically handle authem-configurator calls
-
 ## debugging
 
 ### remotely
