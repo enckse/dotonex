@@ -67,10 +67,6 @@ func runConnection(ctx *internal.Context, conn *connection) {
 			internal.WriteError("unable to read buffer", err)
 			continue
 		}
-		buffered := []byte(buffer[0:n])
-		if !checkAuth("post", internal.PostAuthorize, ctx, buffered, conn.client, conn.client) {
-			continue
-		}
 		if _, err := proxy.WriteToUDP(buffer[0:n], conn.client); err != nil {
 			internal.WriteError("error relaying", err)
 		}
@@ -183,9 +179,6 @@ func main() {
 		}
 		if i, ok := obj.(internal.PreAuth); ok {
 			ctx.AddPreAuth(i)
-		}
-		if i, ok := obj.(internal.PostAuth); ok {
-			ctx.AddPostAuth(i)
 		}
 		ctx.AddModule(obj)
 	}

@@ -30,10 +30,6 @@ func (l *logger) Pre(packet *internal.ClientPacket) bool {
 	return internal.NoopPre(packet, write)
 }
 
-func (l *logger) Post(packet *internal.ClientPacket) bool {
-	return internal.NoopPost(packet, write)
-}
-
 func (l *logger) Trace(t internal.TraceType, packet *internal.ClientPacket) {
 	write(internal.TracingMode, t, packet)
 }

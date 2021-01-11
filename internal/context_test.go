@@ -19,20 +19,13 @@ type MockModule struct {
 	pre    int
 	fail   bool
 	reload int
-	post   int
 	unload int
 	// TraceType
 	preAuth  int
-	postAuth int
 }
 
 func (m *MockModule) Name() string {
 	return "mock"
-}
-
-func (m *MockModule) Post(p *ClientPacket) bool {
-	m.post++
-	return !m.fail
 }
 
 func (m *MockModule) Setup(c *PluginContext) error {
@@ -49,7 +42,6 @@ func (m *MockModule) Trace(t TraceType, p *ClientPacket) {
 	switch t {
 	case TraceRequest:
 		m.preAuth++
-		m.postAuth++
 		break
 	}
 }
@@ -60,7 +52,7 @@ func (m *MockModule) Account(p *ClientPacket) {
 
 func TestPreAuthNoMods(t *testing.T) {
 	ctx := &Context{}
-	if ctx.authorize(nil, preMode) != successCode {
+	if ctx.authorize(nil) != successCode {
 		t.Error("should have passed, nothing to do")
 	}
 }
@@ -69,18 +61,18 @@ func TestSecrets(t *testing.T) {
 	ctx, p := getPacket(t)
 	ctx.packet(p)
 	p.Packet.Secret = []byte("test")
-	if ctx.authorize(p, preMode) != badSecretCode {
+	if ctx.authorize(p) != badSecretCode {
 		t.Error("different secrets")
 	}
 	ctx, p = getPacket(t)
-	if ctx.authorize(p, preMode) != successCode {
+	if ctx.authorize(p) != successCode {
 		t.Error("same secrets")
 	}
 	ctx.secrets = make(map[string][]byte)
 	ctx.secrets["10."] = []byte("invalid")
 	ctx.secrets["10.100."] = p.Packet.Secret
 	ctx.secrets["10.10.1."] = []byte("invalid")
-	if ctx.authorize(p, preMode) != badSecretCode {
+	if ctx.authorize(p) != badSecretCode {
 		t.Error("no addr but secrets")
 	}
 	addr, err := net.ResolveUDPAddr("udp", "10.10.1.100:1234")
@@ -88,35 +80,35 @@ func TestSecrets(t *testing.T) {
 		t.Error("invalid udp test addr")
 	}
 	p.ClientAddr = addr
-	if ctx.authorize(p, preMode) != badSecretCode {
+	if ctx.authorize(p) != badSecretCode {
 		t.Error("no matching secrets")
 	}
 	ctx.secrets["10.10.1.10"] = p.Packet.Secret
-	if ctx.authorize(p, preMode) != successCode {
+	if ctx.authorize(p) != successCode {
 		t.Error("matching secrets")
 	}
 	ctx.secrets["10.10.1.10"] = []byte("failure")
-	if ctx.authorize(p, preMode) != badSecretCode {
+	if ctx.authorize(p) != badSecretCode {
 		t.Error("no matching secrets, yet again")
 	}
 	ctx.secrets["0.0.0.0"] = p.Packet.Secret
-	if ctx.authorize(p, preMode) != successCode {
+	if ctx.authorize(p) != successCode {
 		t.Error("matching secrets")
 	}
 }
 
-func checkAuthMode(t *testing.T, mode authingMode) {
+func checkAuthMode(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
 	ctx.AddTrace(m)
 	// invalid packet
-	if ctx.authorize(NewClientPacket(nil, nil), mode) != successCode {
+	if ctx.authorize(NewClientPacket(nil, nil)) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 0 {
 		t.Error("did auth")
 	}
-	if ctx.authorize(p, mode) != successCode {
+	if ctx.authorize(p) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 1 {
@@ -124,20 +116,12 @@ func checkAuthMode(t *testing.T, mode authingMode) {
 	}
 	var getCounts func() (int, int)
 	var reasonCode ReasonCode
-	if mode == preMode {
-		getCounts = func() (int, int) {
-			return m.pre, m.preAuth
-		}
-		reasonCode = preAuthCode
-		ctx.AddPreAuth(m)
-	} else {
-		getCounts = func() (int, int) {
-			return m.post, m.postAuth
-		}
-		reasonCode = postAuthCode
-		ctx.AddPostAuth(m)
+	getCounts = func() (int, int) {
+		return m.pre, m.preAuth
 	}
-	if ctx.authorize(p, mode) != successCode {
+	reasonCode = preAuthCode
+	ctx.AddPreAuth(m)
+	if ctx.authorize(p) != successCode {
 		t.Error("didn't authorize")
 	}
 	if m.trace != 2 {
@@ -148,7 +132,7 @@ func checkAuthMode(t *testing.T, mode authingMode) {
 		t.Error("didn't mod auth")
 	}
 	m.fail = true
-	if ctx.authorize(p, mode) != reasonCode {
+	if ctx.authorize(p) != reasonCode {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
@@ -159,7 +143,7 @@ func checkAuthMode(t *testing.T, mode authingMode) {
 		t.Error("didn't mod auth")
 	}
 	ctx.trace = false
-	if ctx.authorize(p, mode) != reasonCode {
+	if ctx.authorize(p) != reasonCode {
 		t.Error("did authorize")
 	}
 	if m.trace != 3 {
@@ -174,12 +158,8 @@ func checkAuthMode(t *testing.T, mode authingMode) {
 	}
 }
 
-func TestPostAuth(t *testing.T) {
-	checkAuthMode(t, postMode)
-}
-
 func TestPreAuth(t *testing.T) {
-	checkAuthMode(t, preMode)
+	checkAuthMode(t)
 }
 
 func getPacket(t *testing.T) (*Context, *ClientPacket) {

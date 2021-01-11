@@ -31,10 +31,6 @@ func (l *access) Pre(packet *internal.ClientPacket) bool {
 	return internal.NoopPre(packet, write)
 }
 
-func (l *access) Post(packet *internal.ClientPacket) bool {
-	return internal.NoopPost(packet, write)
-}
-
 func (l *access) Trace(t internal.TraceType, packet *internal.ClientPacket) {
 	write(internal.TracingMode, t, packet)
 }

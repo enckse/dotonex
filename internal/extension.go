@@ -26,8 +26,6 @@ const (
 	TracingMode = "trace"
 	// PreAuthMode for pre-auth
 	PreAuthMode = "preauth"
-	// PostAuthMode for post-auth
-	PostAuthMode = "postauth"
 )
 
 var (
@@ -66,12 +64,6 @@ type (
 	PreAuth interface {
 		Module
 		Pre(*ClientPacket) bool
-	}
-
-	// PostAuth represents the interface required to post-authorize a packet
-	PostAuth interface {
-		Module
-		Post(*ClientPacket) bool
 	}
 
 	// Tracing represents the interface required to trace requests
@@ -163,11 +155,6 @@ func Disabled(mode string, modes []string) bool {
 	return false
 }
 
-// NoopPost is a no-operation post authorization call
-func NoopPost(packet *ClientPacket, call NoopCall) bool {
-	return noopAuth(PostAuthMode, packet, call)
-}
-
 // NoopPre is a no-operation pre authorization call
 func NoopPre(packet *ClientPacket, call NoopCall) bool {
 	return noopAuth(PreAuthMode, packet, call)
@@ -193,7 +180,6 @@ func DisabledModes(m Module, ctx *PluginContext) []string {
 	noAccounting := isFlagged(ctx.config.Disable.Accounting, name)
 	noTracing := isFlagged(ctx.config.Disable.Trace, name)
 	noPreauth := isFlagged(ctx.config.Disable.Preauth, name)
-	noPostauth := isFlagged(ctx.config.Disable.Postauth, name)
 	var modes []string
 	if noAccounting {
 		modes = append(modes, AccountingMode)
@@ -203,9 +189,6 @@ func DisabledModes(m Module, ctx *PluginContext) []string {
 	}
 	if noPreauth {
 		modes = append(modes, PreAuthMode)
-	}
-	if noPostauth {
-		modes = append(modes, PostAuthMode)
 	}
 	return modes
 }

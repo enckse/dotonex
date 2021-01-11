@@ -28,7 +28,6 @@ type (
 			Accounting []string
 			Preauth    []string
 			Trace      []string
-			Postauth   []string
 		}
 	}
 )
