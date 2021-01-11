@@ -1,4 +1,4 @@
-package usermac
+package modules
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ func TestUserMacBasics(t *testing.T) {
 	newTestSet(t, "test", "12-22-33-44-55-66", false)
 }
 
-func ErrorIfNotPre(t *testing.T, m *umac, p *internal.ClientPacket, message string) {
+func ErrorIfNotPre(t *testing.T, m *proxyModule, p *internal.ClientPacket, message string) {
 	err := checkUserMac(p)
 	if err == nil {
 		if message != "" {
@@ -26,9 +26,9 @@ func ErrorIfNotPre(t *testing.T, m *umac, p *internal.ClientPacket, message stri
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) (*internal.ClientPacket, *umac) {
+func newTestSet(t *testing.T, user, mac string, valid bool) (*internal.ClientPacket, *proxyModule) {
 	m := setupUserMac()
-	if m.Name() != "usermac" {
+	if m.Name() != "proxy" {
 		t.Error("invalid/wrong name")
 	}
 	var secret = []byte("secret")
@@ -51,9 +51,9 @@ func newTestSet(t *testing.T, user, mac string, valid bool) (*internal.ClientPac
 	return p, m
 }
 
-func setupUserMac() *umac {
+func setupUserMac() *proxyModule {
 	file = "./tests/manifest"
-	m := &umac{}
+	m := &proxyModule{}
 	m.load()
 	return m
 }

@@ -12,8 +12,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal"
-	"voidedtech.com/radiucal/internal/log"
-	"voidedtech.com/radiucal/internal/usermac"
+	"voidedtech.com/radiucal/internal/modules"
 )
 
 var (
@@ -168,9 +167,9 @@ func main() {
 	internal.WriteInfo("loading plugins")
 	var plugin internal.Module
 	if conf.Accounting {
-		plugin = &log.Plugin
+		plugin = &modules.AccountingModule
 	} else {
-		plugin = &usermac.Plugin
+		plugin = &modules.ProxyModule
 	}
 
 	if err := plugin.Setup(internal.NewPluginContext(conf)); err != nil {

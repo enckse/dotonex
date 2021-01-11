@@ -4,54 +4,24 @@
  Access-Request
  Access-Request
  Access-Request
- Access-Request
- Access-Request
- Access-Request
- Access-Request
- Access-Request
- Access-Request
-Calling-Station-Id "11-22-33-44-55-66"
-Calling-Station-Id "11-22-33-44-55-66"
-Calling-Station-Id "11-22-33-44-55-66"
-Calling-Station-Id "11-22-33-44-55-66"
 Calling-Station-Id "11-22-33-44-55-66"
 Calling-Station-Id "11-22-33-44-55-66"
 Calling-Station-Id "11-22-33-44-55-66"
 Calling-Station-Id "11-22-33-44-55-66"
 Calling-Station-Id "11-22-33-44-55-67"
 Calling-Station-Id "11-22-33-44-55-67"
-Calling-Station-Id "11-22-33-44-55-67"
-Calling-Station-Id "11-22-33-44-55-67"
 Info 0
 Info 0
 Info 0
 Info 0
 Info 0
 Info 0
-Info 1
-Info 1
-Info 1
-Info 1
-Info 1
-Info 1
-Mode preauth
-Mode preauth
-Mode preauth
-Mode preauth
-Mode preauth
-Mode preauth
-Mode trace
-Mode trace
-Mode trace
-Mode trace
-Mode trace
-Mode trace
-NAS-IP-Address 127.0.0.1
-NAS-IP-Address 127.0.0.1
-NAS-IP-Address 127.0.0.1
-NAS-IP-Address 127.0.0.1
-NAS-IP-Address 127.0.0.1
-NAS-IP-Address 127.0.0.1
+Mode accounting
+Mode accounting
+Mode accounting
+Mode accounting
+Mode accounting
+Mode accounting
 NAS-IP-Address 127.0.0.1
 NAS-IP-Address 127.0.0.1
 NAS-IP-Address 127.0.0.1
@@ -64,18 +34,6 @@ NAS-IP-Address 127.0.0.1
  UDPAddr
  UDPAddr
  UDPAddr
- UDPAddr
- UDPAddr
- UDPAddr
- UDPAddr
- UDPAddr
- UDPAddr
-User-Name "test"
-User-Name "test"
-User-Name "test"
-User-Name "test"
-User-Name "test"
-User-Name "test"
 User-Name "test"
 User-Name "test"
 User-Name "test"

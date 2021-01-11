@@ -1,4 +1,4 @@
-package log
+package modules
 
 import (
 	"fmt"
@@ -7,28 +7,27 @@ import (
 )
 
 var (
-	// Plugin represents the system instance of the module
-	Plugin logger
+	AccountingModule accountingModule
 )
 
 type (
-	logger struct {
+	accountingModule struct {
 	}
 )
 
-func (l *logger) Name() string {
-	return "logger"
+func (l *accountingModule) Name() string {
+	return "accounting"
 }
 
-func (l *logger) Setup(ctx *internal.PluginContext) error {
+func (l *accountingModule) Setup(ctx *internal.PluginContext) error {
 	return nil
 }
 
-func (l *logger) Trace(t internal.TraceType, packet *internal.ClientPacket) {
+func (l *accountingModule) Trace(t internal.TraceType, packet *internal.ClientPacket) {
 	write(internal.TracingMode, t, packet)
 }
 
-func (l *logger) Account(packet *internal.ClientPacket) {
+func (l *accountingModule) Account(packet *internal.ClientPacket) {
 	write(internal.AccountingMode, internal.NoTrace, packet)
 }
 
@@ -36,6 +35,6 @@ func write(mode string, objType internal.TraceType, packet *internal.ClientPacke
 	go func() {
 		dump := internal.NewRequestDump(packet, mode)
 		messages := dump.DumpPacket(internal.KeyValue{Key: "Info", Value: fmt.Sprintf("%d", int(objType))})
-		internal.LogPluginMessages(&Plugin, messages)
+		internal.LogPluginMessages(&AccountingModule, messages)
 	}()
 }

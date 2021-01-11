@@ -1,4 +1,4 @@
-package usermac
+package modules
 
 import (
 	"fmt"
@@ -14,12 +14,12 @@ import (
 )
 
 type (
-	umac struct {
+	proxyModule struct {
 	}
 )
 
-func (l *umac) Name() string {
-	return "usermac"
+func (l *proxyModule) Name() string {
+	return "proxy"
 }
 
 var (
@@ -27,10 +27,10 @@ var (
 	file     string
 	manifest = make(map[string]bool)
 	// Plugin represents the instance for the system
-	Plugin umac
+	ProxyModule proxyModule
 )
 
-func (l *umac) load() error {
+func (l *proxyModule) load() error {
 	if !internal.PathExists(file) {
 		return fmt.Errorf("%s is missing", file)
 	}
@@ -53,11 +53,11 @@ func (l *umac) load() error {
 		manifest[d] = true
 		idx++
 	}
-	internal.LogPluginMessages(&Plugin, kv.Strings())
+	internal.LogPluginMessages(&ProxyModule, kv.Strings())
 	return nil
 }
 
-func (l *umac) Setup(ctx *internal.PluginContext) error {
+func (l *proxyModule) Setup(ctx *internal.PluginContext) error {
 	file = filepath.Join(ctx.Lib, "manifest")
 	if err := l.load(); err != nil {
 		return err
@@ -65,7 +65,7 @@ func (l *umac) Setup(ctx *internal.PluginContext) error {
 	return nil
 }
 
-func (l *umac) Pre(packet *internal.ClientPacket) bool {
+func (l *proxyModule) Pre(packet *internal.ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }
 
@@ -134,5 +134,5 @@ func mark(success bool, user, calling string, p *internal.ClientPacket, cached b
 	kv.Add("NAS-IPAddress", nasip)
 	kv.Add("NAS-Port", fmt.Sprintf("%d", nasport))
 	kv.Add("Id", strconv.Itoa(int(p.Packet.Identifier)))
-	internal.LogPluginMessages(&Plugin, kv.Strings())
+	internal.LogPluginMessages(&ProxyModule, kv.Strings())
 }
