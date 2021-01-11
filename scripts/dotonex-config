@@ -4,6 +4,8 @@ import os
 import time
 import subprocess
 import configparser
+import shlex
+import json
 
 _SERVER = "server"
 _LOCAL = ".local"
@@ -21,12 +23,14 @@ class ConfigException(Exception):
 def _is_mac(mac):
     m = mac.lower()
     if len(m) != 12:
-        return False
+        return None
+    cleaned = []
     for c in m:
         if (c >= 'a' and c <= 'f') or (c >= '0' and c <= '9'):
+            cleaned.append(c)
             continue
-        return False
-    return True
+        return None
+    return "".join(cleaned)
 
 
 def _users(repo, vlan_names):
@@ -42,7 +46,7 @@ def _users(repo, vlan_names):
         if mab:
             print("{} (MAB)".format(f))
             for mac in os.listdir(cfg_dir):
-                if not _is_mac(mac):
+                if _is_mac(mac) is None:
                     continue
                 print(" -> {}".format(mac))
                 users.append(Hostapd(mac, mac, f))
@@ -124,7 +128,7 @@ def _build_configuration(repo):
         print("no hostapd data found")
         return
     eap_user = os.path.join(repo, "eap_users")
-    next_eap = eap_user + ".next"
+    next_eap = eap_user + ".next" + _LOCAL
     with open(next_eap, 'w') as f:
         f.write("\n\n".join(sorted(hostapd)) + "\n")
     if os.path.exists(eap_user):
@@ -188,12 +192,64 @@ def _fetch(repo):
             raise ConfigException("{} git command failed".format(cmd))
 
 
+def _validate(repo, command, token, mac):
+    """Validate a user."""
+    print('validating inputs')
+    cleaned_mac = _is_mac(mac)
+    if cleaned_mac is None:
+        print("invalid mac: {}".format(mac))
+        return
+    known_file = _local_file(repo, "known")
+    new_known = known_file + ".next" + _LOCAL
+    known = {}
+    if os.path.exists(known_file):
+        with open(known_file, 'r') as f:
+            known = json.loads(f.read())
+    user_name = None
+    if token in known:
+        user_name = known[token]
+    changed = False
+    if user_name is None:
+        try:
+            o = _run_piped(shlex.split(command.format(token)))
+            j = json.loads(o)
+            if "name" not in j:
+                print(o)
+                raise ConfigException("key not found in response")
+            user_name = j["name"]
+            known[token] = user_name
+            changed = True
+            print('validation complete')
+        except Exception as e:
+            print("lookup failed")
+            print(e)
+            exit(1)
+    if changed:
+        data = json.dumps(known)
+        with open(new_known, "w") as f:
+            f.write(data)
+        subprocess.call(["mv", new_known, known_file])
+    if user_name is None:
+        exit(1)
+    print("user found: {}".format(user_name))
+    user_dir = os.path.join(repo, user_name)
+    with open(_local_file(user_dir, _TOKEN), 'w') as f:
+        f.write(token)
+    exit_code = 0
+    for f in [cleaned_mac, _VLAN_CFG]:
+        if not os.path.exists(os.path.join(user_dir, f)):
+            print("invalid: {}".format(f))
+            exit_code = 1
+    print("valid")
+    exit(exit_code)
+
+
 def main():
     """Program entry."""
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", help="action to perform")
     parser.add_argument("repository", help="repository to operate from")
-    parser.add_argument("--url", help="url to confirm user tokens with")
+    parser.add_argument("--command", help="command for validation callback")
     parser.add_argument("--hash", help="shared server password hash")
     parser.add_argument("--mac", help="calling mac")
     parser.add_argument("--token", help="token to confirm")
@@ -202,9 +258,9 @@ def main():
         if not os.path.exists(args.repository):
             raise ConfigException("repository does not exist")
         if args.mode == "validate":
-            if not args.url or not args.token or not args.mac:
-                raise ConfigException("url, token, and mac required")
-            _validate(args.repository, args.url, args.token, args.mac)
+            if not args.command or not args.token or not args.mac:
+                raise ConfigException("command, token, and mac required")
+            _validate(args.repository, args.command, args.token, args.mac)
         elif args.mode == "server":
             if not args.hash:
                 raise ConfigException("hash required")
