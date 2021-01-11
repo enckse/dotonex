@@ -1,4 +1,4 @@
-radiucal
+dotonex
 ===
 
 Designed for using a go proxy+hostapd as an 802.1x RADIUS server for network authentication (or how to live without freeradius)
@@ -36,7 +36,7 @@ Expectations:
 
 ## Proxy
 
-radiucal is a go proxy that receives UDP packets and routes them along (namely to hostapd/another radius server)
+dotonex is a go proxy that receives UDP packets and routes them along (namely to hostapd/another radius server)
 
 the proxy:
 
