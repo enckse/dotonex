@@ -12,6 +12,7 @@ _LOCAL = ".local"
 _TOKEN = "token"
 _VLAN_CFG = "vlans.cfg"
 
+
 def _local_file(repo, name):
     return os.path.join(repo, name + _LOCAL)
 
@@ -76,7 +77,9 @@ def _users(repo, vlan_names):
                 for v in vlans:
                     if first:
                         users.append(Hostapd(user_name, password, v))
-                    users.append(Hostapd("{}:{}".format(v, user_name), password, v))
+                    users.append(Hostapd("{}:{}".format(v, user_name),
+                                         password,
+                                         v))
                     first = False
     return users
 
@@ -102,7 +105,6 @@ radius_accept_attr=81:s:{}""".format(vlan_id)
 
 \"{}\" MSCHAPV2 hash:{} [2]""".format(self.name, self.name, self.password)
         return login + attr
-
 
 
 def _build_configuration(repo):
