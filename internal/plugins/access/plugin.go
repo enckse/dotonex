@@ -30,7 +30,6 @@ func (l *access) Pre(packet *internal.ClientPacket) bool {
 }
 
 func (l *access) Trace(t internal.TraceType, packet *internal.ClientPacket) {
-	write(internal.TracingMode, t, packet)
 }
 
 func (l *access) Account(packet *internal.ClientPacket) {
@@ -38,9 +37,6 @@ func (l *access) Account(packet *internal.ClientPacket) {
 }
 
 func write(mode string, objType internal.TraceType, packet *internal.ClientPacket) {
-	if mode == internal.TracingMode {
-		return
-	}
 	go func() {
 		username, err := rfc2865.UserName_LookupString(packet.Packet)
 		if err != nil {
