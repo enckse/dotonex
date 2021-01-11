@@ -47,9 +47,8 @@ sleep 1
 pkill radiucal
 pkill harness
 
-COMPARE="logger access usermac"
+COMPARE="logger usermac"
 rm -f bin/logger.log
-rm -f bin/access.log
 rm -f bin/usermac.log
 
 _getaux() {
@@ -61,7 +60,7 @@ _getaux() {
 }
 
 _getaux "usermac" | grep -v "^  Id" > bin/usermac.log
-for o in access logger; do
+for o in logger; do
     _getaux $o | \
         sed "s/^  //g" | cut -d " " -f 1,3 | \
         sed "s/^Access/ Access/g" | \

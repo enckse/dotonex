@@ -43,5 +43,3 @@ plugins
     - usermac
     # to output log file dumps from packets received
     - log
-    # track access requests
-    - access

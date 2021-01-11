@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"voidedtech.com/radiucal/internal"
-	"voidedtech.com/radiucal/internal/plugins/access"
 	"voidedtech.com/radiucal/internal/plugins/log"
 	"voidedtech.com/radiucal/internal/plugins/usermac"
 )
@@ -27,8 +26,6 @@ func getPlugin(name string) (internal.Module, error) {
 		return &usermac.Plugin, nil
 	case "log":
 		return &log.Plugin, nil
-	case "access":
-		return &access.Plugin, nil
 	}
 	return nil, fmt.Errorf("unknown plugin type %s", name)
 }
