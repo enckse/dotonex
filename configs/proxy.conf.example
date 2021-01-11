@@ -1,3 +1,2 @@
-plugins: [usermac]
 cache: true
 noreject: true

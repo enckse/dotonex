@@ -12,7 +12,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/radiucal/internal"
-	"voidedtech.com/radiucal/internal/plugins"
+	"voidedtech.com/radiucal/internal/log"
+	"voidedtech.com/radiucal/internal/usermac"
 )
 
 var (
@@ -164,24 +165,28 @@ func main() {
 
 	ctx := &internal.Context{Debug: p.Debug}
 	ctx.FromConfig(conf.Dir, conf)
-	pCtx := internal.NewPluginContext(conf)
-	for _, p := range conf.Plugins {
-		internal.WriteInfo("loading plugin", p)
-		obj, err := plugins.LoadPlugin(p, pCtx)
-		if err != nil {
-			internal.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
-		}
-		if i, ok := obj.(internal.Accounting); ok {
-			ctx.AddAccounting(i)
-		}
-		if i, ok := obj.(internal.Tracing); ok {
-			ctx.AddTrace(i)
-		}
-		if i, ok := obj.(internal.PreAuth); ok {
-			ctx.AddPreAuth(i)
-		}
-		ctx.AddModule(obj)
+	internal.WriteInfo("loading plugins")
+	var plugin internal.Module
+	if conf.Accounting {
+		plugin = &usermac.Plugin
+	} else {
+		plugin = &log.Plugin
 	}
+
+	if err := plugin.Setup(internal.NewPluginContext(conf)); err != nil {
+		internal.Fatal("unable to create internal plugin", err)
+	}
+
+	if i, ok := plugin.(internal.Accounting); ok {
+		ctx.AddAccounting(i)
+	}
+	if i, ok := plugin.(internal.Tracing); ok {
+		ctx.AddTrace(i)
+	}
+	if i, ok := plugin.(internal.PreAuth); ok {
+		ctx.AddPreAuth(i)
+	}
+	ctx.AddModule(plugin)
 
 	if !conf.Internals.NoLogs {
 		logBuffer := time.Duration(conf.Internals.Logs) * time.Second

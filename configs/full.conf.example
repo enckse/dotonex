@@ -36,10 +36,3 @@ internals:
     spancheck: 1
     # hour range in which a recycle is allowed based on lifespan (day hour 0-23, default: 22, 23, 0, 1, 2, 3, 4, 5)
     lifehours: [22, 23, 0, 1, 2, 3, 4, 5]
-
-# plugins to load (an array/multiple values allowed)
-plugins
-    # to do file-system based user+mac filter
-    - usermac
-    # to output log file dumps from packets received
-    - log

@@ -15,7 +15,6 @@ type (
 		Dir        string
 		NoReject   bool
 		Log        string
-		Plugins    []string
 		Internals  struct {
 			NoInterrupt bool
 			NoLogs      bool
