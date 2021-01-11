@@ -17,6 +17,7 @@ def _local_file(repo, name):
 class ConfigException(Exception):
     pass
 
+
 def _is_mac(mac):
     m = mac.lower()
     if len(m) != 12:
@@ -39,7 +40,7 @@ def _users(repo, vlan_names):
         mab = f in vlan_names
         cfg_dir = os.path.join(repo, f)
         if mab:
-            print("{} (MAB)".format(cfg_dir))
+            print("{} (MAB)".format(f))
             for mac in os.listdir(cfg_dir):
                 if not _is_mac(mac):
                     continue
@@ -52,7 +53,7 @@ def _users(repo, vlan_names):
             secret = _local_file(cfg_dir, _TOKEN)
             if not os.path.exists(secret):
                 continue
-            print("{} (USER)".format(cfg_dir))
+            print("{} (USER)".format(f))
             user_name = ""
             with open(secret, 'r') as data:
                 user_name = data.read().strip()
@@ -125,11 +126,12 @@ def _build_configuration(repo):
     eap_user = os.path.join(repo, "eap_users")
     next_eap = eap_user + ".next"
     with open(next_eap, 'w') as f:
-        f.write("\n\n".join(hostapd) + "\n")
+        f.write("\n\n".join(sorted(hostapd)) + "\n")
     if os.path.exists(eap_user):
         if subprocess.call(["diff", "-u", eap_user, next_eap]) == 0:
             return
     subprocess.call(["mv", next_eap, eap_user])
+    print("hostapd reset")
     _reset_hostapd()
 
 
@@ -137,6 +139,7 @@ def _reset_hostapd():
     pids = _run_piped(["pidof", "hostapd"])
     for p in [x.strip() for x in pids.split("\n")]:
         if p:
+            print("signaling {}".format(p))
             subprocess.call(["kill", "-HUP", p])
 
 
@@ -146,6 +149,7 @@ def _server(repo, pass_hash):
         with open(hash_file, 'r') as f:
             if f.read().strip() == pass_hash:
                 return
+    print("hash update")
     with open(hash_file, 'w') as f:
         f.write(pass_hash)
     _build(repo, True)
@@ -206,8 +210,10 @@ def main():
                 raise ConfigException("hash required")
             _server(args.repository, args.hash)
         elif args.mode == "update":
-            #_fetch(args.repository)
+            _fetch(args.repository)
             _build(args.repository, False)
+        elif args.mode == "build":
+            _build(args.repository, True)
         else:
             raise ConfigException("unknown mode: {}".format(args.mode))
     except Exception as e:
