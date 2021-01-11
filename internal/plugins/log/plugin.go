@@ -9,7 +9,6 @@ import (
 var (
 	// Plugin represents the system instance of the module
 	Plugin logger
-	modes  []string
 )
 
 type (
@@ -22,7 +21,6 @@ func (l *logger) Name() string {
 }
 
 func (l *logger) Setup(ctx *internal.PluginContext) error {
-	modes = internal.DisabledModes(l, ctx)
 	return nil
 }
 
@@ -40,9 +38,6 @@ func (l *logger) Account(packet *internal.ClientPacket) {
 
 func write(mode string, objType internal.TraceType, packet *internal.ClientPacket) {
 	go func() {
-		if internal.Disabled(mode, modes) {
-			return
-		}
 		dump := internal.NewRequestDump(packet, mode)
 		messages := dump.DumpPacket(internal.KeyValue{Key: "Info", Value: fmt.Sprintf("%d", int(objType))})
 		internal.LogPluginMessages(&Plugin, messages)

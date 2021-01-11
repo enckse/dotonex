@@ -45,9 +45,3 @@ plugins
     - log
     # track access requests
     - access
-
-disable:
-    accounting: []
-    preauth: [debugger]
-    trace: [logger]
-    postauth: []

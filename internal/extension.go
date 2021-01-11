@@ -142,19 +142,6 @@ func (packet *RequestDump) DumpPacket(kv KeyValue) []string {
 	return results
 }
 
-// Disabled indicates if a given mode is disabled
-func Disabled(mode string, modes []string) bool {
-	if len(modes) == 0 {
-		return false
-	}
-	for _, m := range modes {
-		if m == mode {
-			return true
-		}
-	}
-	return false
-}
-
 // NoopPre is a no-operation pre authorization call
 func NoopPre(packet *ClientPacket, call NoopCall) bool {
 	return noopAuth(PreAuthMode, packet, call)
@@ -172,25 +159,6 @@ func isFlagged(list []string, name string) bool {
 		}
 	}
 	return false
-}
-
-// DisabledModes returns the modes disable for module
-func DisabledModes(m Module, ctx *PluginContext) []string {
-	name := m.Name()
-	noAccounting := isFlagged(ctx.config.Disable.Accounting, name)
-	noTracing := isFlagged(ctx.config.Disable.Trace, name)
-	noPreauth := isFlagged(ctx.config.Disable.Preauth, name)
-	var modes []string
-	if noAccounting {
-		modes = append(modes, AccountingMode)
-	}
-	if noTracing {
-		modes = append(modes, TracingMode)
-	}
-	if noPreauth {
-		modes = append(modes, PreAuthMode)
-	}
-	return modes
 }
 
 func newFile(path, instance string, appending bool) *os.File {

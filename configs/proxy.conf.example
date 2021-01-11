@@ -1,6 +1,3 @@
 plugins: [usermac, access]
 cache: true
 noreject: true
-
-disable:
-    trace: [access]

@@ -24,11 +24,6 @@ type (
 			SpanCheck   int
 			LifeHours   []int
 		}
-		Disable struct {
-			Accounting []string
-			Preauth    []string
-			Trace      []string
-		}
 	}
 )
 

@@ -11,7 +11,6 @@ import (
 var (
 	// Plugin represents the plugin instance for the system
 	Plugin access
-	modes  []string
 )
 
 type (
@@ -23,7 +22,6 @@ func (l *access) Name() string {
 }
 
 func (l *access) Setup(ctx *internal.PluginContext) error {
-	modes = internal.DisabledModes(l, ctx)
 	return nil
 }
 
@@ -40,10 +38,10 @@ func (l *access) Account(packet *internal.ClientPacket) {
 }
 
 func write(mode string, objType internal.TraceType, packet *internal.ClientPacket) {
+	if mode == internal.TracingMode {
+		return
+	}
 	go func() {
-		if internal.Disabled(mode, modes) {
-			return
-		}
 		username, err := rfc2865.UserName_LookupString(packet.Packet)
 		if err != nil {
 			username = ""
