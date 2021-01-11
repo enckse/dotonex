@@ -13,7 +13,7 @@ EAP=${REPO}eap_users
 rm -f $KEY $TOKEN $EAP
 
 _command() {
-    python ../../scripts/dotonex-config $1 $REPO --command='echo {{\"name\": \"user.name\"}}' ${@:2} >> $RESULTS
+    python ../../tools/dotonex-config $1 $REPO --command='echo {{\"name\": \"user.name\"}}' ${@:2} >> $RESULTS
 }
 
 _diff() {
