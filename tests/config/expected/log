@@ -1,0 +1,51 @@
+
+configuration process failed
+no password for login found
+hash update
+xyz (MAB)
+ -> aabbccddeeff
+hostapd reset
+hash update
+xyz (MAB)
+ -> aabbccddeeff
+xyz (MAB)
+ -> aabbccddeeff
+validating inputs
+user found: user.name
+invalid: 1122334455aa
+valid
+validating inputs
+user found: user.name
+valid
+@@ -1,3 +1,27 @@
++
++"abc:token" PEAP
++
++"abc:token" MSCHAPV2 hash:HASH [2]
++radius_accept_attr=64:d:13
++radius_accept_attr=65:d:6
++radius_accept_attr=81:s:1
++
++
++"token" PEAP
++
++"token" MSCHAPV2 hash:HASH [2]
++radius_accept_attr=64:d:13
++radius_accept_attr=65:d:6
++radius_accept_attr=81:s:1
++
++
++"xyz:token" PEAP
++
++"xyz:token" MSCHAPV2 hash:HASH [2]
++radius_accept_attr=64:d:13
++radius_accept_attr=65:d:6
++radius_accept_attr=81:s:2
++
+ "aabbccddeeff" MD5 "aabbccddeeff"
+ radius_accept_attr=64:d:13
+ radius_accept_attr=65:d:6
+user.name (USER)
+xyz (MAB)
+ -> aabbccddeeff
+hostapd reset
