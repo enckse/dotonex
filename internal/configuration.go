@@ -1,8 +1,7 @@
-package server
+package internal
 
 import (
 	yaml "gopkg.in/yaml.v2"
-	"voidedtech.com/radiucal/internal/core"
 )
 
 type (
@@ -38,9 +37,9 @@ type (
 func (c *Configuration) Dump() {
 	config, err := yaml.Marshal(c)
 	if err == nil {
-		core.WriteDebug("configuration", string(config))
+		WriteDebug("configuration", string(config))
 	} else {
-		core.WriteError("unable to read yaml configuration", err)
+		WriteError("unable to read yaml configuration", err)
 	}
 }
 

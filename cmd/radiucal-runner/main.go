@@ -11,9 +11,8 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
-	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/server"
-	"voidedtech.com/radiucal/internal/server/plugins"
+	"voidedtech.com/radiucal/internal"
+	"voidedtech.com/radiucal/internal/plugins"
 )
 
 var (
@@ -35,7 +34,7 @@ func newConnection(srv, cli *net.UDPAddr) *connection {
 	conn.client = cli
 	serverUDP, err := net.DialUDP("udp", nil, srv)
 	if err != nil {
-		core.WriteError("dial udp", err)
+		internal.WriteError("dial udp", err)
 		return nil
 	}
 	conn.server = serverUDP
@@ -60,48 +59,48 @@ func setup(hostport string, port int) error {
 	return nil
 }
 
-func runConnection(ctx *server.Context, conn *connection) {
+func runConnection(ctx *internal.Context, conn *connection) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, err := conn.server.Read(buffer[0:])
 		if err != nil {
-			core.WriteError("unable to read buffer", err)
+			internal.WriteError("unable to read buffer", err)
 			continue
 		}
 		buffered := []byte(buffer[0:n])
-		if !checkAuth("post", server.PostAuthorize, ctx, buffered, conn.client, conn.client) {
+		if !checkAuth("post", internal.PostAuthorize, ctx, buffered, conn.client, conn.client) {
 			continue
 		}
 		if _, err := proxy.WriteToUDP(buffer[0:n], conn.client); err != nil {
-			core.WriteError("error relaying", err)
+			internal.WriteError("error relaying", err)
 		}
 	}
 }
 
-func checkAuth(name string, fxn server.AuthorizePacket, ctx *server.Context, b []byte, addr, client *net.UDPAddr) bool {
-	auth := server.HandleAuth(fxn, ctx, b, addr, func(buffer []byte) {
+func checkAuth(name string, fxn internal.AuthorizePacket, ctx *internal.Context, b []byte, addr, client *net.UDPAddr) bool {
+	auth := internal.HandleAuth(fxn, ctx, b, addr, func(buffer []byte) {
 		proxy.WriteToUDP(buffer, client)
 	})
 	if !auth {
-		core.WriteDebug("client failed auth check", name)
+		internal.WriteDebug("client failed auth check", name)
 	}
 	return auth
 }
 
-func runProxy(ctx *server.Context) {
+func runProxy(ctx *internal.Context) {
 	if ctx.Debug {
-		core.WriteInfo("=============WARNING==================")
-		core.WriteInfo("debugging is enabled!")
-		core.WriteInfo("dumps from debugging may contain secrets")
-		core.WriteInfo("do NOT share debugging dumps")
-		core.WriteInfo("=============WARNING==================")
+		internal.WriteInfo("=============WARNING==================")
+		internal.WriteInfo("debugging is enabled!")
+		internal.WriteInfo("dumps from debugging may contain secrets")
+		internal.WriteInfo("do NOT share debugging dumps")
+		internal.WriteInfo("=============WARNING==================")
 		ctx.DebugDump()
 	}
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
 		if err != nil {
-			core.WriteError("read from udp", err)
+			internal.WriteError("read from udp", err)
 			continue
 		}
 		addr := cliaddr.String()
@@ -120,37 +119,37 @@ func runProxy(ctx *server.Context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		if !checkAuth("pre", server.PreAuthorize, ctx, buffered, cliaddr, conn.client) {
+		if !checkAuth("pre", internal.PreAuthorize, ctx, buffered, cliaddr, conn.client) {
 			continue
 		}
 		if _, err := conn.server.Write(buffer[0:n]); err != nil {
-			core.WriteError("unable to write to the server", err)
+			internal.WriteError("unable to write to the server", err)
 		}
 	}
 }
 
-func account(ctx *server.Context) {
+func account(ctx *internal.Context) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
 		if err != nil {
-			core.WriteError("accounting udp error", err)
+			internal.WriteError("accounting udp error", err)
 			continue
 		}
-		ctx.Account(server.NewClientPacket(buffer[0:n], cliaddr))
+		ctx.Account(internal.NewClientPacket(buffer[0:n], cliaddr))
 	}
 }
 
 func main() {
-	p := server.Flags()
-	core.ConfigureLogging(p.Debug, p.Instance)
+	p := internal.Flags()
+	internal.ConfigureLogging(p.Debug, p.Instance)
 	b, err := ioutil.ReadFile(p.Config)
 	if err != nil {
-		core.Fatal("unable to load config", err)
+		internal.Fatal("unable to load config", err)
 	}
-	conf := &server.Configuration{}
+	conf := &internal.Configuration{}
 	if err := yaml.Unmarshal(b, conf); err != nil {
-		core.Fatal("unable to parse config", err)
+		internal.Fatal("unable to parse config", err)
 	}
 	conf.Defaults(b)
 	if p.Debug {
@@ -164,28 +163,28 @@ func main() {
 	}
 	addr := fmt.Sprintf("%s:%d", conf.Host, to)
 	if err := setup(addr, conf.Bind); err != nil {
-		core.Fatal("proxy setup", err)
+		internal.Fatal("proxy setup", err)
 	}
 
-	ctx := &server.Context{Debug: p.Debug}
+	ctx := &internal.Context{Debug: p.Debug}
 	ctx.FromConfig(conf.Dir, conf)
-	pCtx := server.NewPluginContext(conf)
+	pCtx := internal.NewPluginContext(conf)
 	for _, p := range conf.Plugins {
-		core.WriteInfo("loading plugin", p)
+		internal.WriteInfo("loading plugin", p)
 		obj, err := plugins.LoadPlugin(p, pCtx)
 		if err != nil {
-			core.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
+			internal.Fatal(fmt.Sprintf("unable to load plugin: %s", p), err)
 		}
-		if i, ok := obj.(server.Accounting); ok {
+		if i, ok := obj.(internal.Accounting); ok {
 			ctx.AddAccounting(i)
 		}
-		if i, ok := obj.(server.Tracing); ok {
+		if i, ok := obj.(internal.Tracing); ok {
 			ctx.AddTrace(i)
 		}
-		if i, ok := obj.(server.PreAuth); ok {
+		if i, ok := obj.(internal.PreAuth); ok {
 			ctx.AddPreAuth(i)
 		}
-		if i, ok := obj.(server.PostAuth); ok {
+		if i, ok := obj.(internal.PostAuth); ok {
 			ctx.AddPostAuth(i)
 		}
 		ctx.AddModule(obj)
@@ -197,9 +196,9 @@ func main() {
 			for {
 				time.Sleep(logBuffer)
 				if ctx.Debug {
-					core.WriteDebug("flushing logs")
+					internal.WriteDebug("flushing logs")
 				}
-				server.WritePluginMessages(conf.Log, p.Instance)
+				internal.WritePluginMessages(conf.Log, p.Instance)
 			}
 		}()
 	}
@@ -210,7 +209,7 @@ func main() {
 		go func() {
 			for range c {
 				if ctx.Debug {
-					core.WriteDebug("interrupt signal received")
+					internal.WriteDebug("interrupt signal received")
 				}
 				interrupt <- true
 			}
@@ -223,12 +222,12 @@ func main() {
 		for {
 			time.Sleep(check)
 			if ctx.Debug {
-				core.WriteDebug("lifespan wakeup")
+				internal.WriteDebug("lifespan wakeup")
 			}
 			now := time.Now()
-			if !core.IntegerIn(now.Hour(), conf.Internals.LifeHours) {
+			if !internal.IntegerIn(now.Hour(), conf.Internals.LifeHours) {
 				if ctx.Debug {
-					core.WriteDebug("lifespan in quiet hours")
+					internal.WriteDebug("lifespan in quiet hours")
 				}
 				continue
 			}
@@ -238,18 +237,18 @@ func main() {
 		}
 	}()
 	if conf.Accounting {
-		core.WriteInfo("accounting mode")
+		internal.WriteInfo("accounting mode")
 		go account(ctx)
 	} else {
-		core.WriteInfo("proxy mode")
+		internal.WriteInfo("proxy mode")
 		go runProxy(ctx)
 	}
 	select {
 	case <-interrupt:
-		core.WriteInfo("interrupt...")
+		internal.WriteInfo("interrupt...")
 	case <-lifecycle:
-		core.WriteInfo("lifecyle...")
+		internal.WriteInfo("lifecyle...")
 	}
-	server.WritePluginMessages(conf.Log, p.Instance)
+	internal.WritePluginMessages(conf.Log, p.Instance)
 	os.Exit(0)
 }

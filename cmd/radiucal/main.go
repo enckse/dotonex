@@ -6,32 +6,31 @@ import (
 	"os/exec"
 	"time"
 
-	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/server"
+	"voidedtech.com/radiucal/internal"
 )
 
 func main() {
-	flags := server.Flags()
+	flags := internal.Flags()
 	i := fmt.Sprintf("instance: %s", flags.Instance)
 	args := flags.Args()
 	if flags.Debug {
-		core.WriteDebug(fmt.Sprintf("flags: %v", args))
+		internal.WriteDebug(fmt.Sprintf("flags: %v", args))
 	}
 	last := time.Now()
 	errors := 0
 	for {
-		core.WriteInfo("starting " + i)
+		internal.WriteInfo("starting " + i)
 		cmd := exec.Command("radiucal-runner", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			core.WriteWarn(fmt.Sprintf("radiucal runner ended %s (%v)", i, err))
+			internal.WriteWarn(fmt.Sprintf("radiucal runner ended %s (%v)", i, err))
 		}
 		now := time.Now()
 		sleep := 10 * time.Millisecond
 		if now.Sub(last).Seconds() < 30 {
 			if errors > 3 {
-				core.WriteWarn("cool down for restart")
+				internal.WriteWarn("cool down for restart")
 				sleep = 5 * time.Second
 			} else {
 				errors++

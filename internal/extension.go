@@ -1,4 +1,4 @@
-package server
+package internal
 
 import (
 	"bytes"
@@ -13,7 +13,6 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/debug"
-	"voidedtech.com/radiucal/internal/core"
 )
 
 const (
@@ -224,7 +223,7 @@ func newFile(path, instance string, appending bool) *os.File {
 	logPath := filepath.Join(path, fmt.Sprintf("%s.%s", inst, t.Format("2006-01-02")))
 	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0660)
 	if err != nil {
-		core.WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
+		WriteError(fmt.Sprintf("unable to create file: %s", logPath), err)
 		return nil
 	}
 	return f

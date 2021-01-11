@@ -1,4 +1,4 @@
-package server
+package internal
 
 import (
 	"bytes"
@@ -7,6 +7,10 @@ import (
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
+)
+
+const (
+	testDir = "../tests/"
 )
 
 type MockModule struct {
@@ -203,7 +207,7 @@ func checkOneSecret(dir, filename, ip, secret string, t *testing.T) {
 }
 
 func TestSecretMappings(t *testing.T) {
-	dir := "../../tests/"
+	dir := testDir
 	_, err := parseSecretMappings(dir + "nofile")
 	if err.Error() != "no secrets file" {
 		t.Error("file does not exist")
@@ -238,7 +242,7 @@ func TestSecretMappings(t *testing.T) {
 }
 
 func TestSecretParsing(t *testing.T) {
-	dir := "../../tests/"
+	dir := testDir
 	_, err := parseSecretFile(dir + "nofile")
 	if err.Error() != "no secrets file" {
 		t.Error("file does not exist")

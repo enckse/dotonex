@@ -3,15 +3,15 @@ package plugins
 import (
 	"fmt"
 
-	"voidedtech.com/radiucal/internal/server"
-	"voidedtech.com/radiucal/internal/server/plugins/access"
-	"voidedtech.com/radiucal/internal/server/plugins/debug"
-	"voidedtech.com/radiucal/internal/server/plugins/log"
-	"voidedtech.com/radiucal/internal/server/plugins/usermac"
+	"voidedtech.com/radiucal/internal"
+	"voidedtech.com/radiucal/internal/plugins/access"
+	"voidedtech.com/radiucal/internal/plugins/debug"
+	"voidedtech.com/radiucal/internal/plugins/log"
+	"voidedtech.com/radiucal/internal/plugins/usermac"
 )
 
 // LoadPlugin loads a plugin from the name and into a module object
-func LoadPlugin(name string, ctx *server.PluginContext) (server.Module, error) {
+func LoadPlugin(name string, ctx *internal.PluginContext) (internal.Module, error) {
 	mod, err := getPlugin(name)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func LoadPlugin(name string, ctx *server.PluginContext) (server.Module, error) {
 	return mod, nil
 }
 
-func getPlugin(name string) (server.Module, error) {
+func getPlugin(name string) (internal.Module, error) {
 	switch name {
 	case "usermac":
 		return &usermac.Plugin, nil

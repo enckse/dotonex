@@ -10,8 +10,7 @@ import (
 	"sync"
 
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/radiucal/internal/core"
-	"voidedtech.com/radiucal/internal/server"
+	"voidedtech.com/radiucal/internal"
 )
 
 type (
@@ -32,7 +31,7 @@ var (
 )
 
 func (l *umac) load() error {
-	if !core.PathExists(file) {
+	if !internal.PathExists(file) {
 		return fmt.Errorf("%s is missing", file)
 	}
 	lock.Lock()
@@ -43,7 +42,7 @@ func (l *umac) load() error {
 	}
 	manifest = make(map[string]bool)
 	data := strings.Split(string(b), "\n")
-	kv := server.KeyValueStore{}
+	kv := internal.KeyValueStore{}
 	kv.Add("Manfiest", "load")
 	idx := 0
 	for _, d := range data {
@@ -54,11 +53,11 @@ func (l *umac) load() error {
 		manifest[d] = true
 		idx++
 	}
-	server.LogPluginMessages(&Plugin, kv.Strings())
+	internal.LogPluginMessages(&Plugin, kv.Strings())
 	return nil
 }
 
-func (l *umac) Setup(ctx *server.PluginContext) error {
+func (l *umac) Setup(ctx *internal.PluginContext) error {
 	file = filepath.Join(ctx.Lib, "manifest")
 	if err := l.load(); err != nil {
 		return err
@@ -66,7 +65,7 @@ func (l *umac) Setup(ctx *server.PluginContext) error {
 	return nil
 }
 
-func (l *umac) Pre(packet *server.ClientPacket) bool {
+func (l *umac) Pre(packet *internal.ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }
 
@@ -80,7 +79,7 @@ func clean(in string) string {
 	return result
 }
 
-func checkUserMac(p *server.ClientPacket) error {
+func checkUserMac(p *internal.ClientPacket) error {
 	username, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
@@ -91,7 +90,7 @@ func checkUserMac(p *server.ClientPacket) error {
 	}
 	username = clean(username)
 	calling = clean(calling)
-	fqdn := core.NewManifestEntry(username, calling)
+	fqdn := internal.NewManifestEntry(username, calling)
 	success := true
 	var failure error
 	lock.Lock()
@@ -105,7 +104,7 @@ func checkUserMac(p *server.ClientPacket) error {
 	return failure
 }
 
-func mark(success bool, user, calling string, p *server.ClientPacket, cached bool) {
+func mark(success bool, user, calling string, p *internal.ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -127,7 +126,7 @@ func mark(success bool, user, calling string, p *server.ClientPacket, cached boo
 	if !success {
 		result = "FAILED"
 	}
-	kv := server.KeyValueStore{}
+	kv := internal.KeyValueStore{}
 	kv.Add("Result", result)
 	kv.Add("User-Name", user)
 	kv.Add("Calling-Station-Id", calling)
@@ -135,5 +134,5 @@ func mark(success bool, user, calling string, p *server.ClientPacket, cached boo
 	kv.Add("NAS-IPAddress", nasip)
 	kv.Add("NAS-Port", fmt.Sprintf("%d", nasport))
 	kv.Add("Id", strconv.Itoa(int(p.Packet.Identifier)))
-	server.LogPluginMessages(&Plugin, kv.Strings())
+	internal.LogPluginMessages(&Plugin, kv.Strings())
 }
