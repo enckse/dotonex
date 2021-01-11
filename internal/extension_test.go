@@ -11,13 +11,6 @@ func TestNewPluginContext(t *testing.T) {
 	}
 }
 
-func TestCloneContext(t *testing.T) {
-	c := NewPluginContext(&Configuration{Dir: "test"}).CloneContext()
-	if c.Lib != "test" {
-		t.Error("invalid context")
-	}
-}
-
 func TestKeyValueStrings(t *testing.T) {
 	c := KeyValueStore{}
 	c.KeyValues = append(c.KeyValues, KeyValue{Key: "key", Value: "val"})

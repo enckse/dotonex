@@ -109,11 +109,6 @@ func NewPluginContext(config *Configuration) *PluginContext {
 	return p
 }
 
-// CloneContext a plugin context to a copy for use in other plugins
-func (p *PluginContext) CloneContext() *PluginContext {
-	return NewPluginContext(p.config)
-}
-
 // NewRequestDump prepares a packet request for dumping
 func NewRequestDump(packet *ClientPacket, mode string) *RequestDump {
 	return &RequestDump{data: packet, mode: mode}

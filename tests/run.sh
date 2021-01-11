@@ -47,9 +47,9 @@ sleep 1
 pkill radiucal
 pkill harness
 
-COMPARE="logger usermac"
-rm -f bin/logger.log
-rm -f bin/usermac.log
+COMPARE="accounting proxy"
+rm -f bin/accounting.log
+rm -f bin/proxy.log
 
 _getaux() {
     local upper
@@ -59,8 +59,8 @@ _getaux() {
     done
 }
 
-_getaux "usermac" | grep -v "^  Id" > bin/usermac.log
-for o in logger; do
+_getaux "proxy" | grep -v "^  Id" > bin/proxy.log
+for o in accounting; do
     _getaux $o | \
         sed "s/^  //g" | cut -d " " -f 1,3 | \
         sed "s/^Access/ Access/g" | \
