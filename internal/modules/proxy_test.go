@@ -52,7 +52,7 @@ func newTestSet(t *testing.T, user, mac string, valid bool) (*internal.ClientPac
 }
 
 func setupUserMac() *proxyModule {
-	internal.SetAllowed("test.112233445566")
+	internal.SetAllowed("test/112233445566")
 	m := &proxyModule{}
 	return m
 }

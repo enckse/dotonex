@@ -11,21 +11,15 @@ import (
 
 var (
 	lock    = &sync.Mutex{}
-	backend manager
+	backend *script
 )
 
 type (
-	manager interface {
-		Validate(string, string) bool
-		Server() bool
-		Update() bool
-	}
 	script struct {
 		repo    string
 		command string
 		hash    string
-	}
-	static struct {
+		static  bool
 		payload []string
 	}
 )
@@ -46,39 +40,24 @@ func (s script) execute(sub string, args []string) bool {
 }
 
 func (s script) Validate(token, mac string) bool {
-	return s.execute("validate", []string{fmt.Sprintf("--command='%s'", s.command), fmt.Sprintf("--mac=%s", mac), fmt.Sprintf("--token=%s", token)})
-}
-
-func (s static) Validate(token, mac string) bool {
-	key := fmt.Sprintf("%s.%s", token, mac)
-	for _, p := range s.payload {
-		if p == key {
-			return true
+	if s.static {
+		key := fmt.Sprintf("%s/%s", token, mac)
+		for _, p := range s.payload {
+			if p == key {
+				return true
+			}
 		}
+		return false
 	}
-	return false
+	return s.execute("validate", []string{fmt.Sprintf("--command='%s'", s.command), fmt.Sprintf("--mac=%s", mac), fmt.Sprintf("--token=%s", token)})
 }
 
 func (s script) Server() bool {
 	return s.execute("server", []string{fmt.Sprintf("--hash=%s", s.hash)})
 }
 
-func (s static) Server() bool {
-	return true
-}
-
 func (s script) Update() bool {
 	return s.execute("update", []string{})
-}
-
-func (s static) Update() bool {
-	return true
-}
-
-func setBackend(mgr manager) {
-	lock.Lock()
-	defer lock.Unlock()
-	backend = mgr
 }
 
 // SetAllowed hard sets which token+mac combos are allowed
@@ -91,22 +70,20 @@ func SetAllowed(payload string) {
 			objects = append(objects, str)
 		}
 	}
-	setBackend(static{payload: objects})
+	lock.Lock()
+	defer lock.Unlock()
+	backend = &script{payload: objects, static: true}
 }
 
 // Manage configures the backend for access checks
 func Manage(cfg *Configuration) error {
-	if cfg.Configurator.Static {
-		SetAllowed(cfg.Configurator.Payload)
-	} else {
-		if len(cfg.Configurator.Payload) == 0 {
-			return fmt.Errorf("no command configured for management")
-		}
-		if len(cfg.Configurator.ServerKey) == 0 {
-			return fmt.Errorf("no server key/passphrase found")
-		}
-		setBackend(&script{repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: MD4(cfg.Configurator.ServerKey)})
+	if len(cfg.Configurator.Payload) == 0 {
+		return fmt.Errorf("no command configured for management")
 	}
+	if len(cfg.Configurator.ServerKey) == 0 {
+		return fmt.Errorf("no server key/passphrase found")
+	}
+	backend = &script{repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: MD4(cfg.Configurator.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()
