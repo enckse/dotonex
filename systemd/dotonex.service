@@ -3,7 +3,7 @@ Description=RADIUS proxy frontend for (pre/post)auth+hostapd
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/radiucal-daemon
+ExecStart=/usr/bin/dotonex-daemon
 Restart=always
 
 [Install]
