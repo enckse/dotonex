@@ -21,7 +21,7 @@ type MockModule struct {
 	reload int
 	unload int
 	// TraceType
-	preAuth  int
+	preAuth int
 }
 
 func (m *MockModule) Name() string {

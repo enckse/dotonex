@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	// AccountingModule is an instance of the module
 	AccountingModule accountingModule
 )
 

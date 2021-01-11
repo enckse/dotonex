@@ -2,12 +2,9 @@ package modules
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
-	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 
 	"layeh.com/radius/rfc2865"
 	"voidedtech.com/dotonex/internal"
@@ -23,45 +20,11 @@ func (l *proxyModule) Name() string {
 }
 
 var (
-	lock     = &sync.Mutex{}
-	file     string
-	manifest = make(map[string]bool)
-	// Plugin represents the instance for the system
+	// ProxyModule represents the instance for the system
 	ProxyModule proxyModule
 )
 
-func (l *proxyModule) load() error {
-	if !internal.PathExists(file) {
-		return fmt.Errorf("%s is missing", file)
-	}
-	lock.Lock()
-	defer lock.Unlock()
-	b, err := ioutil.ReadFile(file)
-	if err != nil {
-		return err
-	}
-	manifest = make(map[string]bool)
-	data := strings.Split(string(b), "\n")
-	kv := internal.KeyValueStore{}
-	kv.Add("Manfiest", "load")
-	idx := 0
-	for _, d := range data {
-		if strings.TrimSpace(d) == "" {
-			continue
-		}
-		kv.Add(fmt.Sprintf("Manifest-%d", idx), d)
-		manifest[d] = true
-		idx++
-	}
-	internal.LogPluginMessages(&ProxyModule, kv.Strings())
-	return nil
-}
-
 func (l *proxyModule) Setup(ctx *internal.PluginContext) error {
-	file = filepath.Join(ctx.Lib, "manifest")
-	if err := l.load(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -80,7 +43,7 @@ func clean(in string) string {
 }
 
 func checkUserMac(p *internal.ClientPacket) error {
-	username, err := rfc2865.UserName_LookupString(p.Packet)
+	userName, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
 	}
@@ -88,19 +51,25 @@ func checkUserMac(p *internal.ClientPacket) error {
 	if err != nil {
 		return err
 	}
-	username = clean(username)
+	token := userName
 	calling = clean(calling)
-	fqdn := internal.NewManifestEntry(username, calling)
 	success := true
 	var failure error
-	lock.Lock()
-	_, ok := manifest[fqdn]
-	lock.Unlock()
+	ok := true
+	cleaned, isMAC := internal.CleanMAC(calling)
+	if isMAC {
+		if calling != clean(token) {
+			// This is NOT a MAB situation
+			ok = internal.CheckTokenMAC(token, cleaned)
+		}
+	} else {
+		ok = false
+	}
 	if !ok {
-		failure = fmt.Errorf("failed preauth: %s %s", username, calling)
+		failure = fmt.Errorf("failed preauth: %s %s", userName, calling)
 		success = false
 	}
-	go mark(success, username, calling, p, false)
+	go mark(success, userName, calling, p, false)
 	return failure
 }
 

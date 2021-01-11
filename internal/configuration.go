@@ -7,15 +7,22 @@ import (
 type (
 	// Configuration is the configuration definition
 	Configuration struct {
-		Cache      bool
-		Host       string
-		Accounting bool
-		To         int
-		Bind       int
-		Dir        string
-		NoReject   bool
-		Log        string
-		Internals  struct {
+		Cache        bool
+		Host         string
+		Accounting   bool
+		To           int
+		Bind         int
+		Dir          string
+		NoReject     bool
+		Log          string
+		Configurator struct {
+			Static     bool
+			Repository string
+			Payload    string
+			ServerKey  string
+			Refresh    int
+		}
+		Internals struct {
 			NoInterrupt bool
 			NoLogs      bool
 			Logs        int
@@ -54,6 +61,10 @@ func (c *Configuration) Defaults(backing []byte) {
 		} else {
 			c.Bind = 1812
 		}
+	}
+	c.Configurator.Repository = defaultString(c.Configurator.Repository, "/var/lib/cache/dotonex")
+	if c.Configurator.Refresh <= 0 {
+		c.Configurator.Refresh = 5
 	}
 	if c.Internals.Logs <= 0 {
 		c.Internals.Logs = 10

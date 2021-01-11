@@ -13,8 +13,13 @@ func TestIn(t *testing.T) {
 	}
 }
 
-func TestManifestEntry(t *testing.T) {
-	if NewManifestEntry("test", "object") != "test.object" {
-		t.Error("invalid manifest entry")
+func TestCleanMAC(t *testing.T) {
+	mac, ok := CleanMAC("aba")
+	if ok {
+		t.Errorf("mac is invalid")
+	}
+	mac, ok = CleanMAC("aabb11:22:33:FF")
+	if !ok || mac != "aabb112233ff" {
+		t.Errorf("invalid mac")
 	}
 }

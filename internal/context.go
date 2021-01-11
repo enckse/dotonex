@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	localKey             = "127.0.0.1"
-	allKey               = "0.0.0.0"
+	localKey = "127.0.0.1"
+	allKey   = "0.0.0.0"
 	// failure of auth reasons
 	successCode   ReasonCode = 0
 	badSecretCode ReasonCode = 1
@@ -34,19 +34,19 @@ type (
 
 	// Context is the server's operating context
 	Context struct {
-		Debug     bool
-		secret    []byte
-		preauths  []PreAuth
-		accts     []Accounting
-		traces    []Tracing
-		modules   []Module
-		secrets   map[string][]byte
-		noReject  bool
+		Debug    bool
+		secret   []byte
+		preauths []PreAuth
+		accts    []Accounting
+		traces   []Tracing
+		modules  []Module
+		secrets  map[string][]byte
+		noReject bool
 		// shortcuts
-		preauth  bool
-		acct     bool
-		trace    bool
-		module   bool
+		preauth bool
+		acct    bool
+		trace   bool
+		module  bool
 	}
 )
 

@@ -238,6 +238,9 @@ func main() {
 		go account(ctx)
 	} else {
 		internal.WriteInfo("proxy mode")
+		if err := internal.Manage(conf); err != nil {
+			internal.Fatal("unable to setup management of configs", err)
+		}
 		go runProxy(ctx)
 	}
 	select {

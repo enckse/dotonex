@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"fmt"
 	"os"
+	"strings"
 )
 
 // PathExists reports if a path exists or does not exist
@@ -23,7 +23,13 @@ func IntegerIn(i int, list []int) bool {
 	return false
 }
 
-// NewManifestEntry creates a new manifest entry object
-func NewManifestEntry(user, mac string) string {
-	return fmt.Sprintf("%s.%s", user, mac)
+// CleanMAC will clean a MAC and check that it is valid
+func CleanMAC(value string) (string, bool) {
+	str := ""
+	for _, chr := range strings.ToLower(value) {
+		if (chr >= '0' && chr <= '9') || (chr >= 'a' && chr <= 'f') {
+			str = str + string([]rune{chr})
+		}
+	}
+	return str, len(str) == 12
 }
