@@ -57,7 +57,7 @@ configurator:
 	payload: ["curl", "-s", "https://gitlab.url"]
 	# shared login key for all users (empty)
 	serverkey: secretkey
-	# refresh time for how often to rebuild dynamic config in seconds (15)
+	# refresh time for how often to rebuild dynamic config in minutes (5)
 	refresh: 5
 	# timeout for how long the backend script can run in seconds (15)
 	timeout: 15
