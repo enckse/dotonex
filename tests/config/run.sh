@@ -34,7 +34,7 @@ _diff_known() {
 }
 
 # no password
-_command build
+_command rebuild
 if [ -e $EAP ]; then
     echo "should have failed, no password"
     exit 1
@@ -43,7 +43,7 @@ fi
 _command server --hash "test"
 _command server --hash "test"
 _command server --hash "HASH"
-_command build
+_command rebuild
 _diff_eap mabonly
 
 _command validate --token abcdef --mac 1122334455aa

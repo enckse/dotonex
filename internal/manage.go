@@ -56,8 +56,12 @@ func (s script) Server() bool {
 	return s.execute("server", []string{fmt.Sprintf("--hash=%s", s.hash)})
 }
 
-func (s script) Update() bool {
-	return s.execute("update", []string{})
+func (s script) Fetch() bool {
+	return s.execute("fetch", []string{})
+}
+
+func (s script) Build() bool {
+	return s.execute("build", []string{})
 }
 
 // SetAllowed hard sets which token+mac combos are allowed
@@ -104,8 +108,12 @@ func CheckTokenMAC(token, mac string) bool {
 func run(sleep time.Duration) {
 	for {
 		time.Sleep(sleep)
+		if !backend.Fetch() {
+			WriteWarn("fetch failed")
+			continue
+		}
 		lock.Lock()
-		result := backend.Update()
+		result := backend.Build()
 		lock.Unlock()
 		if !result {
 			WriteWarn("config backend update failed")

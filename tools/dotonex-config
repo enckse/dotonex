@@ -274,11 +274,11 @@ def main():
             if not args.hash:
                 raise ConfigException("hash required")
             _server(args.repository, args.hash)
-        elif args.mode == "update":
+        elif args.mode == "fetch":
             _fetch(args.repository)
-            _build(args.repository, False)
-        elif args.mode == "build":
-            _build(args.repository, True)
+        elif args.mode in ["build", "rebuild"]:
+            force = args.mode == "rebuild"
+            _build(args.repository, force)
         else:
             raise ConfigException("unknown mode: {}".format(args.mode))
     except Exception as e:
