@@ -248,7 +248,8 @@ def _validate(repo, command, token, mac):
         if not os.path.exists(os.path.join(user_dir, f)):
             _stdout("invalid: {}".format(f))
             exit_code = 1
-    _stdout("valid")
+    if exit_code == 0:
+        _stdout("valid")
     exit(exit_code)
 
 
