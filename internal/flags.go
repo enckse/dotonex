@@ -18,6 +18,8 @@ const (
 	instanceFlag = "instance"
 	debugFlag    = "debug"
 	dash         = "--"
+	// InstanceConfig indicates a configuration file of instance type
+	InstanceConfig = ".conf"
 )
 
 // Args converts the process flags back to callable arguments

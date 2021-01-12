@@ -4,21 +4,34 @@ rm -rf $BIN
 mkdir -p $BIN
 OUT=${BIN}stdout
 LOGS=log/
+DISCOVER=${BIN}discover/
 PLUGINS=plugins/
 HARNESS="../tools/harness.go"
-for d in $LOGS $PLUGINS; do
+for d in $LOGS $PLUGINS $DISCOVER; do
     rm -rf $d
     mkdir -p $d
 done
 
 PATH="../:$PATH"
 CONF="$1"
+
+_discover() {
+    local f
+    f=$DISCOVER/$1
+    rm -rf $f
+    mkdir $f
+    cp test.$1.conf $f
+    echo $f
+}
+
 _run() {
-    ../dotonex --debug --config test.$CONF.conf > $OUT 2>&1
+    local f=$(_discover $CONF)
+    ../dotonex --debug --config $f/test.$CONF.conf > $OUT 2>&1
 }
 
 _acct() {
-    ../dotonex --debug --instance acct --config test.acct.conf > $OUT.acct 2>&1
+    local f=$(_discover acct)
+    ../dotonex --debug --instance acct --config $f/test.acct.conf > $OUT.acct 2>&1
 }
 
 _reset() {
