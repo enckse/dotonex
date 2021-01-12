@@ -10,7 +10,7 @@ RADIUS_KEY   :=
 
 .PHONY: $(UTESTS)
 
-build: $(HOSTAPD) $(EXES) test
+build: $(HOSTAPD) $(EXES) configuration test
 
 $(UTESTS):
 	cd $@ && go test -v
@@ -27,6 +27,9 @@ $(HOSTAPD):
 clean:
 	rm -rf $(EXES)
 	rm -rf hostap/hostap
+
+configuration:
+	go run tools/generator.go
 
 install:
 ifeq ($(SERVER_REPO),)
