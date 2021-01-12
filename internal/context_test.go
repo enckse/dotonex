@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	testDir = "../tests/"
+	testDir = "../tests/unittests/"
 )
 
 type MockModule struct {
