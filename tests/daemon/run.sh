@@ -28,12 +28,12 @@ _discover() {
 
 _run() {
     local f=$(_discover $CONF)
-    $EXE --debug --instance $CONF --config $f/ > $OUT 2>&1
+    $EXE --debug --config $f/ > $OUT 2>&1
 }
 
 _acct() {
     local f=$(_discover acct)
-    $EXE --debug --instance acct --config $f/ > $OUT.acct 2>&1
+    $EXE --debug --config $f/ > $OUT.acct 2>&1
 }
 
 _reset() {
