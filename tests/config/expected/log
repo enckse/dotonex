@@ -48,7 +48,6 @@
 [SCRIPTLET]  -> aabbccddeeff
 [SCRIPTLET] hostapd reset
 [SCRIPTLET] invalid: 1122334455aa
-[SCRIPTLET] valid
 @@ -1,23 +1,23 @@
  
 -"abc:abcdef" PEAP
@@ -92,4 +91,3 @@
 [SCRIPTLET] validating inputs
 [SCRIPTLET] user found: user.name
 [SCRIPTLET] invalid: 1122334455aa
-[SCRIPTLET] valid
