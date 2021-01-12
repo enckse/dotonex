@@ -23,6 +23,7 @@ type (
 		static  bool
 		timeout time.Duration
 		payload []string
+		debug   bool
 	}
 )
 
@@ -30,7 +31,9 @@ func (s script) execute(sub string, args []string) bool {
 	arguments := []string{sub, s.repo}
 	arguments = append(arguments, args...)
 
-	WriteInfo(fmt.Sprintf("running: %s (%v)", sub, args))
+	if s.debug {
+		WriteInfo(fmt.Sprintf("running: %s (%v)", sub, args))
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
 
@@ -42,15 +45,17 @@ func (s script) execute(sub string, args []string) bool {
 		WriteWarn("script timeout")
 		return false
 	}
-	str := strings.TrimSpace(string(out))
-	if len(str) > 0 {
-		WriteInfo("stdout")
-		WriteInfo(str)
-	}
-	str = stderr.String()
+	str := stderr.String()
 	if len(str) > 0 {
 		WriteInfo("stderr")
 		WriteInfo(str)
+	}
+	if s.debug {
+		str = strings.TrimSpace(string(out))
+		if len(str) > 0 {
+			WriteInfo("stdout")
+			WriteInfo(str)
+		}
 	}
 	if err != nil {
 		WriteError("script result", err)
@@ -110,7 +115,7 @@ func Manage(cfg *Configuration) error {
 	if len(cfg.Configurator.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	backend = &script{timeout: time.Duration(cfg.Configurator.Timeout) * time.Second, repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: MD4(cfg.Configurator.ServerKey)}
+	backend = &script{debug: cfg.Configurator.Debug, timeout: time.Duration(cfg.Configurator.Timeout) * time.Second, repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: MD4(cfg.Configurator.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()

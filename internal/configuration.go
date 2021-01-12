@@ -16,6 +16,7 @@ type (
 		NoReject     bool
 		Log          string
 		Configurator struct {
+			Debug      bool
 			Static     bool
 			Repository string
 			Payload    []string

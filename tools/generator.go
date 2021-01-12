@@ -61,6 +61,8 @@ configurator:
 	refresh: 5
 	# timeout for how long the backend script can run in seconds (15)
 	timeout: 15
+	# debug is enabled for backend
+	debug: false
 
 # internal operations (do NOT change except for debugging)
 internals:
