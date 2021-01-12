@@ -55,7 +55,7 @@ func (s script) execute(sub string, args []string) bool {
 	if err != nil {
 		WriteError("script result", err)
 		if exitError, ok := err.(*exec.ExitError); ok {
-			return exitError.ExitCode() != 0
+			return exitError.ExitCode() == 0
 		}
 	}
 	return true

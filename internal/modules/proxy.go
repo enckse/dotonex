@@ -55,17 +55,17 @@ func checkUserMac(p *internal.ClientPacket) error {
 	calling = clean(calling)
 	success := true
 	var failure error
-	ok := true
+	valid := true
 	cleaned, isMAC := internal.CleanMAC(calling)
 	if isMAC {
 		if calling != clean(token) {
 			// This is NOT a MAB situation
-			ok = internal.CheckTokenMAC(token, cleaned)
+			valid = internal.CheckTokenMAC(token, cleaned)
 		}
 	} else {
-		ok = false
+		valid = false
 	}
-	if !ok {
+	if !valid {
 		failure = fmt.Errorf("failed preauth: %s %s", userName, calling)
 		success = false
 	}
