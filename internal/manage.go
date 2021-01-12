@@ -131,6 +131,7 @@ func CheckTokenMAC(token, mac string) bool {
 func run(sleep time.Duration) {
 	for {
 		time.Sleep(sleep)
+		WriteInfo("running fetch and update")
 		if !backend.Fetch() {
 			WriteWarn("fetch failed")
 			continue
