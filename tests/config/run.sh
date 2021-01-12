@@ -30,6 +30,7 @@ _diff_eap() {
 }
 
 _diff_known() {
+    sed -i "s/$(date +%Y-%m-%d)/DATE/g" ${KNOWN}
     _diff $1 $KNOWN
 }
 
