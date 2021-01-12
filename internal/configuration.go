@@ -21,6 +21,7 @@ type (
 			Payload    string
 			ServerKey  string
 			Refresh    int
+			Timeout    int
 		}
 		Internals struct {
 			NoInterrupt bool
@@ -65,6 +66,9 @@ func (c *Configuration) Defaults(backing []byte) {
 	c.Configurator.Repository = defaultString(c.Configurator.Repository, "/var/cache/dotonex/config")
 	if c.Configurator.Refresh <= 0 {
 		c.Configurator.Refresh = 5
+	}
+	if c.Configurator.Timeout <= 0 {
+		c.Configurator.Timeout = 15
 	}
 	if c.Internals.Logs <= 0 {
 		c.Internals.Logs = 10

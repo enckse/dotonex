@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -20,6 +21,7 @@ type (
 		command string
 		hash    string
 		static  bool
+		timeout time.Duration
 		payload []string
 	}
 )
@@ -27,14 +29,27 @@ type (
 func (s script) execute(sub string, args []string) bool {
 	arguments := []string{sub, s.repo}
 	arguments = append(arguments, args...)
-	cmd := exec.Command("dotonex-config", arguments...)
+
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "dotonex-config", arguments...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+	out, err := cmd.Output()
+	if ctx.Err() == context.DeadlineExceeded {
+		WriteWarn("script timeout")
+		return false
+	}
+	if err != nil {
 		WriteError("script result", err)
 		if exitError, ok := err.(*exec.ExitError); ok {
 			return exitError.ExitCode() != 0
 		}
+	}
+	str := strings.TrimSpace(string(out))
+	if len(str) > 0 {
+		WriteInfo(str)
 	}
 	return true
 }
@@ -87,7 +102,7 @@ func Manage(cfg *Configuration) error {
 	if len(cfg.Configurator.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	backend = &script{repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: MD4(cfg.Configurator.ServerKey)}
+	backend = &script{timeout: time.Duration(cfg.Configurator.Timeout) * time.Second, repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: MD4(cfg.Configurator.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()
