@@ -1,10 +1,8 @@
-.PHONY: dotonex configs
+TARGETS := daemon config
 
-all: dotonex configs
+.PHONY: $(TARGETS)
 
-dotonex:
-	./run.sh normal
-	./run.sh norjct
+all: $(TARGETS)
 
-configs:
-	cd config && ./run.sh
+$(TARGETS):
+	make -C $@

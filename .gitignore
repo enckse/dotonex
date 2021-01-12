@@ -1,6 +1,6 @@
 bin/
 tests/plugins/
-tests/log/
+log/
 tests/config/repo/*
 plugins/**/tests/
 dotonex*

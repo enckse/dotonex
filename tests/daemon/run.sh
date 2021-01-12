@@ -6,13 +6,15 @@ OUT=${BIN}stdout
 LOGS=log/
 DISCOVER=${BIN}discover/
 PLUGINS=plugins/
-HARNESS="../tools/harness.go"
+OFFSET="../../"
+EXE=${OFFSET}dotonex
+HARNESS="${OFFSET}tools/harness.go"
 for d in $LOGS $PLUGINS $DISCOVER; do
     rm -rf $d
     mkdir -p $d
 done
 
-PATH="../:$PATH"
+PATH="${OFFSET}:$PATH"
 CONF="$1"
 
 _discover() {
@@ -26,12 +28,12 @@ _discover() {
 
 _run() {
     local f=$(_discover $CONF)
-    ../dotonex --debug --config $f/test.$CONF.conf > $OUT 2>&1
+    $EXE --debug --config $f/test.$CONF.conf > $OUT 2>&1
 }
 
 _acct() {
     local f=$(_discover acct)
-    ../dotonex --debug --instance acct --config $f/test.acct.conf > $OUT.acct 2>&1
+    $EXE --debug --instance acct --config $f/test.acct.conf > $OUT.acct 2>&1
 }
 
 _reset() {
