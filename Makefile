@@ -40,8 +40,8 @@ endif
 ifeq ($(SHARED_KEY),)
 	$(error "please set SHARED_KEY for server installation")
 endif
-ifeq ($(GITLAB_REPO),)
-	$(error "please set GITLAB_R for server installion")
+ifeq ($(GITLAB_TLD),)
+	$(error "please set GITLAB_TLD for server installion")
 endif
 	install -d $(DESTDIR)/var/lib/dotonex
 	install -d $(DESTDIR)/etc/dotonex/hostapd
@@ -51,9 +51,7 @@ endif
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/dotonex/clients
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/dotonex/secrets
 	echo "0.0.0.0 $(RADIUS_KEY)" >> $(DESTDIR)/var/lib/dotonex/secrets
-	echo "export SERVER_REPO=$(SERVER_REPO)" $(DESTDIR)/etc/dotonex/env
-	sed -i "s/serverkey: secretkey/serverkey: $(SHARED_KEY)/g" $(DESTDIR)/etc/dotonex/*.conf
-	sed -i "s/gitlab.url/$(GITLAB_TLD)g" $(DESTDIR)/etc/dotonex/*.conf
+	echo "export SERVER_REPO=$(SERVER_REPO)" > $(DESTDIR)/etc/dotonex/env
 	install -Dm755 $(HOSTAPD) $(DESTDIR)/usr/lib/dotonex/hostapd
 	install -Dm644 hostap/hostapd.conf $(DESTDIR)/etc/dotonex/hostapd/
 	install -Dm755 dotonex $(DESTDIR)/usr/bin/
@@ -65,3 +63,5 @@ endif
 	install -Dm644 systemd/dotonex.conf $(DESTDIR)/usr/lib/tmpfiles.d/
 	install -Dm644 systemd/dotonex.service $(DESTDIR)/usr/lib/systemd/system/
 	cp -r hostap/certs $(DESTDIR)/etc/dotonex/hostapd/
+	sed -i "s/serverkey: secretkey/serverkey: $(SHARED_KEY)/g" $(DESTDIR)/etc/dotonex/*.conf
+	sed -i "s/gitlab.url/$(GITLAB_TLD)/g" $(DESTDIR)/etc/dotonex/*.conf

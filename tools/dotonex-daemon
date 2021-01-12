@@ -2,13 +2,16 @@
 LIBRARY=/var/lib/dotonex
 SETUP=$LIBRARY/setup.log
 ENV=/etc/dotonex/env
+REPO=/var/cache/dotonex/config
 
 if [ -e $ENV ]; then
     source $ENV
 fi
 
-if [ ! -d $SERVER_REPO ]; then
-    git clone $SERVER_REPO /var/cache/dotonex/config
+if [ ! -z "$SERVER_REPO" ]; then
+    if [ ! -d $REPO ]; then
+        git clone $SERVER_REPO /var/cache/dotonex/config
+    fi
 fi
 
 if [ $UID -ne 0 ]; then
