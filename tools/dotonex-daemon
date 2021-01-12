@@ -2,6 +2,11 @@
 LIBRARY=/var/lib/dotonex
 SETUP=$LIBRARY/setup.log
 
+if [ $UID -ne 0 ]; then
+    echo "must run as root"
+    exit 1
+fi
+
 _random-string() {
     cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
 }
