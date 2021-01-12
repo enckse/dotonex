@@ -14,7 +14,7 @@ KNOWN=${REPO}known.local
 rm -f $KEY $TOKEN $EAP $KNOWN
 
 _command() {
-    python ../../tools/dotonex-config $1 $REPO --command='echo {{\"name\": \"user.name\"}}' ${@:2} >> $RESULTS
+    python ../../tools/dotonex-config $1 $REPO ${@:2} echo '{{"name":"user.name"}}' >> $RESULTS
 }
 
 _diff() {

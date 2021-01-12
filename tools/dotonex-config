@@ -4,7 +4,6 @@ import os
 import time
 import subprocess
 import configparser
-import shlex
 import json
 
 _SERVER = "server"
@@ -217,7 +216,7 @@ def _validate(repo, command, token, mac):
     changed = False
     if user_name is None:
         try:
-            o = _run_piped(shlex.split(command.format(token)))
+            o = _run_piped([x.format(token) for x in command])
             j = json.loads(o)
             if "name" not in j:
                 _stdout(o)
@@ -258,18 +257,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", help="action to perform")
     parser.add_argument("repository", help="repository to operate from")
-    parser.add_argument("--command", help="command for validation callback")
     parser.add_argument("--hash", help="shared server password hash")
     parser.add_argument("--mac", help="calling mac")
     parser.add_argument("--token", help="token to confirm")
     try:
-        args = parser.parse_args()
+        args, cmd = parser.parse_known_args()
         if not os.path.exists(args.repository):
             raise ConfigException("repository does not exist")
         if args.mode == "validate":
-            if not args.command or not args.token or not args.mac:
+            if not cmd or len(cmd) == 0 or not args.token or not args.mac:
                 raise ConfigException("command, token, and mac required")
-            _validate(args.repository, args.command, args.token, args.mac)
+            _validate(args.repository, cmd, args.token, args.mac)
         elif args.mode == "server":
             if not args.hash:
                 raise ConfigException("hash required")

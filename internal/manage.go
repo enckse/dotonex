@@ -18,7 +18,7 @@ var (
 type (
 	script struct {
 		repo    string
-		command string
+		command []string
 		hash    string
 		static  bool
 		timeout time.Duration
@@ -65,7 +65,9 @@ func (s script) Validate(token, mac string) bool {
 		}
 		return false
 	}
-	return s.execute("validate", []string{fmt.Sprintf("--command='%s'", s.command), fmt.Sprintf("--mac=%s", mac), fmt.Sprintf("--token=%s", token)})
+	cmd := []string{fmt.Sprintf("--mac=%s", mac), fmt.Sprintf("--token=%s", token)}
+	cmd = append(cmd, s.command...)
+	return s.execute("validate", cmd)
 }
 
 func (s script) Server() bool {
@@ -81,10 +83,9 @@ func (s script) Build() bool {
 }
 
 // SetAllowed hard sets which token+mac combos are allowed
-func SetAllowed(payload string) {
-	list := strings.Split(payload, ",")
+func SetAllowed(payload []string) {
 	objects := []string{}
-	for _, obj := range list {
+	for _, obj := range payload {
 		str := strings.TrimSpace(obj)
 		if len(str) > 0 {
 			objects = append(objects, str)

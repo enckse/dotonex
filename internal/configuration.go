@@ -18,7 +18,7 @@ type (
 		Configurator struct {
 			Static     bool
 			Repository string
-			Payload    string
+			Payload    []string
 			ServerKey  string
 			Refresh    int
 			Timeout    int
