@@ -1,0 +1,44 @@
+#!/bin/bash
+LIBRARY=/var/lib/dotonex
+SETUP=$LIBRARY/setup.log
+
+_random-string() {
+    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
+}
+
+_init() {
+    local pass cwd
+    echo "setting up hostapd/dotonex"
+    pass=$(_random-string)
+    sed -i "s/{PASSWORD}/$pass/g" /etc/dotonex/hostapd/certs/*.cnf /etc/dotonex/hostapd/hostapd.conf
+    cwd=$PWD
+    cd /etc/dotonex/hostapd/certs/ && ./bootstrap
+    cd $cwd
+}
+
+
+if [ ! -e $SETUP ]; then
+    echo "performing first-time dotonex setup"
+    _init >> $SETUP 2>&1
+fi
+
+_hostapd() {
+    /usr/lib/dotonex/hostapd /etc/dotonex/hostapd/hostapd.conf | sed "s/^/[hostapd] /g"
+}
+
+_dotonex() {
+    /usr/bin/dotonex | sed 's/^/[dotonex] /g'
+}
+
+while [ 1 -eq 1 ]; do
+    if ! pgrep '^hostapd$' > /dev/null; then
+        echo "starting hostapd"
+        _hostapd &
+    fi
+    if ! pgrep '^dotonex$' > /dev/null; then
+        echo "starting dotonex"
+        _dotonex &
+    fi
+    sleep 5;
+done
+
