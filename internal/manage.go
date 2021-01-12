@@ -42,21 +42,21 @@ func (s script) execute(sub string, args []string) bool {
 		WriteWarn("script timeout")
 		return false
 	}
-	b := stderr.String()
-	if len(b) > 0 {
+	str := strings.TrimSpace(string(out))
+	if len(str) > 0 {
+		WriteInfo("stdout")
+		WriteInfo(str)
+	}
+	str = stderr.String()
+	if len(str) > 0 {
 		WriteInfo("stderr")
-		WriteInfo(string(b))
+		WriteInfo(str)
 	}
 	if err != nil {
 		WriteError("script result", err)
 		if exitError, ok := err.(*exec.ExitError); ok {
 			return exitError.ExitCode() != 0
 		}
-	}
-	str := strings.TrimSpace(string(out))
-	if len(str) > 0 {
-		WriteInfo("stdout")
-		WriteInfo(str)
 	}
 	return true
 }

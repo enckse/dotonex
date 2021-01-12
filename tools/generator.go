@@ -51,8 +51,8 @@ log: /var/log/dotonex/
 configurator:
 	# utilizies internal payload instead of backend scripts (false)
 	static: false
-	# repository path (/var/lib/dotonex/config)
-	repository: /var/lib/dotonex/config
+	# repository path (/var/cache/dotonex/config)
+	repository: /var/cache/dotonex/config
 	# payload command to run to validate a user OR static list of token+mac pairs ([])
 	payload: ["curl", "-s", "https://gitlab.url"]
 	# shared login key for all users (empty)
