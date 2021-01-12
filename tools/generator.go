@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"voidedtech.com/dotonex/internal"
@@ -79,7 +80,7 @@ internals:
 )
 
 func main () {
-	tmpl, err := template.New("script").Parse(config)
+	tmpl, err := template.New("script").Parse(strings.Replace(config, "\t", "    ", -1))
 	if err != nil {
 		internal.Fatal("unable to parse template", err)
 	}

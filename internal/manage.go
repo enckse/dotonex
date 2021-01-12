@@ -1,9 +1,9 @@
 package internal
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -35,12 +35,17 @@ func (s script) execute(sub string, args []string) bool {
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, "dotonex-config", arguments...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	out, err := cmd.Output()
 	if ctx.Err() == context.DeadlineExceeded {
 		WriteWarn("script timeout")
 		return false
+	}
+	b := stderr.String()
+	if len(b) > 0 {
+		WriteInfo("stderr")
+		WriteInfo(string(b))
 	}
 	if err != nil {
 		WriteError("script result", err)
@@ -50,6 +55,7 @@ func (s script) execute(sub string, args []string) bool {
 	}
 	str := strings.TrimSpace(string(out))
 	if len(str) > 0 {
+		WriteInfo("stdout")
 		WriteInfo(str)
 	}
 	return true
