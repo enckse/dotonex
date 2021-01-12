@@ -1,6 +1,15 @@
 #!/bin/bash
 LIBRARY=/var/lib/dotonex
 SETUP=$LIBRARY/setup.log
+ENV=/etc/dotonex/env
+
+if [ -e $ENV ]; then
+    source $ENV
+fi
+
+if [ ! -d $SERVER_REPO ]; then
+    git clone $SERVER_REPO /var/cache/dotonex/config
+fi
 
 if [ $UID -ne 0 ]; then
     echo "must run as root"
