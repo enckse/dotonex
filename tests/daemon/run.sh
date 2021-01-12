@@ -82,6 +82,8 @@ for o in accounting; do
         sed "s/^UDPAddr/ UDPAddr/g" | \
         sed "s/^Id/ Id/g" | \
         cut -d " " -f 1,2 | \
+        sed "s/ UDPAddr/UDPAddr/g" | \
+        sed "s/ Access/Access/g" | \
         sort >> bin/$o.log
 done
 
