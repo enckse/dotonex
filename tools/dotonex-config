@@ -218,10 +218,10 @@ def _validate(repo, command, token, mac):
         try:
             o = _run_piped([x.format(token) for x in command])
             j = json.loads(o)
-            if "name" not in j:
+            if "username" not in j:
                 _stdout(o)
                 raise ConfigException("key not found in response")
-            user_name = j["name"]
+            user_name = j["username"]
             _stdout("inserting {} for {}".format(token, user_name))
             known[token] = user_name
             changed = True
