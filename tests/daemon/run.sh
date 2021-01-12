@@ -22,18 +22,18 @@ _discover() {
     f=$DISCOVER/$1
     rm -rf $f
     mkdir $f
-    cp test.$1.conf $f
+    cp $1.conf $f
     echo $f
 }
 
 _run() {
     local f=$(_discover $CONF)
-    $EXE --debug --config $f/test.$CONF.conf > $OUT 2>&1
+    $EXE --debug --instance $CONF --config $f/ > $OUT 2>&1
 }
 
 _acct() {
     local f=$(_discover acct)
-    $EXE --debug --instance acct --config $f/test.acct.conf > $OUT.acct 2>&1
+    $EXE --debug --instance acct --config $f/ > $OUT.acct 2>&1
 }
 
 _reset() {

@@ -10,7 +10,7 @@ func TestArgs(t *testing.T) {
 	if len(a) != 0 {
 		t.Error("no args")
 	}
-	p.Config = "cfg"
+	p.Directory = "cfg"
 	a = p.Args()
 	if len(a) != 2 {
 		t.Error("config not set")

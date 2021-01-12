@@ -7,9 +7,9 @@ import (
 type (
 	// ProcessFlags represent command line arguments to the process
 	ProcessFlags struct {
-		Config   string
-		Instance string
-		Debug    bool
+		Directory string
+		Instance  string
+		Debug     bool
 	}
 )
 
@@ -25,9 +25,9 @@ const (
 // Args converts the process flags back to callable arguments
 func (p ProcessFlags) Args() []string {
 	var args []string
-	if len(p.Config) > 0 {
+	if len(p.Directory) > 0 {
 		args = append(args, dash+configFlag)
-		args = append(args, p.Config)
+		args = append(args, p.Directory)
 	}
 	if len(p.Instance) > 0 {
 		args = append(args, dash+instanceFlag)
@@ -41,13 +41,13 @@ func (p ProcessFlags) Args() []string {
 
 // Flags parses CLI flags for dotonex
 func Flags() ProcessFlags {
-	var cfg = flag.String(configFlag, "/etc/dotonex/dotonex.conf", "Configuration file")
+	var dir = flag.String(configFlag, "/etc/dotonex/", "Configuration file")
 	var instance = flag.String(instanceFlag, "", "Instance name")
 	var debugging = flag.Bool(debugFlag, false, "Enable debugging")
 	flag.Parse()
 	return ProcessFlags{
-		Config:   *cfg,
-		Instance: *instance,
-		Debug:    *debugging,
+		Directory: *dir,
+		Instance:  *instance,
+		Debug:     *debugging,
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"path/filepath"
 	"os"
 	"os/signal"
 	"sync"
@@ -139,7 +140,7 @@ func account(ctx *internal.Context) {
 func main() {
 	p := internal.Flags()
 	internal.ConfigureLogging(p.Debug, p.Instance)
-	b, err := ioutil.ReadFile(p.Config)
+	b, err := ioutil.ReadFile(filepath.Join(p.Directory, p.Instance + internal.InstanceConfig))
 	if err != nil {
 		internal.Fatal("unable to load config", err)
 	}

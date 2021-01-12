@@ -52,6 +52,6 @@ endif
 	install -Dm755 tools/dotonex-daemon $(DESTDIR)/usr/bin/
 	install -Dm644 configs/accounting.conf $(DESTDIR)/etc/dotonex/accounting.conf
 	install -Dm644 configs/proxy.conf $(DESTDIR)/etc/dotonex/proxy.conf
-	install -Dm644 configs/systemd/dotonex.conf $(DESTDIR)/usr/lib/tmpfiles.d/
-	install -Dm644 configs/systemd/dotonex.service $(DESTDIR)/usr/lib/systemd/system/
+	install -Dm644 systemd/dotonex.conf $(DESTDIR)/usr/lib/tmpfiles.d/
+	install -Dm644 systemd/dotonex.service $(DESTDIR)/usr/lib/systemd/system/
 	cp -r hostap/certs $(DESTDIR)/etc/dotonex/hostapd/

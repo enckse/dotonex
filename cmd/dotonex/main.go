@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -19,7 +18,7 @@ func main() {
 		internal.WriteDebug(fmt.Sprintf("flags: %v", args))
 	}
 	instances := []string{}
-	options, err := ioutil.ReadDir(filepath.Dir(flags.Config))
+	options, err := ioutil.ReadDir(flags.Directory)
 	if err != nil {
 		internal.Fatal("unable to read possible instances", err)
 	}
