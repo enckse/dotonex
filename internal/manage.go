@@ -30,6 +30,7 @@ func (s script) execute(sub string, args []string) bool {
 	arguments := []string{sub, s.repo}
 	arguments = append(arguments, args...)
 
+	WriteInfo(fmt.Sprintf("running: %s (%v)", sub, args))
 	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
 
