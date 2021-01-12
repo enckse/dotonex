@@ -6,20 +6,20 @@ import (
 
 func TestArgs(t *testing.T) {
 	p := ProcessFlags{}
-	a := p.Args()
-	if len(a) != 0 {
+	a := p.Args("")
+	if len(a) != 2 {
 		t.Error("no args")
 	}
 	p.Directory = "cfg"
-	a = p.Args()
-	if len(a) != 2 {
+	a = p.Args("i")
+	if len(a) != 4 {
 		t.Error("config not set")
 	}
 	if a[0] != "--config" || a[1] != "cfg" {
 		t.Error("config not set")
 	}
 	p.Instance = "inst"
-	a = p.Args()
+	a = p.Args("inst")
 	if len(a) != 4 {
 		t.Error("instance not set")
 	}
@@ -27,7 +27,7 @@ func TestArgs(t *testing.T) {
 		t.Error("instance not set")
 	}
 	p.Debug = true
-	a = p.Args()
+	a = p.Args("")
 	if len(a) != 5 {
 		t.Error("debug not on")
 	}
