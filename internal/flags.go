@@ -23,16 +23,14 @@ const (
 )
 
 // Args converts the process flags back to callable arguments
-func (p ProcessFlags) Args() []string {
+func (p ProcessFlags) Args(instance string) []string {
 	var args []string
 	if len(p.Directory) > 0 {
 		args = append(args, dash+configFlag)
 		args = append(args, p.Directory)
 	}
-	if len(p.Instance) > 0 {
-		args = append(args, dash+instanceFlag)
-		args = append(args, p.Instance)
-	}
+	args = append(args, dash+instanceFlag)
+	args = append(args, instance)
 	if p.Debug {
 		args = append(args, dash+debugFlag)
 	}

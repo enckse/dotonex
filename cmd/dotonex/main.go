@@ -13,10 +13,6 @@ import (
 
 func main() {
 	flags := internal.Flags()
-	args := flags.Args()
-	if flags.Debug {
-		internal.WriteDebug(fmt.Sprintf("flags: %v", args))
-	}
 	instances := []string{}
 	options, err := ioutil.ReadDir(flags.Directory)
 	if err != nil {
@@ -33,7 +29,7 @@ func main() {
 		internal.Fatal("no instances found", fmt.Errorf("please configure some instances"))
 	}
 	for _, i := range instances {
-		go runInstance(i, args)
+		go runInstance(i, flags)
 	}
 
 	duration := 10 * time.Second
@@ -42,7 +38,11 @@ func main() {
 	}
 }
 
-func runInstance(instance string, args []string) {
+func runInstance(instance string, arguments internal.ProcessFlags) {
+	args := arguments.Args(instance)
+	if arguments.Debug {
+		internal.WriteDebug(fmt.Sprintf("flags: %v", args))
+	}
 	last := time.Now()
 	errors := 0
 	for {
