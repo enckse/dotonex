@@ -5,6 +5,7 @@ import time
 import subprocess
 import configparser
 import json
+import datetime
 
 _SERVER = "server"
 _LOCAL = ".local"
@@ -221,7 +222,7 @@ def _validate(repo, command, token, mac):
             known = json.loads(f.read())
     user_name = None
     if token in known:
-        user_name = known[token]
+        user_name = known[token][0]
     changed = False
     if user_name is None:
         try:
@@ -232,7 +233,8 @@ def _validate(repo, command, token, mac):
                 raise ConfigException("key not found in response")
             user_name = j["username"]
             _stdout("inserting {} for {}".format(token, user_name))
-            known[token] = user_name
+            known[token] = [user_name,
+                            datetime.datetime.now().strftime("%Y-%m-%d")]
             changed = True
             _stdout('validation complete')
         except Exception as e:
@@ -245,7 +247,7 @@ def _validate(repo, command, token, mac):
     user_dir = os.path.join(repo, user_name)
     if changed:
         _stdout("user token is new")
-        data = json.dumps(known)
+        data = json.dumps(known, sort_keys=True, indent=True)
         with open(new_known, "w") as f:
             f.write(data)
         subprocess.call(["mv", new_known, known_file])

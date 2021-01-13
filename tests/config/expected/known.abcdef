@@ -1,1 +1,6 @@
-{"abcdef": "user.name"}
+{
+ "abcdef": [
+  "user.name",
+  "DATE"
+ ]
+}
