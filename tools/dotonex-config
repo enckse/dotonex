@@ -268,7 +268,7 @@ def main():
         target = os.path.dirname(_local_file(args.repository, "empty"))
         if not os.path.exists(target):
             _stdout("initializing target: {}".format(target))
-            os.mkdir(target)
+            os.mkdir(target, mode=0o700)
         if args.mode == "validate":
             if not cmd or len(cmd) == 0 or not args.token or not args.mac:
                 raise ConfigException("command, token, and mac required")
