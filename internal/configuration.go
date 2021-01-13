@@ -69,7 +69,7 @@ func (c *Configuration) Defaults(backing []byte) {
 		c.Configurator.Refresh = 5
 	}
 	if c.Configurator.Timeout <= 0 {
-		c.Configurator.Timeout = 60
+		c.Configurator.Timeout = 30
 	}
 	if c.Internals.Logs <= 0 {
 		c.Internals.Logs = 10

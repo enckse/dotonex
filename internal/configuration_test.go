@@ -16,7 +16,7 @@ func TestDefaults(t *testing.T) {
 	if c.Log != "/var/log/dotonex/" {
 		t.Error("invalid log dir")
 	}
-	if c.Configurator.Timeout != 60 {
+	if c.Configurator.Timeout != 30 {
 		t.Error("invalid timeout")
 	}
 	if c.Configurator.Refresh != 5 {
