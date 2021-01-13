@@ -91,3 +91,9 @@
 [SCRIPTLET] validating inputs
 [SCRIPTLET] user found: user.name
 [SCRIPTLET] invalid: 1122334455aa
+[SCRIPTLET] calling make
+[SCRIPTLET] make failed
+[SCRIPTLET] calling make
+[SCRIPTLET] user.name (USER)
+[SCRIPTLET] xyz (MAB)
+[SCRIPTLET]  -> aabbccddeeff

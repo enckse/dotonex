@@ -10,8 +10,9 @@ echo > $RESULTS
 KEY=${REPO}server.local
 TOKEN=${REPO}user.name/token.local
 EAP=${REPO}eap_users
+MAKE=${REPO}Makefile
 KNOWN=${REPO}known.local
-rm -f $KEY $TOKEN $EAP $KNOWN
+rm -f $KEY $TOKEN $EAP $KNOWN $MAKE
 
 _command() {
     python ../../tools/dotonex-config $1 $REPO ${@:2} echo '{{"username":"user.name"}}' >> $RESULTS
@@ -53,6 +54,11 @@ _diff_known known.token
 _command validate --token abcdef --mac 1122334455aa
 _diff_known known.token
 _diff_eap user
+
+echo -e "all:\n\texit 1" > $MAKE
+_command rebuild
+echo -e "all:\n\texit 0" > $MAKE
+_command rebuild
 
 cat $RESULTS | grep -v "$PWD" > $CHECK
 diff -u $CHECK ${EXPECT}log
