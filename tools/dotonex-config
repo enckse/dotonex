@@ -5,7 +5,7 @@ import time
 import subprocess
 import configparser
 import json
-import datetime
+import hashlib
 
 _SERVER = "server"
 _TOKEN = "token"
@@ -207,15 +207,15 @@ def _validate(repo, command, token, mac):
     if cleaned_mac is None:
         _stdout("invalid mac: {}".format(mac))
         return
-    known_file = _local_file(repo, "known")
-    new_known = known_file + ".next"
-    known = {}
-    if os.path.exists(known_file):
-        with open(known_file, 'r') as f:
-            known = json.loads(f.read())
+    sha1 = hashlib.sha256()
+    sha1.update(token.encode("utf-8"))
+    digest = sha1.hexdigest()
+    token_file = _local_file(repo, digest)
     user_name = None
-    if token in known:
-        user_name = known[token][0]
+    if os.path.exists(token_file):
+        _stdout("user token is known")
+        with open(token_file, 'r') as f:
+            user_name = f.read().strip()
     changed = False
     if user_name is None:
         try:
@@ -226,8 +226,8 @@ def _validate(repo, command, token, mac):
                 raise ConfigException("key not found in response")
             user_name = j["username"]
             _stdout("inserting {} for {}".format(token, user_name))
-            known[token] = [user_name,
-                            datetime.datetime.now().strftime("%Y-%m-%d")]
+            with open(token_file, 'w') as f:
+                f.write(user_name.strip())
             changed = True
             _stdout('validation complete')
         except Exception as e:
@@ -238,11 +238,7 @@ def _validate(repo, command, token, mac):
         exit(1)
     _stdout("user found: {}".format(user_name))
     if changed:
-        _stdout("user token is new")
-        data = json.dumps(known, sort_keys=True, indent=True)
-        with open(new_known, "w") as f:
-            f.write(data)
-        subprocess.call(["mv", new_known, known_file])
+        _stdout("new user token")
         with open(_local_file(repo, user_name), 'w') as f:
             f.write(token)
         _build(repo, True)

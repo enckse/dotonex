@@ -42,7 +42,7 @@
 [SCRIPTLET] inserting abcdef for user.name
 [SCRIPTLET] validation complete
 [SCRIPTLET] user found: user.name
-[SCRIPTLET] user token is new
+[SCRIPTLET] new user token
 [SCRIPTLET] user.name (USER)
 [SCRIPTLET] xyz (MAB)
 [SCRIPTLET]  -> aabbccddeeff
@@ -82,12 +82,13 @@
 [SCRIPTLET] inserting token for user.name
 [SCRIPTLET] validation complete
 [SCRIPTLET] user found: user.name
-[SCRIPTLET] user token is new
+[SCRIPTLET] new user token
 [SCRIPTLET] user.name (USER)
 [SCRIPTLET] xyz (MAB)
 [SCRIPTLET]  -> aabbccddeeff
 [SCRIPTLET] hostapd reset
 [SCRIPTLET] valid
 [SCRIPTLET] validating inputs
+[SCRIPTLET] user token is known
 [SCRIPTLET] user found: user.name
 [SCRIPTLET] invalid: 1122334455aa
