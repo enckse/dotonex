@@ -48,14 +48,16 @@ _dotonex() {
 }
 
 while [ 1 -eq 1 ]; do
-    if ! pgrep '^hostapd$' > /dev/null; then
-        echo "starting hostapd"
-        _hostapd &
-    fi
     if ! pgrep '^dotonex$' > /dev/null; then
         echo "starting dotonex"
         _dotonex &
+        sleep 1
     fi
-    sleep 5;
+    if ! pgrep '^hostapd$' > /dev/null; then
+        echo "starting hostapd"
+        _hostapd &
+        sleep 1
+    fi
+    sleep 5
 done
 
