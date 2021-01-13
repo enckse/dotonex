@@ -8,13 +8,13 @@ import json
 import datetime
 
 _SERVER = "server"
-_LOCAL = ".local"
 _TOKEN = "token"
 _VLAN_CFG = "vlans.cfg"
-
+_TARGET = "bin"
+_DB = ".db"
 
 def _local_file(repo, name):
-    return os.path.join(repo, name + _LOCAL)
+    return os.path.join(repo, _TARGET, name + _DB)
 
 
 def _stdout(message):
@@ -46,6 +46,8 @@ def _users(repo, vlan_names):
     with open(password, 'r') as f:
         password = f.read().strip()
     for f in os.listdir(repo):
+        if f == _TARGET:
+            continue
         mab = f in vlan_names
         cfg_dir = os.path.join(repo, f)
         if mab:
@@ -59,7 +61,7 @@ def _users(repo, vlan_names):
             possible = os.path.join(cfg_dir, _VLAN_CFG)
             if not os.path.exists(possible):
                 continue
-            secret = _local_file(cfg_dir, _TOKEN)
+            secret = _local_file(repo, f)
             if not os.path.exists(secret):
                 continue
             _stdout("{} (USER)".format(f))
@@ -133,8 +135,8 @@ def _build_configuration(repo):
     if len(hostapd) == 0:
         _stdout("no hostapd data found")
         return
-    eap_user = os.path.join(repo, "eap_users")
-    next_eap = eap_user + ".next" + _LOCAL
+    eap_user = os.path.join(repo, _TARGET, "eap_users")
+    next_eap = eap_user + ".next"
     with open(next_eap, 'w') as f:
         f.write("\n\n".join(sorted(hostapd)) + "\n")
     if os.path.exists(eap_user):
@@ -206,7 +208,7 @@ def _validate(repo, command, token, mac):
         _stdout("invalid mac: {}".format(mac))
         return
     known_file = _local_file(repo, "known")
-    new_known = known_file + ".next" + _LOCAL
+    new_known = known_file + ".next"
     known = {}
     if os.path.exists(known_file):
         with open(known_file, 'r') as f:
@@ -235,18 +237,18 @@ def _validate(repo, command, token, mac):
     if user_name is None:
         exit(1)
     _stdout("user found: {}".format(user_name))
-    user_dir = os.path.join(repo, user_name)
     if changed:
         _stdout("user token is new")
         data = json.dumps(known, sort_keys=True, indent=True)
         with open(new_known, "w") as f:
             f.write(data)
         subprocess.call(["mv", new_known, known_file])
-        with open(_local_file(user_dir, _TOKEN), 'w') as f:
+        with open(_local_file(repo, user_name), 'w') as f:
             f.write(token)
         _build(repo, True)
     exit_code = 0
     for f in [cleaned_mac, _VLAN_CFG]:
+        user_dir = os.path.join(repo, user_name)
         if not os.path.exists(os.path.join(user_dir, f)):
             _stdout("invalid: {}".format(f))
             exit_code = 1
@@ -267,6 +269,10 @@ def main():
         args, cmd = parser.parse_known_args()
         if not os.path.exists(args.repository):
             raise ConfigException("repository does not exist")
+        target = os.path.dirname(_local_file(args.repository, "empty"))
+        if not os.path.exists(target):
+            _stdout("initializing target: {}".format(target))
+            os.mkdir(target)
         if args.mode == "validate":
             if not cmd or len(cmd) == 0 or not args.token or not args.mac:
                 raise ConfigException("command, token, and mac required")

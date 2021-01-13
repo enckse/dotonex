@@ -3,15 +3,14 @@
 EXPECT=expected/
 REPO=$PWD/repo/
 BIN=bin/
+REPOBIN=${REPO}${BIN}
 mkdir -p $BIN
 RESULTS=${BIN}log
 CHECK=$RESULTS.check
 echo > $RESULTS
-KEY=${REPO}server.local
-TOKEN=${REPO}user.name/token.local
-EAP=${REPO}eap_users
-KNOWN=${REPO}known.local
-rm -f $KEY $TOKEN $EAP $KNOWN
+EAP=${REPOBIN}eap_users
+KNOWN=${REPOBIN}known.db
+rm -f ${REPOBIN}*
 
 _command() {
     python ../../tools/dotonex-config $1 $REPO ${@:2} echo '{{"username":"user.name"}}' >> $RESULTS
