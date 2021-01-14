@@ -21,6 +21,19 @@ type (
 	}
 )
 
+// ValidateMembership will check if membership settings are valid
+func (d Definition) ValidateMembership() error {
+	if len(d.Membership) == 0 {
+		return fmt.Errorf("no membership")
+	}
+	for _, m := range d.Membership {
+		if m.VLAN == "" {
+			return fmt.Errorf("invalid vlan")
+		}
+	}
+	return nil
+}
+
 // ValidateVLANs will check VLAN definitions for correctness
 func (d Definition) ValidateVLANs() error {
 	if len(d.VLANs) == 0 {
@@ -32,4 +45,14 @@ func (d Definition) ValidateVLANs() error {
 		}
 	}
 	return nil
+}
+
+// IsVLAN gets and checks if a vlan is valid in the definition
+func (d Definition) IsVLAN(name string) (string, bool) {
+	for _, v := range d.VLANs {
+		if v.Name == name {
+			return v.ID, true
+		}
+	}
+	return "", false
 }

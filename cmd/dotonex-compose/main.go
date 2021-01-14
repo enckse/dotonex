@@ -156,6 +156,93 @@ func server(flags internal.ConfigFlags) error {
 }
 
 func getHostapd(flags internal.ConfigFlags, def internal.Definition) ([]internal.Hostapd, error) {
+	hashFile := flags.LocalFile(serverHash)
+	if !internal.PathExists(hashFile) {
+		return nil, fmt.Errorf("no server hash found")
+	}
+	b, err := ioutil.ReadFile(hashFile)
+	if err != nil {
+		return nil, err
+	}
+	hash := string(b)
+	dirs, err := ioutil.ReadDir(flags.Repo)
+	if err != nil {
+		return nil, err
+	}
+	if len(hash) == 0 {
+		return nil, fmt.Errorf("empty hash")
+	}
+	var result []internal.Hostapd
+	for _, dir := range dirs {
+		if !dir.IsDir() {
+			continue
+		}
+		name := dir.Name()
+		if name == internal.ConfigTarget {
+			continue
+		}
+		path := filepath.Join(flags.Repo, name)
+		if id, ok := def.IsVLAN(name); ok {
+			internal.WriteInfo(fmt.Sprintf("%s (MAB)", name))
+			sub, err := ioutil.ReadDir(path)
+			if err != nil {
+				return nil, err
+			}
+			for _, mac := range sub {
+				cleaned, ok := internal.CleanMAC(mac.Name())
+				if !ok {
+					continue
+				}
+				internal.WriteInfo(fmt.Sprintf(" -> %s", cleaned))
+				result = append(result, internal.NewHostapd(cleaned, cleaned, id))
+			}
+			continue
+		}
+		possible := filepath.Join(path, vlanConfig)
+		if !internal.PathExists(possible) {
+			continue
+		}
+		secret := flags.LocalFile(name)
+		if !internal.PathExists(secret) {
+			continue
+		}
+		internal.WriteInfo(fmt.Sprintf("%s (USER)", name))
+		b, err := ioutil.ReadFile(secret)
+		if err != nil {
+			return nil, err
+		}
+		loginName := string(b)
+		if len(loginName) == 0 {
+			internal.WriteWarn("empty login name")
+			continue
+		}
+		b, err = ioutil.ReadFile(possible)
+		if err != nil {
+			return nil, err
+		}
+		d := internal.Definition{}
+		if err := yaml.Unmarshal(b, &d); err != nil {
+			internal.WriteError("unable to read user yaml", err)
+			continue
+		}
+		if err := d.ValidateMembership(); err != nil {
+			internal.WriteError("invalid memberships found", err)
+			continue
+		}
+		first := true
+		for _, member := range d.Membership {
+			id, ok := def.IsVLAN(member.VLAN)
+			if !ok {
+				internal.WriteWarn(fmt.Sprintf("invalid VLAN %s", member.VLAN))
+				continue
+			}
+			if first {
+				result = append(result, internal.NewHostapd(loginName, hash, id))
+				first = false
+			}
+			result = append(result, internal.NewHostapd(fmt.Sprintf("%s:%s", member.VLAN, loginName), hash, id))
+		}
+	}
 	return nil, nil
 }
 

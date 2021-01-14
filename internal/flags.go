@@ -34,7 +34,7 @@ const (
 	macFlag      = "mac"
 	tokenFlag    = "token"
 	hashFlag     = "hash"
-	configTarget = "bin"
+	ConfigTarget = "bin"
 	configData   = ".db"
 	// InstanceConfig indicates a configuration file of instance type
 	InstanceConfig = ".conf"
@@ -52,7 +52,7 @@ const (
 
 // LocalFile gets a local file from the configuration store
 func (c ConfigFlags) LocalFile(name string) string {
-	return filepath.Join(c.Repo, configTarget, name+configData)
+	return filepath.Join(c.Repo, ConfigTarget, name+configData)
 }
 
 // GetConfigFlags will get the arguments for configuration backend needs
