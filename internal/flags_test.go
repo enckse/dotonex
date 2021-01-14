@@ -4,6 +4,33 @@ import (
 	"testing"
 )
 
+func TestConfigLocalFile(t *testing.T) {
+	c := ConfigFlags{Repo: "test"}
+	if "test/bin/file.db" != c.LocalFile("file") {
+		t.Error("invalid file result")
+	}
+}
+
+func TestConfigValid(t *testing.T) {
+	c := ConfigFlags{}
+	if c.Valid() {
+		t.Error("is invalid")
+	}
+	c.Repo = "test"
+	if c.Valid() {
+		t.Error("is invalid")
+	}
+	c.Repo = ""
+	c.Mode = "test"
+	if c.Valid() {
+		t.Error("is invalid")
+	}
+	c.Repo = "test"
+	if !c.Valid() {
+		t.Error("is valid")
+	}
+}
+
 func TestArgs(t *testing.T) {
 	p := ProcessFlags{}
 	a := p.Args("")

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"flag"
+	"path/filepath"
 )
 
 type (
@@ -11,6 +12,14 @@ type (
 		Instance  string
 		Debug     bool
 	}
+	ConfigFlags struct {
+		Mode    string
+		Repo    string
+		Hash    string
+		MAC     string
+		Token   string
+		Command []string
+	}
 )
 
 const (
@@ -18,9 +27,46 @@ const (
 	instanceFlag = "instance"
 	debugFlag    = "debug"
 	dash         = "--"
+	modeFlag     = dash+"mode"
+	repoFlag     = dash+"repository"
+	macFlag      = dash+"mac"
+	tokenFlag    = dash+"token"
+	hashFlag     = dash+"hash"
+	configTarget = "bin"
+	configData   = ".db"
 	// InstanceConfig indicates a configuration file of instance type
 	InstanceConfig = ".conf"
+	// Config modes
+	ModeValidate = "validate"
+	ModeServer   = "server"
+	ModeFetch    = "fetch"
+	ModeBuild    = "build"
+	ModeRebuild  = "rebuild"
 )
+
+func (c ConfigFlags) LocalFile(name string) string {
+	return filepath.Join(c.Repo, configTarget, name + configData)
+}
+
+func GetConfigFlags() ConfigFlags {
+	mode := flag.String(modeFlag, "", "operating mode")
+	repo := flag.String(repoFlag, "", "repository to work on")
+	mac := flag.String(macFlag, "", "MAC address")
+	hash := flag.String(hashFlag, "", "server hash")
+	token := flag.String(tokenFlag, "", "token to validate")
+	flag.Parse()
+	args := flag.Args()
+	return ConfigFlags{Mode: *mode,
+					   Repo: *repo,
+					   MAC: *mac,
+					   Token: *token,
+					   Hash: *hash,
+					   Command: args}
+}
+
+func (c ConfigFlags) Valid() bool {
+	return len(c.Mode) > 0 && len(c.Repo) > 0
+}
 
 // Args converts the process flags back to callable arguments
 func (p ProcessFlags) Args(instance string) []string {
