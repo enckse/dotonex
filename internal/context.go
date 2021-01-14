@@ -70,23 +70,24 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 	// we may not be able to always read a packet during conversation
 	// especially during initial EAP phases
 	// we let that go
-	if packet.Error == nil {
-		if err := ctx.checkSecret(packet); err != nil {
-			WriteError("invalid radius secret", err)
-			valid = badSecretCode
-		}
-		if ctx.preauthYes {
-			failure := !ctx.preauth.Pre(packet)
-			if failure {
-				WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", ctx.preauth.Name()))
-				if valid == successCode {
-					valid = preAuthCode
-				}
+	if packet.Error != nil {
+		return valid
+	}
+	if err := ctx.checkSecret(packet); err != nil {
+		WriteError("invalid radius secret", err)
+		valid = badSecretCode
+	}
+	if ctx.preauthYes {
+		failure := !ctx.preauth.Pre(packet)
+		if failure {
+			WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", ctx.preauth.Name()))
+			if valid == successCode {
+				valid = preAuthCode
 			}
 		}
-		if ctx.traceYes {
-			ctx.trace.Trace(TraceRequest, packet)
-		}
+	}
+	if ctx.traceYes {
+		ctx.trace.Trace(TraceRequest, packet)
 	}
 	return valid
 }
