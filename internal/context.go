@@ -31,34 +31,34 @@ type (
 	Context struct {
 		Debug    bool
 		secret   []byte
-		preauths []PreAuth
-		accts    []Accounting
-		traces   []Tracing
+		preauth  PreAuth
+		acct     Accounting
+		trace    Tracing
 		secrets  map[string][]byte
 		noReject bool
 		// shortcuts
-		preauth bool
-		acct    bool
-		trace   bool
+		preauthYes bool
+		acctYes    bool
+		traceYes   bool
 	}
 )
 
 // AddTrace adds a tracing check to the context
-func (ctx *Context) AddTrace(t Tracing) {
-	ctx.trace = true
-	ctx.traces = append(ctx.traces, t)
+func (ctx *Context) SetTrace(t Tracing) {
+	ctx.traceYes = true
+	ctx.trace = t
 }
 
 // AddPreAuth adds a pre-authorization check to the context
-func (ctx *Context) AddPreAuth(p PreAuth) {
-	ctx.preauth = true
-	ctx.preauths = append(ctx.preauths, p)
+func (ctx *Context) SetPreAuth(p PreAuth) {
+	ctx.preauthYes = true
+	ctx.preauth = p
 }
 
 // AddAccounting adds an accounting check to the context
-func (ctx *Context) AddAccounting(a Accounting) {
-	ctx.acct = true
-	ctx.accts = append(ctx.accts, a)
+func (ctx *Context) SetAccounting(a Accounting) {
+	ctx.acctYes = true
+	ctx.acct = a
 }
 
 func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
@@ -66,8 +66,6 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 		return successCode
 	}
 	valid := successCode
-	preauthing := ctx.preauth
-	tracing := ctx.trace
 	ctx.packet(packet)
 	// we may not be able to always read a packet during conversation
 	// especially during initial EAP phases
@@ -77,28 +75,17 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 			WriteError("invalid radius secret", err)
 			valid = badSecretCode
 		}
-		if preauthing {
-			failure := false
-			checking := func(m Module, p *ClientPacket) bool {
-				return m.(PreAuth).Pre(p)
-			}
-			for _, m := range ctx.preauths {
-				if checking(m, packet) {
-					continue
-				}
-				failure = true
-				WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", m.Name()))
-			}
+		if ctx.preauthYes {
+			failure := !ctx.preauth.Pre(packet)
 			if failure {
+				WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", ctx.preauth.Name()))
 				if valid == successCode {
 					valid = preAuthCode
 				}
 			}
 		}
-		if tracing {
-			for _, mod := range ctx.traces {
-				mod.Trace(TraceRequest, packet)
-			}
+		if ctx.traceYes {
+			ctx.trace.Trace(TraceRequest, packet)
 		}
 	}
 	return valid
@@ -254,10 +241,8 @@ func (ctx *Context) Account(packet *ClientPacket) {
 		// unable to parse, exit early
 		return
 	}
-	if ctx.acct {
-		for _, mod := range ctx.accts {
-			mod.Account(packet)
-		}
+	if ctx.acctYes {
+		ctx.acct.Account(packet)
 	}
 }
 

@@ -167,13 +167,13 @@ func main() {
 		plugin = &modules.ProxyModule
 	}
 	if i, ok := plugin.(internal.Accounting); ok {
-		ctx.AddAccounting(i)
+		ctx.SetAccounting(i)
 	}
 	if i, ok := plugin.(internal.Tracing); ok {
-		ctx.AddTrace(i)
+		ctx.SetTrace(i)
 	}
 	if i, ok := plugin.(internal.PreAuth); ok {
-		ctx.AddPreAuth(i)
+		ctx.SetPreAuth(i)
 	}
 
 	if !conf.Internals.NoLogs {
