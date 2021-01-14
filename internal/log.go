@@ -3,14 +3,6 @@ package internal
 import (
 	"fmt"
 	"log"
-	"os"
-)
-
-const (
-	// ExitFailure indicates something went wrong
-	ExitFailure = 2
-	// ExitSignal indicates a signal exit (ok but do something)
-	ExitSignal = 1
 )
 
 var (
@@ -44,11 +36,6 @@ func WriteInfo(message string, messages ...string) {
 	write("INFO", message, messages...)
 }
 
-// WriteInfoDetail logs detail for informational messages
-func WriteInfoDetail(message string) {
-	write("INFO", fmt.Sprintf(" => %s", message))
-}
-
 // WriteWarn logs warning messages
 func WriteWarn(message string, messages ...string) {
 	write("WARN", message, messages...)
@@ -76,15 +63,4 @@ func write(cat, message string, messages ...string) {
 	}
 	msg := fmt.Sprintf("%s%s%s%s", category, instance, message, vars)
 	log.Print(msg)
-}
-
-// Version prints version information
-func Version(vers string) {
-	WriteInfo(fmt.Sprintf("Version: %s", vers))
-}
-
-// ExitNow prints an error message and calls Exit (do NOT call when defers are running)
-func ExitNow(message string, err error) {
-	WriteError(message, err)
-	os.Exit(ExitFailure)
 }
