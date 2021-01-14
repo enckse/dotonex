@@ -78,26 +78,20 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 			valid = badSecretCode
 		}
 		if preauthing {
-			var checks []Module
-			for _, m := range ctx.preauths {
-				checks = append(checks, m)
+			failure := false
+			checking := func(m Module, p *ClientPacket) bool {
+				return m.(PreAuth).Pre(p)
 			}
-			if len(checks) > 0 {
-				failure := false
-				checking := func(m Module, p *ClientPacket) bool {
-					return m.(PreAuth).Pre(p)
+			for _, m := range ctx.preauths {
+				if checking(m, packet) {
+					continue
 				}
-				for _, mod := range checks {
-					if checking(mod, packet) {
-						continue
-					}
-					failure = true
-					WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
-				}
-				if failure {
-					if valid == successCode {
-						valid = preAuthCode
-					}
+				failure = true
+				WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", m.Name()))
+			}
+			if failure {
+				if valid == successCode {
+					valid = preAuthCode
 				}
 			}
 		}
