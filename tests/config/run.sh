@@ -12,7 +12,7 @@ HASH1=${REPOBIN}b5fe2db507cc5ac540493d48fbd5fe33.db
 HASH2=${REPOBIN}3607e48be4f77269241d049a8765cb18.db
 HASH1EXP=hash1
 HASH2EXP=hash2
-rm -f ${REPOBIN}*
+rm -rf ${REPOBIN}
 
 _command() {
     ../../dotonex-compose --mode $1 --repository $REPO ${@:2} echo '{"username":"user.name"}' >> $RESULTS 2>&1
