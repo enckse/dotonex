@@ -25,11 +25,11 @@ func (l *accountingModule) Setup(ctx *internal.PluginContext) error {
 }
 
 func (l *accountingModule) Trace(t internal.TraceType, packet *internal.ClientPacket) {
-	write(internal.TracingMode, t, packet)
+	write("tracing", t, packet)
 }
 
 func (l *accountingModule) Account(packet *internal.ClientPacket) {
-	write(internal.AccountingMode, internal.NoTrace, packet)
+	write("accounting", internal.NoTrace, packet)
 }
 
 func write(mode string, objType internal.TraceType, packet *internal.ClientPacket) {

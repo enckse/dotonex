@@ -20,12 +20,6 @@ const (
 	NoTrace TraceType = 0
 	// TraceRequest indicate to trace the request
 	TraceRequest TraceType = 1
-	// AccountingMode for accounting
-	AccountingMode = "accounting"
-	// TracingMode for tracing
-	TracingMode = "trace"
-	// PreAuthMode for pre-auth
-	PreAuthMode = "preauth"
 )
 
 var (
