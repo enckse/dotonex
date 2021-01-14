@@ -12,6 +12,8 @@ type (
 		Instance  string
 		Debug     bool
 	}
+
+	// ConfigFlags are config backend arguments
 	ConfigFlags struct {
 		Mode    string
 		Repo    string
@@ -36,18 +38,24 @@ const (
 	configData   = ".db"
 	// InstanceConfig indicates a configuration file of instance type
 	InstanceConfig = ".conf"
-	// Config modes
+	// ModeValidate tells configuration to validate a user+mac
 	ModeValidate = "validate"
-	ModeServer   = "server"
-	ModeFetch    = "fetch"
-	ModeBuild    = "build"
-	ModeRebuild  = "rebuild"
+	// ModeServer will configure the baseline server requirements
+	ModeServer = "server"
+	// ModeFetch will indicate changes should be fetched remotely
+	ModeFetch = "fetch"
+	// ModeBuild will indicate optional rebuild
+	ModeBuild = "build"
+	// ModeRebuild will force rebuild
+	ModeRebuild = "rebuild"
 )
 
+// LocalFile gets a local file from the configuration store
 func (c ConfigFlags) LocalFile(name string) string {
 	return filepath.Join(c.Repo, configTarget, name+configData)
 }
 
+// GetConfigFlags will get the arguments for configuration backend needs
 func GetConfigFlags() ConfigFlags {
 	mode := flag.String(modeFlag, "", "operating mode")
 	repo := flag.String(repoFlag, "", "repository to work on")
@@ -64,6 +72,7 @@ func GetConfigFlags() ConfigFlags {
 		Command: args}
 }
 
+// Valid will check the basics for valid config backend flags
 func (c ConfigFlags) Valid() bool {
 	return len(c.Mode) > 0 && len(c.Repo) > 0
 }

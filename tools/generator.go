@@ -11,6 +11,7 @@ import (
 )
 
 type (
+	// Config is the generation of the config for templating
 	Config struct {
 		Accounting string
 		To         bool

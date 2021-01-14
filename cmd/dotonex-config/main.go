@@ -1,17 +1,22 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"voidedtech.com/dotonex/internal"
 )
 
 const (
 	serverHash = "server"
+	perms      = 0600
+	vlanConfig = "vlans.cfg"
 )
 
 func main() {
@@ -21,7 +26,92 @@ func main() {
 	}
 }
 
+func piped(args []string) (string, error) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	o := strings.TrimSpace(stdout.String())
+	if len(o) > 0 {
+		internal.WriteInfo("stdout")
+		internal.WriteInfo(o)
+	}
+	e := stderr.String()
+	if len(e) > 0 {
+		internal.WriteInfo("stderr")
+		internal.WriteInfo(e)
+		return "", fmt.Errorf("command errored")
+	}
+	return o, nil
+}
+
 func validate(flags internal.ConfigFlags) error {
+	internal.WriteInfo("validating inputs")
+	mac, ok := internal.CleanMAC(flags.MAC)
+	if !ok {
+		return fmt.Errorf("invalid MAC")
+	}
+	hash := internal.MD4(flags.Token)
+	tokenFile := flags.LocalFile(hash)
+	user := ""
+	if internal.PathExists(tokenFile) {
+		internal.WriteInfo("token is known")
+		b, err := ioutil.ReadFile(tokenFile)
+		if err != nil {
+			return err
+		}
+		user = string(b)
+	}
+	change := false
+	if user == "" {
+		command := []string{}
+		for _, c := range flags.Command {
+			command = append(command, fmt.Sprintf(c, flags.Token))
+		}
+		output, err := piped(command)
+		if err != nil {
+			return err
+		}
+		m := make(map[string]string)
+		if err := json.Unmarshal([]byte(output), &m); err != nil {
+			return err
+		}
+		if _, ok := m["username"]; !ok {
+			return fmt.Errorf("invalid json, required key missing")
+		}
+		user = m["username"]
+		internal.WriteInfo(fmt.Sprintf("%s token changed", user))
+		if err := ioutil.WriteFile(tokenFile, []byte(user), perms); err != nil {
+			return err
+		}
+		change = true
+		internal.WriteInfo("token validated")
+	}
+	if user == "" {
+		return fmt.Errorf("empty user found")
+	}
+	internal.WriteInfo(fmt.Sprintf("user found: %s", user))
+	if change {
+		internal.WriteInfo("user is new")
+		userFile := flags.LocalFile(user)
+		if err := ioutil.WriteFile(userFile, []byte(flags.Token), perms); err != nil {
+			return err
+		}
+		if err := build(flags, true); err != nil {
+			return err
+		}
+	}
+	userDir := filepath.Join(flags.Repo, user)
+	for _, file := range []string{mac, vlanConfig} {
+		if !internal.PathExists(filepath.Join(userDir, file)) {
+			return fmt.Errorf("%s file not found", file)
+		}
+	}
+	internal.WriteInfo("validated")
 	return nil
 }
 
@@ -49,7 +139,7 @@ func server(flags internal.ConfigFlags) error {
 		}
 	}
 	internal.WriteInfo("hash update")
-	if err := ioutil.WriteFile(hash, []byte(flags.Hash), 0644); err != nil {
+	if err := ioutil.WriteFile(hash, []byte(flags.Hash), perms); err != nil {
 		return err
 	}
 	return build(flags, true)
@@ -71,7 +161,7 @@ func run() error {
 	target := filepath.Dir(flags.LocalFile(""))
 	if !internal.PathExists(target) {
 		internal.WriteInfo("creating target")
-		if err := os.Mkdir(target, 0600); err != nil {
+		if err := os.Mkdir(target, 0700); err != nil {
 			return err
 		}
 	}

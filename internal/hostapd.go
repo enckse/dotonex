@@ -5,6 +5,7 @@ import (
 )
 
 type (
+	// Hostapd is the backend hostapd configuration handler for file generation
 	Hostapd struct {
 		name     string
 		password string
@@ -25,14 +26,15 @@ radius_accept_attr=81:s:%s`
 "%s" MSCHAPV2 hash:%s [2]` + attributes
 )
 
+// String
 func (h Hostapd) String(vlanID string) string {
 	if h.mab {
 		return fmt.Sprintf(mab, h.name, h.name, vlanID)
-	} else {
-		return fmt.Sprintf(login, h.name, h.name, h.password, vlanID)
 	}
+	return fmt.Sprintf(login, h.name, h.name, h.password, vlanID)
 }
 
+// NewHostapd generates a new hostapd configuration setup
 func NewHostapd(name, password, vlan string) Hostapd {
 	mab := name == password
 	return Hostapd{name: name, password: password, vlan: vlan, mab: mab}
