@@ -43,19 +43,19 @@ type (
 	}
 )
 
-// AddTrace adds a tracing check to the context
+// SetTrace adds a tracing check to the context
 func (ctx *Context) SetTrace(t Tracing) {
 	ctx.traceYes = true
 	ctx.trace = t
 }
 
-// AddPreAuth adds a pre-authorization check to the context
+// SetPreAuth adds a pre-authorization check to the context
 func (ctx *Context) SetPreAuth(p PreAuth) {
 	ctx.preauthYes = true
 	ctx.preauth = p
 }
 
-// AddAccounting adds an accounting check to the context
+// SetAccounting adds an accounting check to the context
 func (ctx *Context) SetAccounting(a Accounting) {
 	ctx.acctYes = true
 	ctx.acct = a
@@ -91,7 +91,6 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 	}
 	return valid
 }
-
 
 // FromConfig parses config data into a Context object
 func (ctx *Context) FromConfig(libPath string, c *Configuration) {
