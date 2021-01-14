@@ -8,8 +8,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
+	yaml "gopkg.in/yaml.v2"
 	"voidedtech.com/dotonex/internal"
 )
 
@@ -127,14 +129,22 @@ func fetch(flags internal.ConfigFlags) error {
 	return nil
 }
 
+func compareFileToText(file, text string) (bool, error) {
+	b, err := ioutil.ReadFile(file)
+	if err != nil {
+		return false, err
+	}
+	return text == string(b), nil
+}
+
 func server(flags internal.ConfigFlags) error {
 	hash := flags.LocalFile(serverHash)
 	if internal.PathExists(hash) {
-		curr, err := ioutil.ReadFile(hash)
+		same, err := compareFileToText(hash, flags.Hash)
 		if err != nil {
 			return err
 		}
-		if string(curr) == flags.Hash {
+		if same {
 			return nil
 		}
 	}
@@ -145,8 +155,113 @@ func server(flags internal.ConfigFlags) error {
 	return build(flags, true)
 }
 
-func build(flags internal.ConfigFlags, force bool) error {
+func getHostapd(flags internal.ConfigFlags, def internal.Definition) ([]internal.Hostapd, error) {
+	return nil, nil
+}
+
+func getVLANs(flags internal.ConfigFlags) (internal.Definition, error) {
+	cfg := filepath.Join(flags.Repo, vlanConfig)
+	d := internal.Definition{}
+	if !internal.PathExists(cfg) {
+		return d, fmt.Errorf("no root vlan config found")
+	}
+	b, err := ioutil.ReadFile(cfg)
+	if err != nil {
+		return d, err
+	}
+	if err := yaml.Unmarshal(b, &d); err != nil {
+		return d, err
+	}
+
+	if err := d.ValidateVLANs(); err != nil {
+		return d, err
+	}
+	return d, nil
+}
+
+func configure(flags internal.ConfigFlags) error {
+	internal.WriteInfo("configuring")
+	vlans, err := getVLANs(flags)
+	if err != nil {
+		return err
+	}
+	hostapd, err := getHostapd(flags, vlans)
+	if err != nil {
+		return err
+	}
+	var eapUsers []string
+	for _, h := range hostapd {
+		eapUsers = append(eapUsers, h.String())
+	}
+	if len(eapUsers) == 0 {
+		return fmt.Errorf("no hostapd configurations found")
+	}
+	sort.Strings(eapUsers)
+	hostapdFile := flags.LocalFile("eap_users")
+	hostapdText := strings.Join(eapUsers, "\n\n") + "\n"
+	if internal.PathExists(hostapdFile) {
+		same, err := compareFileToText(hostapdFile, hostapdText)
+		if err != nil {
+			return err
+		}
+		if same {
+			internal.WriteInfo("no hostapd changes")
+			return nil
+		}
+	}
+	if err := ioutil.WriteFile(hostapdFile, []byte(hostapdText), perms); err != nil {
+		return err
+	}
+	return resetHostapd()
+}
+
+func resetHostapd() error {
+	internal.WriteInfo("hostapd reset")
+	pids, err := piped([]string{"pidof", "hostapd"})
+	if err != nil {
+		return err
+	}
+	for _, pid := range strings.Split(pids, " ") {
+		p := strings.TrimSpace(pid)
+		if len(p) == 0 {
+			continue
+		}
+		cmd := exec.Command("kill", "-HUP", p)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func build(flags internal.ConfigFlags, force bool) error {
+	if !force {
+		last, err := piped([]string{"git", "-C", flags.Repo, "log", "-n", "1", "--format=%h"})
+		if err != nil {
+			return err
+		}
+		last = strings.TrimSpace(last)
+		if len(last) == 0 {
+			return fmt.Errorf("no commit retrieved")
+		}
+		lastFile := flags.LocalFile("commit")
+		if internal.PathExists(lastFile) {
+			same, err := compareFileToText(lastFile, last)
+			if err != nil {
+				return err
+			}
+			if same {
+				internal.WriteInfo("no config changes found")
+				return nil
+			}
+		}
+		if err := ioutil.WriteFile(lastFile, []byte(last), perms); err != nil {
+			return err
+		}
+	}
+	return configure(flags)
 }
 
 func run() error {

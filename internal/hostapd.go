@@ -27,15 +27,15 @@ radius_accept_attr=81:s:%s`
 )
 
 // String
-func (h Hostapd) String(vlanID string) string {
+func (h Hostapd) String() string {
 	if h.mab {
-		return fmt.Sprintf(mab, h.name, h.name, vlanID)
+		return fmt.Sprintf(mab, h.name, h.name, h.vlan)
 	}
-	return fmt.Sprintf(login, h.name, h.name, h.password, vlanID)
+	return fmt.Sprintf(login, h.name, h.name, h.password, h.vlan)
 }
 
 // NewHostapd generates a new hostapd configuration setup
-func NewHostapd(name, password, vlan string) Hostapd {
+func NewHostapd(name, password, vlanID string) Hostapd {
 	mab := name == password
-	return Hostapd{name: name, password: password, vlan: vlan, mab: mab}
+	return Hostapd{name: name, password: password, vlan: vlanID, mab: mab}
 }

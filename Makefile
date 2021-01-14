@@ -1,5 +1,5 @@
 FLAGS        := -ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw
-EXES         := dotonex dotonex-runner dotonex-config
+EXES         := dotonex dotonex-runner dotonex-compose
 UTESTS       := $(shell find . -type f -name "*_test.go" | xargs dirname | sort -u)
 SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
 HOSTAPD      := hostap/hostap/hostapd/hostapd

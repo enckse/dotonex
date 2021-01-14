@@ -16,7 +16,7 @@ HASH2EXP=hash2
 rm -f ${REPOBIN}*
 
 _command() {
-    python ../../tools/dotonex-config $1 $REPO ${@:2} echo '{{"username":"user.name"}}' >> $RESULTS
+    ../../dotonex-compose --mode $1 --repository $REPO ${@:2} echo '{{"username":"user.name"}}' >> $RESULTS 2>&1
 }
 
 _diff() {
