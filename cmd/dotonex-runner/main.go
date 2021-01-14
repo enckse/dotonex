@@ -180,7 +180,6 @@ func main() {
 	if i, ok := plugin.(internal.PreAuth); ok {
 		ctx.AddPreAuth(i)
 	}
-	ctx.AddModule(plugin)
 
 	if !conf.Internals.NoLogs {
 		logBuffer := time.Duration(conf.Internals.Logs) * time.Second

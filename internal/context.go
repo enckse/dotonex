@@ -27,8 +27,6 @@ type (
 	// ReasonCode for authorization state
 	ReasonCode int
 
-	authCheck func(Module, *ClientPacket) bool
-
 	// Context is the server's operating context
 	Context struct {
 		Debug    bool
@@ -36,14 +34,12 @@ type (
 		preauths []PreAuth
 		accts    []Accounting
 		traces   []Tracing
-		modules  []Module
 		secrets  map[string][]byte
 		noReject bool
 		// shortcuts
 		preauth bool
 		acct    bool
 		trace   bool
-		module  bool
 	}
 )
 
@@ -57,12 +53,6 @@ func (ctx *Context) AddTrace(t Tracing) {
 func (ctx *Context) AddPreAuth(p PreAuth) {
 	ctx.preauth = true
 	ctx.preauths = append(ctx.preauths, p)
-}
-
-// AddModule adds a general model to the context
-func (ctx *Context) AddModule(m Module) {
-	ctx.module = true
-	ctx.modules = append(ctx.modules, m)
 }
 
 // AddAccounting adds an accounting check to the context
