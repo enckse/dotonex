@@ -166,11 +166,6 @@ func main() {
 	} else {
 		plugin = &modules.ProxyModule
 	}
-
-	if err := plugin.Setup(internal.NewPluginContext(conf)); err != nil {
-		internal.Fatal("unable to create internal plugin", err)
-	}
-
 	if i, ok := plugin.(internal.Accounting); ok {
 		ctx.AddAccounting(i)
 	}

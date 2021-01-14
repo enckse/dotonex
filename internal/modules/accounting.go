@@ -20,10 +20,6 @@ func (l *accountingModule) Name() string {
 	return "accounting"
 }
 
-func (l *accountingModule) Setup(ctx *internal.PluginContext) error {
-	return nil
-}
-
 func (l *accountingModule) Trace(t internal.TraceType, packet *internal.ClientPacket) {
 	write("tracing", t, packet)
 }

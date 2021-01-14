@@ -28,10 +28,6 @@ var (
 	ProxyModule proxyModule
 )
 
-func (l *proxyModule) Setup(ctx *internal.PluginContext) error {
-	return nil
-}
-
 func (l *proxyModule) Pre(packet *internal.ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }

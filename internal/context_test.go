@@ -28,10 +28,6 @@ func (m *MockModule) Name() string {
 	return "mock"
 }
 
-func (m *MockModule) Setup(c *PluginContext) error {
-	return nil
-}
-
 func (m *MockModule) Pre(p *ClientPacket) bool {
 	m.pre++
 	return !m.fail

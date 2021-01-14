@@ -47,7 +47,6 @@ type (
 
 	// Module represents a plugin module for packet checking
 	Module interface {
-		Setup(*PluginContext) error
 		Name() string
 	}
 
