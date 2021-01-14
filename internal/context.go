@@ -100,7 +100,9 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 		var checking authCheck
 		var code ReasonCode
 		if preauthing {
-			checking = getAuthChecker()
+			checking = func(m Module, p *ClientPacket) bool {
+				return m.(PreAuth).Pre(p)
+			}
 			for _, m := range ctx.preauths {
 				checks = append(checks, m)
 			}
@@ -121,12 +123,6 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 		}
 	}
 	return valid
-}
-
-func getAuthChecker() authCheck {
-	return func(m Module, p *ClientPacket) bool {
-		return m.(PreAuth).Pre(p)
-	}
 }
 
 func checkAuthMods(modules []Module, packet *ClientPacket, fxn authCheck) bool {

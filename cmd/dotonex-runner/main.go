@@ -74,16 +74,6 @@ func runConnection(ctx *internal.Context, conn *connection) {
 	}
 }
 
-func checkAuth(name string, fxn internal.AuthorizePacket, ctx *internal.Context, b []byte, addr, client *net.UDPAddr) bool {
-	auth := internal.HandleAuth(fxn, ctx, b, addr, func(buffer []byte) {
-		proxy.WriteToUDP(buffer, client)
-	})
-	if !auth {
-		internal.WriteDebug("client failed auth check", name)
-	}
-	return auth
-}
-
 func runProxy(ctx *internal.Context) {
 	if ctx.Debug {
 		internal.WriteInfo("=============WARNING==================")
@@ -116,7 +106,11 @@ func runProxy(ctx *internal.Context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		if !checkAuth("pre", internal.PreAuthorize, ctx, buffered, cliaddr, conn.client) {
+		auth := internal.HandleAuth(internal.PreAuthorize, ctx, buffered, cliaddr, func(buffer []byte) {
+			proxy.WriteToUDP(buffer, conn.client)
+		})
+		if !auth {
+			internal.WriteDebug("client failed preauth check")
 			continue
 		}
 		if _, err := conn.server.Write(buffer[0:n]); err != nil {

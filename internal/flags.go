@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"fmt"
 	"flag"
+	"fmt"
 	"path/filepath"
 )
 
@@ -65,6 +65,7 @@ func argIfSet(flag, value string, appendTo []string) []string {
 	return appendTo
 }
 
+// Args compose flags into callable arguments
 func (c ComposeFlags) Args() []string {
 	var flags []string
 	flags = argIfSet(modeFlag, c.Mode, flags)
