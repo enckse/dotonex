@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"flag"
 	"path/filepath"
 )
@@ -13,8 +14,8 @@ type (
 		Debug     bool
 	}
 
-	// ConfigFlags are config backend arguments
-	ConfigFlags struct {
+	// ComposeFlags are config backend arguments
+	ComposeFlags struct {
 		Mode    string
 		Repo    string
 		Hash    string
@@ -34,9 +35,9 @@ const (
 	macFlag      = "mac"
 	tokenFlag    = "token"
 	hashFlag     = "hash"
-	// ConfigTarget for composition/config outputs
-	ConfigTarget = "bin"
-	configData   = ".db"
+	// ComposeTarget for composition/config outputs
+	ComposeTarget = "bin"
+	composeData   = ".db"
 	// InstanceConfig indicates a configuration file of instance type
 	InstanceConfig = ".conf"
 	// ModeValidate tells configuration to validate a user+mac
@@ -52,12 +53,33 @@ const (
 )
 
 // LocalFile gets a local file from the configuration store
-func (c ConfigFlags) LocalFile(name string) string {
-	return filepath.Join(c.Repo, ConfigTarget, name+configData)
+func (c ComposeFlags) LocalFile(name string) string {
+	return filepath.Join(c.Repo, ComposeTarget, name+composeData)
 }
 
-// GetConfigFlags will get the arguments for configuration backend needs
-func GetConfigFlags() ConfigFlags {
+func argIfSet(flag, value string, appendTo []string) []string {
+	if len(value) > 0 {
+		appendTo = append(appendTo, fmt.Sprintf("%s%s", dash, flag))
+		appendTo = append(appendTo, value)
+	}
+	return appendTo
+}
+
+func (c ComposeFlags) Args() []string {
+	var flags []string
+	flags = argIfSet(modeFlag, c.Mode, flags)
+	flags = argIfSet(repoFlag, c.Repo, flags)
+	flags = argIfSet(tokenFlag, c.Token, flags)
+	flags = argIfSet(hashFlag, c.Hash, flags)
+	flags = argIfSet(macFlag, c.MAC, flags)
+	if len(c.Command) > 0 {
+		flags = append(flags, c.Command...)
+	}
+	return flags
+}
+
+// GetComposeFlags will get the arguments for configuration backend needs
+func GetComposeFlags() ComposeFlags {
 	mode := flag.String(modeFlag, "", "operating mode")
 	repo := flag.String(repoFlag, "", "repository to work on")
 	mac := flag.String(macFlag, "", "MAC address")
@@ -65,7 +87,7 @@ func GetConfigFlags() ConfigFlags {
 	token := flag.String(tokenFlag, "", "token to validate")
 	flag.Parse()
 	args := flag.Args()
-	return ConfigFlags{Mode: *mode,
+	return ComposeFlags{Mode: *mode,
 		Repo:    *repo,
 		MAC:     *mac,
 		Token:   *token,
@@ -74,7 +96,7 @@ func GetConfigFlags() ConfigFlags {
 }
 
 // Valid will check the basics for valid config backend flags
-func (c ConfigFlags) Valid() bool {
+func (c ComposeFlags) Valid() bool {
 	return len(c.Mode) > 0 && len(c.Repo) > 0
 }
 

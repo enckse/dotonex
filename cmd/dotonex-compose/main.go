@@ -51,7 +51,7 @@ func piped(args []string) (string, error) {
 	return o, nil
 }
 
-func validate(flags internal.ConfigFlags) error {
+func validate(flags internal.ComposeFlags) error {
 	internal.WriteInfo("validating inputs")
 	mac, ok := internal.CleanMAC(flags.MAC)
 	if !ok {
@@ -121,7 +121,7 @@ func validate(flags internal.ConfigFlags) error {
 	return nil
 }
 
-func fetch(flags internal.ConfigFlags) error {
+func fetch(flags internal.ComposeFlags) error {
 	for _, cmd := range []string{"fetch", "pull"} {
 		command := exec.Command("git", "-C", flags.Repo, cmd)
 		command.Stdout = os.Stdout
@@ -141,7 +141,7 @@ func compareFileToText(file, text string) (bool, error) {
 	return text == string(b), nil
 }
 
-func server(flags internal.ConfigFlags) error {
+func server(flags internal.ComposeFlags) error {
 	hash := flags.LocalFile(serverHash)
 	if internal.PathExists(hash) {
 		same, err := compareFileToText(hash, flags.Hash)
@@ -159,7 +159,7 @@ func server(flags internal.ConfigFlags) error {
 	return build(flags, true)
 }
 
-func getHostapd(flags internal.ConfigFlags, def internal.Definition) ([]internal.Hostapd, error) {
+func getHostapd(flags internal.ComposeFlags, def internal.Definition) ([]internal.Hostapd, error) {
 	hashFile := flags.LocalFile(serverHash)
 	if !internal.PathExists(hashFile) {
 		return nil, fmt.Errorf("no server hash found")
@@ -182,7 +182,7 @@ func getHostapd(flags internal.ConfigFlags, def internal.Definition) ([]internal
 			continue
 		}
 		name := dir.Name()
-		if name == internal.ConfigTarget {
+		if name == internal.ComposeTarget {
 			continue
 		}
 		path := filepath.Join(flags.Repo, name)
@@ -250,7 +250,7 @@ func getHostapd(flags internal.ConfigFlags, def internal.Definition) ([]internal
 	return result, nil
 }
 
-func getVLANs(flags internal.ConfigFlags) (internal.Definition, error) {
+func getVLANs(flags internal.ComposeFlags) (internal.Definition, error) {
 	cfg := filepath.Join(flags.Repo, vlanConfig)
 	d := internal.Definition{}
 	if !internal.PathExists(cfg) {
@@ -270,7 +270,7 @@ func getVLANs(flags internal.ConfigFlags) (internal.Definition, error) {
 	return d, nil
 }
 
-func configure(flags internal.ConfigFlags) error {
+func configure(flags internal.ComposeFlags) error {
 	internal.WriteInfo("configuring")
 	vlans, err := getVLANs(flags)
 	if err != nil {
@@ -288,7 +288,7 @@ func configure(flags internal.ConfigFlags) error {
 		return fmt.Errorf("no hostapd configurations found")
 	}
 	sort.Strings(eapUsers)
-	hostapdFile := filepath.Join(flags.Repo, internal.ConfigTarget, "eap_users")
+	hostapdFile := filepath.Join(flags.Repo, internal.ComposeTarget, "eap_users")
 	hostapdText := strings.Join(eapUsers, "\n\n") + "\n"
 	if internal.PathExists(hostapdFile) {
 		same, err := compareFileToText(hostapdFile, hostapdText)
@@ -327,7 +327,7 @@ func resetHostapd() error {
 	return nil
 }
 
-func build(flags internal.ConfigFlags, force bool) error {
+func build(flags internal.ComposeFlags, force bool) error {
 	if !force {
 		last, err := piped([]string{"git", "-C", flags.Repo, "log", "-n", "1", "--format=%h"})
 		if err != nil {
@@ -356,7 +356,7 @@ func build(flags internal.ConfigFlags, force bool) error {
 }
 
 func run() error {
-	flags := internal.GetConfigFlags()
+	flags := internal.GetComposeFlags()
 	if !flags.Valid() {
 		return fmt.Errorf("invalid arguments")
 	}

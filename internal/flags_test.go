@@ -4,15 +4,50 @@ import (
 	"testing"
 )
 
-func TestConfigLocalFile(t *testing.T) {
-	c := ConfigFlags{Repo: "test"}
+func TestComposeLocalFile(t *testing.T) {
+	c := ComposeFlags{Repo: "test"}
 	if "test/bin/file.db" != c.LocalFile("file") {
 		t.Error("invalid file result")
 	}
 }
 
-func TestConfigValid(t *testing.T) {
-	c := ConfigFlags{}
+func TestComposeArgs(t *testing.T) {
+	c := ComposeFlags{}
+	if len(c.Args()) != 0 {
+		t.Error("no args")
+	}
+	c.Command = []string{"TEST", "XYZ"}
+	if len(c.Args()) != 2 {
+		t.Error("command args")
+	}
+	c.Repo = "TEST"
+	c.Token = "test"
+	args := c.Args()
+	if len(args) != 6 {
+		t.Error("invalid args")
+	}
+	if args[0] != "--repository" {
+		t.Error("invalid arg 1")
+	}
+	if args[1] != "TEST" {
+		t.Error("invalid arg 2")
+	}
+	if args[2] != "--token" {
+		t.Error("invalid arg 3")
+	}
+	if args[3] != "test" {
+		t.Error("invalid arg 4")
+	}
+	if args[4] != "TEST" {
+		t.Error("invalid arg 5")
+	}
+	if args[5] != "XYZ" {
+		t.Error("invalid arg 6")
+	}
+}
+
+func TestComposeValid(t *testing.T) {
+	c := ComposeFlags{}
 	if c.Valid() {
 		t.Error("is invalid")
 	}
