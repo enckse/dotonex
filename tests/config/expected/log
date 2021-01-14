@@ -1,94 +1,48 @@
 
-[SCRIPTLET] configuration process failed
-[SCRIPTLET] no password for login found
-[SCRIPTLET] hash update
-[SCRIPTLET] xyz (MAB)
-[SCRIPTLET]  -> aabbccddeeff
-[SCRIPTLET] hostapd reset
-[SCRIPTLET] hash update
-[SCRIPTLET] xyz (MAB)
-[SCRIPTLET]  -> aabbccddeeff
-[SCRIPTLET] xyz (MAB)
-[SCRIPTLET]  -> aabbccddeeff
-@@ -1,3 +1,27 @@
-+
-+"abc:abcdef" PEAP
-+
-+"abc:abcdef" MSCHAPV2 hash:HASH [2]
-+radius_accept_attr=64:d:13
-+radius_accept_attr=65:d:6
-+radius_accept_attr=81:s:1
-+
-+
-+"abcdef" PEAP
-+
-+"abcdef" MSCHAPV2 hash:HASH [2]
-+radius_accept_attr=64:d:13
-+radius_accept_attr=65:d:6
-+radius_accept_attr=81:s:1
-+
-+
-+"xyz:abcdef" PEAP
-+
-+"xyz:abcdef" MSCHAPV2 hash:HASH [2]
-+radius_accept_attr=64:d:13
-+radius_accept_attr=65:d:6
-+radius_accept_attr=81:s:2
-+
- "aabbccddeeff" MD5 "aabbccddeeff"
- radius_accept_attr=64:d:13
- radius_accept_attr=65:d:6
-[SCRIPTLET] validating inputs
-[SCRIPTLET] inserting abcdef for user.name
-[SCRIPTLET] validation complete
-[SCRIPTLET] user found: user.name
-[SCRIPTLET] new user token
-[SCRIPTLET] user.name (USER)
-[SCRIPTLET] xyz (MAB)
-[SCRIPTLET]  -> aabbccddeeff
-[SCRIPTLET] hostapd reset
-[SCRIPTLET] invalid: 1122334455aa
-@@ -1,23 +1,23 @@
- 
--"abc:abcdef" PEAP
-+"abc:token" PEAP
- 
--"abc:abcdef" MSCHAPV2 hash:HASH [2]
-+"abc:token" MSCHAPV2 hash:HASH [2]
- radius_accept_attr=64:d:13
- radius_accept_attr=65:d:6
- radius_accept_attr=81:s:1
- 
- 
--"abcdef" PEAP
-+"token" PEAP
- 
--"abcdef" MSCHAPV2 hash:HASH [2]
-+"token" MSCHAPV2 hash:HASH [2]
- radius_accept_attr=64:d:13
- radius_accept_attr=65:d:6
- radius_accept_attr=81:s:1
- 
- 
--"xyz:abcdef" PEAP
-+"xyz:token" PEAP
- 
--"xyz:abcdef" MSCHAPV2 hash:HASH [2]
-+"xyz:token" MSCHAPV2 hash:HASH [2]
- radius_accept_attr=64:d:13
- radius_accept_attr=65:d:6
- radius_accept_attr=81:s:2
-[SCRIPTLET] validating inputs
-[SCRIPTLET] inserting token for user.name
-[SCRIPTLET] validation complete
-[SCRIPTLET] user found: user.name
-[SCRIPTLET] new user token
-[SCRIPTLET] user.name (USER)
-[SCRIPTLET] xyz (MAB)
-[SCRIPTLET]  -> aabbccddeeff
-[SCRIPTLET] hostapd reset
-[SCRIPTLET] valid
-[SCRIPTLET] validating inputs
-[SCRIPTLET] user token is known
-[SCRIPTLET] user found: user.name
-[SCRIPTLET] invalid: 1122334455aa
+[INFO] configuring
+[ERROR] config failure ([no server hash found])
+[INFO] hash update
+[INFO] configuring
+[INFO] xyz (MAB)
+[INFO]  -> aabbccddeeff
+[INFO] hostapd reset
+[ERROR] config failure ([exit status 1])
+[INFO] hash update
+[INFO] configuring
+[INFO] xyz (MAB)
+[INFO]  -> aabbccddeeff
+[INFO] no hostapd changes
+[INFO] configuring
+[INFO] xyz (MAB)
+[INFO]  -> aabbccddeeff
+[INFO] no hostapd changes
+[INFO] validating inputs
+[INFO] stdout
+[INFO] {"username":"user.name"}
+[INFO] user.name token changed
+[INFO] token validated
+[INFO] user found: user.name
+[INFO] user is new
+[INFO] configuring
+[INFO] user.name (USER)
+[INFO] xyz (MAB)
+[INFO]  -> aabbccddeeff
+[INFO] hostapd reset
+[ERROR] config failure ([exit status 1])
+[INFO] validating inputs
+[INFO] stdout
+[INFO] {"username":"user.name"}
+[INFO] user.name token changed
+[INFO] token validated
+[INFO] user found: user.name
+[INFO] user is new
+[INFO] configuring
+[INFO] user.name (USER)
+[INFO] xyz (MAB)
+[INFO]  -> aabbccddeeff
+[INFO] hostapd reset
+[ERROR] config failure ([exit status 1])
+[INFO] validating inputs
+[INFO] token is known
+[INFO] user found: user.name
+[ERROR] config failure ([1122334455aa file not found])

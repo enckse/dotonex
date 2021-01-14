@@ -34,6 +34,7 @@ const (
 	macFlag      = "mac"
 	tokenFlag    = "token"
 	hashFlag     = "hash"
+	// ConfigTarget for composition/config outputs
 	ConfigTarget = "bin"
 	configData   = ".db"
 	// InstanceConfig indicates a configuration file of instance type

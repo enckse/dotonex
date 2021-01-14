@@ -20,7 +20,7 @@ radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:%s`
 
-	mab   = `"%s" MD5 "%s` + attributes
+	mab   = `"%s" MD5 "%s"` + attributes
 	login = `"%s" PEAP
 
 "%s" MSCHAPV2 hash:%s [2]` + attributes

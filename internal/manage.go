@@ -37,7 +37,7 @@ func (s script) execute(sub string, args []string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "dotonex-config", arguments...)
+	cmd := exec.CommandContext(ctx, "dotonex-compose", arguments...)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()

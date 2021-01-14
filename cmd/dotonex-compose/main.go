@@ -72,7 +72,11 @@ func validate(flags internal.ConfigFlags) error {
 	if user == "" {
 		command := []string{}
 		for _, c := range flags.Command {
-			command = append(command, fmt.Sprintf(c, flags.Token))
+			text := c
+			if strings.Contains(c, "%s") {
+				text = fmt.Sprintf(c, flags.Token)
+			}
+			command = append(command, text)
 		}
 		output, err := piped(command)
 		if err != nil {
@@ -243,7 +247,7 @@ func getHostapd(flags internal.ConfigFlags, def internal.Definition) ([]internal
 			result = append(result, internal.NewHostapd(fmt.Sprintf("%s:%s", member.VLAN, loginName), hash, id))
 		}
 	}
-	return nil, nil
+	return result, nil
 }
 
 func getVLANs(flags internal.ConfigFlags) (internal.Definition, error) {
@@ -284,7 +288,7 @@ func configure(flags internal.ConfigFlags) error {
 		return fmt.Errorf("no hostapd configurations found")
 	}
 	sort.Strings(eapUsers)
-	hostapdFile := flags.LocalFile("eap_users")
+	hostapdFile := filepath.Join(flags.Repo, internal.ConfigTarget, "eap_users")
 	hostapdText := strings.Join(eapUsers, "\n\n") + "\n"
 	if internal.PathExists(hostapdFile) {
 		same, err := compareFileToText(hostapdFile, hostapdText)

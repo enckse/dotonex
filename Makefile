@@ -56,7 +56,7 @@ endif
 	install -Dm644 hostap/hostapd.conf $(DESTDIR)/etc/dotonex/hostapd/
 	install -Dm755 dotonex $(DESTDIR)/usr/bin/
 	install -Dm755 dotonex-runner $(DESTDIR)/usr/bin/
-	install -Dm755 dotonex-config $(DESTDIR)/usr/bin/
+	install -Dm755 dotonex-compose $(DESTDIR)/usr/bin/
 	install -Dm755 tools/dotonex-daemon $(DESTDIR)/usr/bin/
 	install -Dm644 configs/accounting.conf $(DESTDIR)/etc/dotonex/accounting.conf
 	install -Dm644 configs/proxy.conf $(DESTDIR)/etc/dotonex/proxy.conf

@@ -1,3 +1,7 @@
+"aabbccddeeff" MD5 "aabbccddeeff"
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:2
 
 "abc:token" PEAP
 
@@ -6,7 +10,6 @@ radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:1
 
-
 "token" PEAP
 
 "token" MSCHAPV2 hash:HASH [2]
@@ -14,15 +17,9 @@ radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:1
 
-
 "xyz:token" PEAP
 
 "xyz:token" MSCHAPV2 hash:HASH [2]
-radius_accept_attr=64:d:13
-radius_accept_attr=65:d:6
-radius_accept_attr=81:s:2
-
-"aabbccddeeff" MD5 "aabbccddeeff"
 radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:2

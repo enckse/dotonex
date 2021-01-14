@@ -6,17 +6,16 @@ BIN=bin/
 REPOBIN=${REPO}${BIN}
 mkdir -p $BIN
 RESULTS=${BIN}log
-CHECK=$RESULTS.check
 echo > $RESULTS
 EAP=${REPOBIN}eap_users
-HASH1=${REPOBIN}1f8ac10f23c5b5bc1167bda84b833e5c057a77d2.db
-HASH2=${REPOBIN}ee977806d7286510da8b9a7492ba58e2484c0ecc.db
+HASH1=${REPOBIN}b5fe2db507cc5ac540493d48fbd5fe33.db
+HASH2=${REPOBIN}3607e48be4f77269241d049a8765cb18.db
 HASH1EXP=hash1
 HASH2EXP=hash2
 rm -f ${REPOBIN}*
 
 _command() {
-    ../../dotonex-compose --mode $1 --repository $REPO ${@:2} echo '{{"username":"user.name"}}' >> $RESULTS 2>&1
+    ../../dotonex-compose --mode $1 --repository $REPO ${@:2} echo '{"username":"user.name"}' >> $RESULTS 2>&1
 }
 
 _diff() {
@@ -68,8 +67,7 @@ _command validate --token abcdef --mac 1122334455aa
 _diff_token_hash
 _diff_eap user
 
-cat $RESULTS | grep -v "$PWD" > $CHECK
-diff -u $CHECK ${EXPECT}log
+diff -u $RESULTS ${EXPECT}log
 if [ $? -ne 0 ]; then
     echo "incorrect execution"
     exit 1
