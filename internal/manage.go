@@ -27,12 +27,12 @@ type (
 	}
 )
 
-func (s script) execute(sub string, args []string) bool {
-	arguments := []string{sub, s.repo}
-	arguments = append(arguments, args...)
+func (s script) execute(flags ComposeFlags) bool {
+	flags.Repo = s.repo
+	arguments := flags.Args()
 
 	if s.debug {
-		WriteInfo(fmt.Sprintf("running: %s (%v)", sub, args))
+		WriteInfo(fmt.Sprintf("running: %v", arguments))
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
@@ -76,21 +76,21 @@ func (s script) Validate(token, mac string) bool {
 		}
 		return false
 	}
-	cmd := []string{fmt.Sprintf("--mac=%s", mac), fmt.Sprintf("--token=%s", token)}
-	cmd = append(cmd, s.command...)
-	return s.execute("validate", cmd)
+	c := ComposeFlags{Mode: ModeValidate, MAC: mac, Token: token, Command: s.command}
+	return s.execute(c)
 }
 
 func (s script) Server() bool {
-	return s.execute("server", []string{fmt.Sprintf("--hash=%s", s.hash)})
+	c := ComposeFlags{Mode: ModeServer, Hash: s.hash}
+	return s.execute(c)
 }
 
 func (s script) Fetch() bool {
-	return s.execute("fetch", []string{})
+	return s.execute(ComposeFlags{Mode: ModeFetch})
 }
 
 func (s script) Build() bool {
-	return s.execute("build", []string{})
+	return s.execute(ComposeFlags{Mode: ModeBuild})
 }
 
 // SetAllowed hard sets which token+mac combos are allowed
