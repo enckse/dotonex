@@ -11,6 +11,10 @@ import (
 )
 
 type (
+	keyValueStore struct {
+		keyValues []internal.KeyValue
+	}
+
 	proxyModule struct {
 	}
 )
@@ -95,13 +99,27 @@ func mark(success bool, user, calling string, p *internal.ClientPacket, cached b
 	if !success {
 		result = "FAILED"
 	}
-	kv := internal.KeyValueStore{}
-	kv.Add("Result", result)
-	kv.Add("User-Name", user)
-	kv.Add("Calling-Station-Id", calling)
-	kv.Add("NAS-Id", nas)
-	kv.Add("NAS-IPAddress", nasip)
-	kv.Add("NAS-Port", fmt.Sprintf("%d", nasport))
-	kv.Add("Id", strconv.Itoa(int(p.Packet.Identifier)))
-	internal.LogPluginMessages(&ProxyModule, kv.Strings())
+	kv := keyValueStore{}
+	kv.add("Result", result)
+	kv.add("User-Name", user)
+	kv.add("Calling-Station-Id", calling)
+	kv.add("NAS-Id", nas)
+	kv.add("NAS-IPAddress", nasip)
+	kv.add("NAS-Port", fmt.Sprintf("%d", nasport))
+	kv.add("Id", strconv.Itoa(int(p.Packet.Identifier)))
+	internal.LogPluginMessages(&ProxyModule, kv.strings())
+}
+
+func (kv *keyValueStore) add(key, val string) {
+	kv.keyValues = append(kv.keyValues, internal.KeyValue{Key: key, Value: val})
+}
+
+func (kv keyValueStore) strings() []string {
+	var objs []string
+	offset := ""
+	for _, k := range kv.keyValues {
+		objs = append(objs, fmt.Sprintf("%s%s", offset, k.String()))
+		offset = "  "
+	}
+	return objs
 }

@@ -64,3 +64,23 @@ func TestUserMacCache(t *testing.T) {
 	ErrorIfNotPre(t, m, pg, "")
 	ErrorIfNotPre(t, m, pb, first)
 }
+
+func TestKeyValueStrings(t *testing.T) {
+	c := keyValueStore{}
+	c.keyValues = append(c.keyValues, internal.KeyValue{Key: "key", Value: "val"})
+	c.add("key2", "val2")
+	c.add("key2", "val3")
+	res := c.strings()
+	if len(res) != 3 {
+		t.Error("invalid results")
+	}
+	if res[0] != "key = val" {
+		t.Error("invalid first")
+	}
+	if res[1] != "  key2 = val2" {
+		t.Error("invalid mid")
+	}
+	if res[2] != "  key2 = val3" {
+		t.Error("invalid last")
+	}
+}
