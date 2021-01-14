@@ -27,11 +27,11 @@ const (
 	instanceFlag = "instance"
 	debugFlag    = "debug"
 	dash         = "--"
-	modeFlag     = dash+"mode"
-	repoFlag     = dash+"repository"
-	macFlag      = dash+"mac"
-	tokenFlag    = dash+"token"
-	hashFlag     = dash+"hash"
+	modeFlag     = dash + "mode"
+	repoFlag     = dash + "repository"
+	macFlag      = dash + "mac"
+	tokenFlag    = dash + "token"
+	hashFlag     = dash + "hash"
 	configTarget = "bin"
 	configData   = ".db"
 	// InstanceConfig indicates a configuration file of instance type
@@ -45,7 +45,7 @@ const (
 )
 
 func (c ConfigFlags) LocalFile(name string) string {
-	return filepath.Join(c.Repo, configTarget, name + configData)
+	return filepath.Join(c.Repo, configTarget, name+configData)
 }
 
 func GetConfigFlags() ConfigFlags {
@@ -57,11 +57,11 @@ func GetConfigFlags() ConfigFlags {
 	flag.Parse()
 	args := flag.Args()
 	return ConfigFlags{Mode: *mode,
-					   Repo: *repo,
-					   MAC: *mac,
-					   Token: *token,
-					   Hash: *hash,
-					   Command: args}
+		Repo:    *repo,
+		MAC:     *mac,
+		Token:   *token,
+		Hash:    *hash,
+		Command: args}
 }
 
 func (c ConfigFlags) Valid() bool {

@@ -81,7 +81,7 @@ internals:
 `
 )
 
-func main () {
+func main() {
 	tmpl, err := template.New("script").Parse(strings.Replace(config, "\t", "    ", -1))
 	if err != nil {
 		internal.Fatal("unable to parse template", err)
@@ -89,7 +89,7 @@ func main () {
 	proxy := &Config{Accounting: "false", To: true, Bind: "1812", file: "proxy"}
 	accounting := &Config{Accounting: "true", To: false, Bind: "1813", file: "accounting"}
 	for _, c := range []*Config{proxy, accounting} {
-		output := filepath.Join(target, c.file + internal.InstanceConfig)
+		output := filepath.Join(target, c.file+internal.InstanceConfig)
 		internal.WriteInfo(output)
 		var b bytes.Buffer
 		if err := tmpl.Execute(&b, c); err != nil {

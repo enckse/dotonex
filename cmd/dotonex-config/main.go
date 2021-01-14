@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
 	"voidedtech.com/dotonex/internal"
 )
 
@@ -75,24 +76,24 @@ func run() error {
 		}
 	}
 	switch flags.Mode {
-		case internal.ModeValidate:
-			if len(flags.Command) == 0 || len(flags.Token) == 0 || len(flags.MAC) == 0 {
-				return fmt.Errorf("missing flags for validation")
-			}
-			return validate(flags)
-		case internal.ModeServer:
-			if len(flags.Hash) == 0 {
-				return fmt.Errorf("missing flags for server")
-			}
-			return server(flags)
-		case internal.ModeFetch:
-			return fetch(flags)
-		case internal.ModeBuild:
-			return build(flags, false)
-		case internal.ModeRebuild:
-			return build(flags, true)
-		default:
-			return fmt.Errorf("unknown mode")
+	case internal.ModeValidate:
+		if len(flags.Command) == 0 || len(flags.Token) == 0 || len(flags.MAC) == 0 {
+			return fmt.Errorf("missing flags for validation")
+		}
+		return validate(flags)
+	case internal.ModeServer:
+		if len(flags.Hash) == 0 {
+			return fmt.Errorf("missing flags for server")
+		}
+		return server(flags)
+	case internal.ModeFetch:
+		return fetch(flags)
+	case internal.ModeBuild:
+		return build(flags, false)
+	case internal.ModeRebuild:
+		return build(flags, true)
+	default:
+		return fmt.Errorf("unknown mode")
 	}
 	return nil
 }
