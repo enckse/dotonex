@@ -87,23 +87,27 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 			WriteError("invalid radius secret", err)
 			valid = badSecretCode
 		}
-		var checks []Module
-		var checking authCheck
-		var code ReasonCode
 		if preauthing {
-			checking = func(m Module, p *ClientPacket) bool {
-				return m.(PreAuth).Pre(p)
-			}
+			var checks []Module
 			for _, m := range ctx.preauths {
 				checks = append(checks, m)
 			}
-			code = preAuthCode
-		}
-		if len(checks) > 0 {
-			failure := checkAuthMods(checks, packet, checking)
-			if failure {
-				if valid == successCode {
-					valid = code
+			if len(checks) > 0 {
+				failure := false
+				checking := func(m Module, p *ClientPacket) bool {
+					return m.(PreAuth).Pre(p)
+				}
+				for _, mod := range checks {
+					if checking(mod, packet) {
+						continue
+					}
+					failure = true
+					WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
+				}
+				if failure {
+					if valid == successCode {
+						valid = preAuthCode
+					}
 				}
 			}
 		}
@@ -116,17 +120,6 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 	return valid
 }
 
-func checkAuthMods(modules []Module, packet *ClientPacket, fxn authCheck) bool {
-	failure := false
-	for _, mod := range modules {
-		if fxn(mod, packet) {
-			continue
-		}
-		failure = true
-		WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", mod.Name()))
-	}
-	return failure
-}
 
 // FromConfig parses config data into a Context object
 func (ctx *Context) FromConfig(libPath string, c *Configuration) {
