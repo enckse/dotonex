@@ -106,7 +106,7 @@ func runProxy(ctx *internal.Context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		auth := internal.HandleAuth(internal.PreAuthorize, ctx, buffered, cliaddr, func(buffer []byte) {
+		auth := internal.HandlePreAuth(ctx, buffered, cliaddr, func(buffer []byte) {
 			proxy.WriteToUDP(buffer, conn.client)
 		})
 		if !auth {

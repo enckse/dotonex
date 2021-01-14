@@ -27,9 +27,6 @@ type (
 	// ReasonCode for authorization state
 	ReasonCode int
 
-	// AuthorizePacket handles determining whether a packet is authorized to continue
-	AuthorizePacket func(*Context, []byte, *net.UDPAddr) (*ClientPacket, ReasonCode)
-
 	authCheck func(Module, *ClientPacket) bool
 
 	// Context is the server's operating context
@@ -72,12 +69,6 @@ func (ctx *Context) AddModule(m Module) {
 func (ctx *Context) AddAccounting(a Accounting) {
 	ctx.acct = true
 	ctx.accts = append(ctx.accts, a)
-}
-
-// PreAuthorize performs a packet pre-check (before radius check)
-func PreAuthorize(ctx *Context, b []byte, addr *net.UDPAddr) (*ClientPacket, ReasonCode) {
-	p := NewClientPacket(b, addr)
-	return p, ctx.authorize(p)
 }
 
 func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
@@ -293,9 +284,10 @@ func (ctx *Context) Account(packet *ClientPacket) {
 	}
 }
 
-// HandleAuth handles the actual authorization checks (e.g. pre, trace, etc.)
-func HandleAuth(fxn AuthorizePacket, ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
-	packet, authCode := fxn(ctx, b, addr)
+// HandlePreAuth handles the actual pre-authorization checks
+func HandlePreAuth(ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) bool {
+	packet := NewClientPacket(b, addr)
+	authCode := ctx.authorize(packet)
 	authed := authCode == successCode
 	if !authed {
 		if !ctx.noReject && write != nil && authCode != badSecretCode {
