@@ -1,4 +1,4 @@
-package op
+package compose
 
 import (
 	"fmt"

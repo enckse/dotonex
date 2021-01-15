@@ -13,7 +13,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 	"voidedtech.com/dotonex/internal/core"
-	"voidedtech.com/dotonex/internal/op"
+	"voidedtech.com/dotonex/internal/compose"
 )
 
 const (
@@ -163,7 +163,7 @@ func server(flags core.ComposeFlags) error {
 	return build(flags, true)
 }
 
-func getHostapd(flags core.ComposeFlags, def op.Definition) ([]op.Hostapd, error) {
+func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Hostapd, error) {
 	hashFile := flags.LocalFile(serverHash)
 	if !core.PathExists(hashFile) {
 		return nil, fmt.Errorf("no server hash found")
@@ -180,7 +180,7 @@ func getHostapd(flags core.ComposeFlags, def op.Definition) ([]op.Hostapd, error
 	if len(hash) == 0 {
 		return nil, fmt.Errorf("empty hash")
 	}
-	var result []op.Hostapd
+	var result []compose.Hostapd
 	for _, dir := range dirs {
 		if !dir.IsDir() {
 			continue
@@ -202,7 +202,7 @@ func getHostapd(flags core.ComposeFlags, def op.Definition) ([]op.Hostapd, error
 					continue
 				}
 				core.WriteInfo(fmt.Sprintf(" -> %s", cleaned))
-				result = append(result, op.NewHostapd(cleaned, cleaned, id))
+				result = append(result, compose.NewHostapd(cleaned, cleaned, id))
 			}
 			continue
 		}
@@ -228,7 +228,7 @@ func getHostapd(flags core.ComposeFlags, def op.Definition) ([]op.Hostapd, error
 		if err != nil {
 			return nil, err
 		}
-		d := op.Definition{}
+		d := compose.Definition{}
 		if err := yaml.Unmarshal(b, &d); err != nil {
 			core.WriteError("unable to read user yaml", err)
 			continue
@@ -245,18 +245,18 @@ func getHostapd(flags core.ComposeFlags, def op.Definition) ([]op.Hostapd, error
 				continue
 			}
 			if first {
-				result = append(result, op.NewHostapd(loginName, hash, id))
+				result = append(result, compose.NewHostapd(loginName, hash, id))
 				first = false
 			}
-			result = append(result, op.NewHostapd(fmt.Sprintf("%s:%s", member.VLAN, loginName), hash, id))
+			result = append(result, compose.NewHostapd(fmt.Sprintf("%s:%s", member.VLAN, loginName), hash, id))
 		}
 	}
 	return result, nil
 }
 
-func getVLANs(flags core.ComposeFlags) (op.Definition, error) {
+func getVLANs(flags core.ComposeFlags) (compose.Definition, error) {
 	cfg := filepath.Join(flags.Repo, vlanConfig)
-	d := op.Definition{}
+	d := compose.Definition{}
 	if !core.PathExists(cfg) {
 		return d, fmt.Errorf("no root vlan config found")
 	}

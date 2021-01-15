@@ -13,7 +13,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/dotonex/internal/core"
-	"voidedtech.com/dotonex/internal/op"
+	"voidedtech.com/dotonex/internal/runner"
 )
 
 var (
@@ -60,7 +60,7 @@ func setup(hostport string, port int) error {
 	return nil
 }
 
-func runConnection(ctx *op.Context, conn *connection) {
+func runConnection(ctx *runner.Context, conn *connection) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, err := conn.server.Read(buffer[0:])
@@ -74,7 +74,7 @@ func runConnection(ctx *op.Context, conn *connection) {
 	}
 }
 
-func runProxy(ctx *op.Context) {
+func runProxy(ctx *runner.Context) {
 	if ctx.Debug {
 		core.WriteInfo("=============WARNING==================")
 		core.WriteInfo("debugging is enabled!")
@@ -106,7 +106,7 @@ func runProxy(ctx *op.Context) {
 			clientLock.Unlock()
 		}
 		buffered := []byte(buffer[0:n])
-		auth := op.HandlePreAuth(ctx, buffered, cliaddr, func(buffer []byte) {
+		auth := runner.HandlePreAuth(ctx, buffered, cliaddr, func(buffer []byte) {
 			proxy.WriteToUDP(buffer, conn.client)
 		})
 		if !auth {
@@ -119,7 +119,7 @@ func runProxy(ctx *op.Context) {
 	}
 }
 
-func account(ctx *op.Context) {
+func account(ctx *runner.Context) {
 	var buffer [radius.MaxPacketLength]byte
 	for {
 		n, cliaddr, err := proxy.ReadFromUDP(buffer[0:])
@@ -127,7 +127,7 @@ func account(ctx *op.Context) {
 			core.WriteError("accounting udp error", err)
 			continue
 		}
-		ctx.Account(op.NewClientPacket(buffer[0:n], cliaddr))
+		ctx.Account(runner.NewClientPacket(buffer[0:n], cliaddr))
 	}
 }
 
@@ -157,16 +157,16 @@ func main() {
 		core.Fatal("proxy setup", err)
 	}
 
-	ctx := &op.Context{Debug: p.Debug}
+	ctx := &runner.Context{Debug: p.Debug}
 	ctx.FromConfig(conf)
 	core.WriteInfo("loading plugins")
 	if conf.Accounting {
-		ctx.SetAccounting(op.AccountPacket)
+		ctx.SetAccounting(runner.AccountPacket)
 	} else {
-		ctx.SetPreAuth(op.PrePacket)
+		ctx.SetPreAuth(runner.PrePacket)
 	}
 	if !conf.NoTrace {
-		ctx.SetTrace(op.TracePacket)
+		ctx.SetTrace(runner.TracePacket)
 	}
 
 	if !conf.Internals.NoLogs {
@@ -177,7 +177,7 @@ func main() {
 				if ctx.Debug {
 					core.WriteDebug("flushing logs")
 				}
-				op.WritePluginMessages(conf.Log, p.Instance)
+				runner.WritePluginMessages(conf.Log, p.Instance)
 			}
 		}()
 	}
@@ -221,9 +221,9 @@ func main() {
 	} else {
 		core.WriteInfo("proxy mode")
 		if conf.Compose.Static {
-			op.SetAllowed(conf.Compose.Payload)
+			runner.SetAllowed(conf.Compose.Payload)
 		} else {
-			if err := op.Manage(conf); err != nil {
+			if err := runner.Manage(conf); err != nil {
 				core.Fatal("unable to setup management of configs", err)
 			}
 		}
@@ -235,6 +235,6 @@ func main() {
 	case <-lifecycle:
 		core.WriteInfo("lifecyle...")
 	}
-	op.WritePluginMessages(conf.Log, p.Instance)
+	runner.WritePluginMessages(conf.Log, p.Instance)
 	os.Exit(0)
 }
