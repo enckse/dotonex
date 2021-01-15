@@ -1,4 +1,4 @@
-package modules
+package op
 
 import (
 	"bytes"
@@ -15,7 +15,6 @@ import (
 	"layeh.com/radius/debug"
 	"layeh.com/radius/rfc2865"
 	"voidedtech.com/dotonex/internal/core"
-	"voidedtech.com/dotonex/internal/op"
 )
 
 var (
@@ -27,7 +26,7 @@ var (
 type (
 	// RequestDump represents the interfaces available to log/dump a request
 	requestDump struct {
-		data *op.ClientPacket
+		data *ClientPacket
 		mode string
 	}
 
@@ -42,7 +41,7 @@ type (
 	}
 )
 
-func newRequestDump(packet *op.ClientPacket, mode string) *requestDump {
+func newRequestDump(packet *ClientPacket, mode string) *requestDump {
 	return &requestDump{data: packet, mode: mode}
 }
 
@@ -120,7 +119,7 @@ func (kv keyValue) str() string {
 	return fmt.Sprintf("%s = %s", kv.key, kv.value)
 }
 
-func moduleWrite(mode string, objType op.TraceType, packet *op.ClientPacket) {
+func moduleWrite(mode string, objType TraceType, packet *ClientPacket) {
 	go func() {
 		dump := newRequestDump(packet, mode)
 		messages := dump.dumpPacket(keyValue{key: "Info", value: fmt.Sprintf("%d", int(objType))})
@@ -128,13 +127,13 @@ func moduleWrite(mode string, objType op.TraceType, packet *op.ClientPacket) {
 	}()
 }
 
-// Account will do accounting operations
-func Account(packet *op.ClientPacket) {
-	moduleWrite("accounting", op.NoTrace, packet)
+// AccountPacket will do accounting operations
+func AccountPacket(packet *ClientPacket) {
+	moduleWrite("accounting", NoTrace, packet)
 }
 
-// Pre performs pre-authorization checks
-func Pre(packet *op.ClientPacket) bool {
+// PrePacket performs pre-authorization checks
+func PrePacket(packet *ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }
 
@@ -148,7 +147,7 @@ func clean(in string) string {
 	return result
 }
 
-func checkUserMac(p *op.ClientPacket) error {
+func checkUserMac(p *ClientPacket) error {
 	userName, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
@@ -166,7 +165,7 @@ func checkUserMac(p *op.ClientPacket) error {
 	if isMAC {
 		if calling != clean(token) {
 			// This is NOT a MAB situation
-			valid = op.CheckTokenMAC(token, cleaned)
+			valid = CheckTokenMAC(token, cleaned)
 		}
 	} else {
 		valid = false
@@ -179,7 +178,7 @@ func checkUserMac(p *op.ClientPacket) error {
 	return failure
 }
 
-func mark(success bool, user, calling string, p *op.ClientPacket, cached bool) {
+func mark(success bool, user, calling string, p *ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -226,7 +225,7 @@ func (kv keyValueStore) strings() []string {
 	return objs
 }
 
-// Trace for running trace of packets
-func Trace(t op.TraceType, packet *op.ClientPacket) {
+// TracePacket for running trace of packets
+func TracePacket(t TraceType, packet *ClientPacket) {
 	moduleWrite("trace", t, packet)
 }

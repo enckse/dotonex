@@ -13,7 +13,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/dotonex/internal/core"
-	"voidedtech.com/dotonex/internal/modules"
 	"voidedtech.com/dotonex/internal/op"
 )
 
@@ -162,11 +161,11 @@ func main() {
 	ctx.FromConfig(conf)
 	core.WriteInfo("loading plugins")
 	if conf.Accounting {
-		ctx.SetAccounting(modules.Account)
+		ctx.SetAccounting(op.AccountPacket)
 	} else {
-		ctx.SetPreAuth(modules.Pre)
+		ctx.SetPreAuth(op.PrePacket)
 	}
-	ctx.SetTrace(modules.Trace)
+	ctx.SetTrace(op.TracePacket)
 
 	if !conf.Internals.NoLogs {
 		logBuffer := time.Duration(conf.Internals.Logs) * time.Second
@@ -176,7 +175,7 @@ func main() {
 				if ctx.Debug {
 					core.WriteDebug("flushing logs")
 				}
-				modules.WritePluginMessages(conf.Log, p.Instance)
+				op.WritePluginMessages(conf.Log, p.Instance)
 			}
 		}()
 	}
@@ -234,6 +233,6 @@ func main() {
 	case <-lifecycle:
 		core.WriteInfo("lifecyle...")
 	}
-	modules.WritePluginMessages(conf.Log, p.Instance)
+	op.WritePluginMessages(conf.Log, p.Instance)
 	os.Exit(0)
 }

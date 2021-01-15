@@ -1,11 +1,10 @@
-package modules
+package op
 
 import (
 	"testing"
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/dotonex/internal/op"
 )
 
 func TestKeyValueString(t *testing.T) {
@@ -40,7 +39,7 @@ func TestUserMacBasics(t *testing.T) {
 	newTestSet(t, "test", "12-22-33-44-55-66", false)
 }
 
-func ErrorIfNotPre(t *testing.T, p *op.ClientPacket, message string) {
+func ErrorIfNotPre(t *testing.T, p *ClientPacket, message string) {
 	err := checkUserMac(p)
 	if err == nil {
 		if message != "" {
@@ -53,10 +52,10 @@ func ErrorIfNotPre(t *testing.T, p *op.ClientPacket, message string) {
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) *op.ClientPacket {
-	op.SetAllowed([]string{"test/112233445566"})
+func newTestSet(t *testing.T, user, mac string, valid bool) *ClientPacket {
+	SetAllowed([]string{"test/112233445566"})
 	var secret = []byte("secret")
-	p := op.NewClientPacket(nil, nil)
+	p := NewClientPacket(nil, nil)
 	p.Packet = radius.New(radius.CodeAccessRequest, secret)
 	ErrorIfNotPre(t, p, "radius: attribute not found")
 	if err := rfc2865.UserName_AddString(p.Packet, user); err != nil {
