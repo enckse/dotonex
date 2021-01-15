@@ -159,7 +159,7 @@ func main() {
 	}
 
 	ctx := &op.Context{Debug: p.Debug}
-	ctx.FromConfig(conf.Dir, conf)
+	ctx.FromConfig(conf)
 	core.WriteInfo("loading plugins")
 	if conf.Accounting {
 		ctx.SetAccounting(&modules.AccountingModule{})

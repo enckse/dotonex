@@ -129,12 +129,12 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 }
 
 // FromConfig parses config data into a Context object
-func (ctx *Context) FromConfig(libPath string, c *core.Configuration) {
+func (ctx *Context) FromConfig(c *core.Configuration) {
 	ctx.noReject = c.NoReject
-	secrets := filepath.Join(libPath, "secrets")
+	secrets := filepath.Join(c.Dir, "secrets")
 	ctx.parseSecrets(secrets)
 	ctx.secrets = make(map[string][]byte)
-	secrets = filepath.Join(libPath, "clients")
+	secrets = filepath.Join(c.Dir, "clients")
 	if core.PathExists(secrets) {
 		mappings, err := parseSecretMappings(secrets)
 		if err != nil {
