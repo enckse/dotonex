@@ -20,6 +20,10 @@ const (
 	successCode   ReasonCode = 0
 	badSecretCode ReasonCode = 1
 	preAuthCode   ReasonCode = 2
+	// NoTrace indicates no tracing to occur
+	NoTrace TraceType = 0
+	// TraceRequest indicate to trace the request
+	TraceRequest TraceType = 1
 )
 
 type (
@@ -42,7 +46,46 @@ type (
 		acctYes    bool
 		traceYes   bool
 	}
+
+	// TraceType indicates how to trace a request
+	TraceType int
+
+	// Module represents a plugin module for packet checking
+	Module interface {
+		Name() string
+	}
+
+	// PreAuth represents the interface required to pre-authorize a packet
+	PreAuth interface {
+		Module
+		Pre(*ClientPacket) bool
+	}
+
+	// Tracing represents the interface required to trace requests
+	Tracing interface {
+		Module
+		Trace(TraceType, *ClientPacket)
+	}
+
+	// Accounting represents the interface required to handle accounting
+	Accounting interface {
+		Module
+		Account(*ClientPacket)
+	}
+
+	// ClientPacket represents the radius packet from the client
+	ClientPacket struct {
+		ClientAddr *net.UDPAddr
+		Buffer     []byte
+		Packet     *radius.Packet
+		Error      error
+	}
 )
+
+// NewClientPacket creates a client packet from an input data packet
+func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
+	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
+}
 
 // SetTrace adds a tracing check to the context
 func (ctx *Context) SetTrace(t Tracing) {
