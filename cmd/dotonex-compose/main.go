@@ -12,7 +12,8 @@ import (
 	"strings"
 
 	yaml "gopkg.in/yaml.v2"
-	"voidedtech.com/dotonex/internal"
+	"voidedtech.com/dotonex/internal/core"
+	"voidedtech.com/dotonex/internal/op"
 )
 
 const (
@@ -23,7 +24,7 @@ const (
 
 func main() {
 	if err := run(); err != nil {
-		internal.WriteError("config failure", err)
+		core.WriteError("config failure", err)
 		os.Exit(1)
 	}
 }
@@ -39,29 +40,29 @@ func piped(args []string) (string, error) {
 	}
 	o := strings.TrimSpace(stdout.String())
 	if len(o) > 0 {
-		internal.WriteInfo("stdout")
-		internal.WriteInfo(o)
+		core.WriteInfo("stdout")
+		core.WriteInfo(o)
 	}
 	e := stderr.String()
 	if len(e) > 0 {
-		internal.WriteInfo("stderr")
-		internal.WriteInfo(e)
+		core.WriteInfo("stderr")
+		core.WriteInfo(e)
 		return "", fmt.Errorf("command errored")
 	}
 	return o, nil
 }
 
-func validate(flags internal.ComposeFlags) error {
-	internal.WriteInfo("validating inputs")
-	mac, ok := internal.CleanMAC(flags.MAC)
+func validate(flags core.ComposeFlags) error {
+	core.WriteInfo("validating inputs")
+	mac, ok := core.CleanMAC(flags.MAC)
 	if !ok {
 		return fmt.Errorf("invalid MAC")
 	}
-	hash := internal.MD4(flags.Token)
+	hash := core.MD4(flags.Token)
 	tokenFile := flags.LocalFile(hash)
 	user := ""
-	if internal.PathExists(tokenFile) {
-		internal.WriteInfo("token is known")
+	if core.PathExists(tokenFile) {
+		core.WriteInfo("token is known")
 		b, err := ioutil.ReadFile(tokenFile)
 		if err != nil {
 			return err
@@ -90,19 +91,19 @@ func validate(flags internal.ComposeFlags) error {
 			return fmt.Errorf("invalid json, required key missing")
 		}
 		user = m["username"]
-		internal.WriteInfo(fmt.Sprintf("%s token changed", user))
+		core.WriteInfo(fmt.Sprintf("%s token changed", user))
 		if err := ioutil.WriteFile(tokenFile, []byte(user), perms); err != nil {
 			return err
 		}
 		change = true
-		internal.WriteInfo("token validated")
+		core.WriteInfo("token validated")
 	}
 	if user == "" {
 		return fmt.Errorf("empty user found")
 	}
-	internal.WriteInfo(fmt.Sprintf("user found: %s", user))
+	core.WriteInfo(fmt.Sprintf("user found: %s", user))
 	if change {
-		internal.WriteInfo("user is new")
+		core.WriteInfo("user is new")
 		userFile := flags.LocalFile(user)
 		if err := ioutil.WriteFile(userFile, []byte(flags.Token), perms); err != nil {
 			return err
@@ -113,15 +114,15 @@ func validate(flags internal.ComposeFlags) error {
 	}
 	userDir := filepath.Join(flags.Repo, user)
 	for _, file := range []string{mac, vlanConfig} {
-		if !internal.PathExists(filepath.Join(userDir, file)) {
+		if !core.PathExists(filepath.Join(userDir, file)) {
 			return fmt.Errorf("%s file not found", file)
 		}
 	}
-	internal.WriteInfo("validated")
+	core.WriteInfo("validated")
 	return nil
 }
 
-func fetch(flags internal.ComposeFlags) error {
+func fetch(flags core.ComposeFlags) error {
 	for _, cmd := range []string{"fetch", "pull"} {
 		command := exec.Command("git", "-C", flags.Repo, cmd)
 		command.Stdout = os.Stdout
@@ -141,9 +142,9 @@ func compareFileToText(file, text string) (bool, error) {
 	return text == string(b), nil
 }
 
-func server(flags internal.ComposeFlags) error {
+func server(flags core.ComposeFlags) error {
 	hash := flags.LocalFile(serverHash)
-	if internal.PathExists(hash) {
+	if core.PathExists(hash) {
 		same, err := compareFileToText(hash, flags.Hash)
 		if err != nil {
 			return err
@@ -152,16 +153,16 @@ func server(flags internal.ComposeFlags) error {
 			return nil
 		}
 	}
-	internal.WriteInfo("hash update")
+	core.WriteInfo("hash update")
 	if err := ioutil.WriteFile(hash, []byte(flags.Hash), perms); err != nil {
 		return err
 	}
 	return build(flags, true)
 }
 
-func getHostapd(flags internal.ComposeFlags, def internal.Definition) ([]internal.Hostapd, error) {
+func getHostapd(flags core.ComposeFlags, def op.Definition) ([]op.Hostapd, error) {
 	hashFile := flags.LocalFile(serverHash)
-	if !internal.PathExists(hashFile) {
+	if !core.PathExists(hashFile) {
 		return nil, fmt.Errorf("no server hash found")
 	}
 	b, err := ioutil.ReadFile(hashFile)
@@ -176,84 +177,84 @@ func getHostapd(flags internal.ComposeFlags, def internal.Definition) ([]interna
 	if len(hash) == 0 {
 		return nil, fmt.Errorf("empty hash")
 	}
-	var result []internal.Hostapd
+	var result []op.Hostapd
 	for _, dir := range dirs {
 		if !dir.IsDir() {
 			continue
 		}
 		name := dir.Name()
-		if name == internal.ComposeTarget {
+		if name == core.ComposeTarget {
 			continue
 		}
 		path := filepath.Join(flags.Repo, name)
 		if id, ok := def.IsVLAN(name); ok {
-			internal.WriteInfo(fmt.Sprintf("%s (MAB)", name))
+			core.WriteInfo(fmt.Sprintf("%s (MAB)", name))
 			sub, err := ioutil.ReadDir(path)
 			if err != nil {
 				return nil, err
 			}
 			for _, mac := range sub {
-				cleaned, ok := internal.CleanMAC(mac.Name())
+				cleaned, ok := core.CleanMAC(mac.Name())
 				if !ok {
 					continue
 				}
-				internal.WriteInfo(fmt.Sprintf(" -> %s", cleaned))
-				result = append(result, internal.NewHostapd(cleaned, cleaned, id))
+				core.WriteInfo(fmt.Sprintf(" -> %s", cleaned))
+				result = append(result, op.NewHostapd(cleaned, cleaned, id))
 			}
 			continue
 		}
 		possible := filepath.Join(path, vlanConfig)
-		if !internal.PathExists(possible) {
+		if !core.PathExists(possible) {
 			continue
 		}
 		secret := flags.LocalFile(name)
-		if !internal.PathExists(secret) {
+		if !core.PathExists(secret) {
 			continue
 		}
-		internal.WriteInfo(fmt.Sprintf("%s (USER)", name))
+		core.WriteInfo(fmt.Sprintf("%s (USER)", name))
 		b, err := ioutil.ReadFile(secret)
 		if err != nil {
 			return nil, err
 		}
 		loginName := string(b)
 		if len(loginName) == 0 {
-			internal.WriteWarn("empty login name")
+			core.WriteWarn("empty login name")
 			continue
 		}
 		b, err = ioutil.ReadFile(possible)
 		if err != nil {
 			return nil, err
 		}
-		d := internal.Definition{}
+		d := op.Definition{}
 		if err := yaml.Unmarshal(b, &d); err != nil {
-			internal.WriteError("unable to read user yaml", err)
+			core.WriteError("unable to read user yaml", err)
 			continue
 		}
 		if err := d.ValidateMembership(); err != nil {
-			internal.WriteError("invalid memberships found", err)
+			core.WriteError("invalid memberships found", err)
 			continue
 		}
 		first := true
 		for _, member := range d.Membership {
 			id, ok := def.IsVLAN(member.VLAN)
 			if !ok {
-				internal.WriteWarn(fmt.Sprintf("invalid VLAN %s", member.VLAN))
+				core.WriteWarn(fmt.Sprintf("invalid VLAN %s", member.VLAN))
 				continue
 			}
 			if first {
-				result = append(result, internal.NewHostapd(loginName, hash, id))
+				result = append(result, op.NewHostapd(loginName, hash, id))
 				first = false
 			}
-			result = append(result, internal.NewHostapd(fmt.Sprintf("%s:%s", member.VLAN, loginName), hash, id))
+			result = append(result, op.NewHostapd(fmt.Sprintf("%s:%s", member.VLAN, loginName), hash, id))
 		}
 	}
 	return result, nil
 }
 
-func getVLANs(flags internal.ComposeFlags) (internal.Definition, error) {
+func getVLANs(flags core.ComposeFlags) (op.Definition, error) {
 	cfg := filepath.Join(flags.Repo, vlanConfig)
-	d := internal.Definition{}
-	if !internal.PathExists(cfg) {
+	d := op.Definition{}
+	if !core.PathExists(cfg) {
 		return d, fmt.Errorf("no root vlan config found")
 	}
 	b, err := ioutil.ReadFile(cfg)
@@ -270,8 +271,8 @@ func getVLANs(flags internal.ComposeFlags) (internal.Definition, error) {
 	return d, nil
 }
 
-func configure(flags internal.ComposeFlags) error {
-	internal.WriteInfo("configuring")
+func configure(flags core.ComposeFlags) error {
+	core.WriteInfo("configuring")
 	vlans, err := getVLANs(flags)
 	if err != nil {
 		return err
@@ -288,15 +289,15 @@ func configure(flags internal.ComposeFlags) error {
 		return fmt.Errorf("no hostapd configurations found")
 	}
 	sort.Strings(eapUsers)
-	hostapdFile := filepath.Join(flags.Repo, internal.ComposeTarget, "eap_users")
+	hostapdFile := filepath.Join(flags.Repo, core.ComposeTarget, "eap_users")
 	hostapdText := strings.Join(eapUsers, "\n\n") + "\n"
-	if internal.PathExists(hostapdFile) {
+	if core.PathExists(hostapdFile) {
 		same, err := compareFileToText(hostapdFile, hostapdText)
 		if err != nil {
 			return err
 		}
 		if same {
-			internal.WriteInfo("no hostapd changes")
+			core.WriteInfo("no hostapd changes")
 			return nil
 		}
 	}
@@ -307,7 +308,7 @@ func configure(flags internal.ComposeFlags) error {
 }
 
 func resetHostapd() error {
-	internal.WriteInfo("hostapd reset")
+	core.WriteInfo("hostapd reset")
 	pids, err := piped([]string{"pidof", "hostapd"})
 	if err != nil {
 		return err
@@ -327,7 +328,7 @@ func resetHostapd() error {
 	return nil
 }
 
-func build(flags internal.ComposeFlags, force bool) error {
+func build(flags core.ComposeFlags, force bool) error {
 	if !force {
 		last, err := piped([]string{"git", "-C", flags.Repo, "log", "-n", "1", "--format=%h"})
 		if err != nil {
@@ -338,13 +339,13 @@ func build(flags internal.ComposeFlags, force bool) error {
 			return fmt.Errorf("no commit retrieved")
 		}
 		lastFile := flags.LocalFile("commit")
-		if internal.PathExists(lastFile) {
+		if core.PathExists(lastFile) {
 			same, err := compareFileToText(lastFile, last)
 			if err != nil {
 				return err
 			}
 			if same {
-				internal.WriteInfo("no config changes found")
+				core.WriteInfo("no config changes found")
 				return nil
 			}
 		}
@@ -356,37 +357,37 @@ func build(flags internal.ComposeFlags, force bool) error {
 }
 
 func run() error {
-	flags := internal.GetComposeFlags()
+	flags := core.GetComposeFlags()
 	if !flags.Valid() {
 		return fmt.Errorf("invalid arguments")
 	}
-	if !internal.PathExists(flags.Repo) {
+	if !core.PathExists(flags.Repo) {
 		return fmt.Errorf("repository invalid/does not exist")
 	}
 
 	target := filepath.Dir(flags.LocalFile(""))
-	if !internal.PathExists(target) {
-		internal.WriteInfo("creating target")
+	if !core.PathExists(target) {
+		core.WriteInfo("creating target")
 		if err := os.Mkdir(target, 0700); err != nil {
 			return err
 		}
 	}
 	switch flags.Mode {
-	case internal.ModeValidate:
+	case core.ModeValidate:
 		if len(flags.Command) == 0 || len(flags.Token) == 0 || len(flags.MAC) == 0 {
 			return fmt.Errorf("missing flags for validation")
 		}
 		return validate(flags)
-	case internal.ModeServer:
+	case core.ModeServer:
 		if len(flags.Hash) == 0 {
 			return fmt.Errorf("missing flags for server")
 		}
 		return server(flags)
-	case internal.ModeFetch:
+	case core.ModeFetch:
 		return fetch(flags)
-	case internal.ModeBuild:
+	case core.ModeBuild:
 		return build(flags, false)
-	case internal.ModeRebuild:
+	case core.ModeRebuild:
 		return build(flags, true)
 	default:
 		return fmt.Errorf("unknown mode")

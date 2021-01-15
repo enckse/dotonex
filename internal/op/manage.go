@@ -1,4 +1,4 @@
-package internal
+package op
 
 import (
 	"bytes"
@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"voidedtech.com/dotonex/internal/core"
 )
 
 var (
@@ -27,12 +29,12 @@ type (
 	}
 )
 
-func (s script) execute(flags ComposeFlags) bool {
+func (s script) execute(flags core.ComposeFlags) bool {
 	flags.Repo = s.repo
 	arguments := flags.Args()
 
 	if s.debug {
-		WriteInfo(fmt.Sprintf("running: %v", arguments))
+		core.WriteInfo(fmt.Sprintf("running: %v", arguments))
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
@@ -42,23 +44,23 @@ func (s script) execute(flags ComposeFlags) bool {
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
 	if ctx.Err() == context.DeadlineExceeded {
-		WriteWarn("script timeout")
+		core.WriteWarn("script timeout")
 		return false
 	}
 	str := stderr.String()
 	if len(str) > 0 {
-		WriteInfo("stderr")
-		WriteInfo(str)
+		core.WriteInfo("stderr")
+		core.WriteInfo(str)
 	}
 	if s.debug {
 		str = strings.TrimSpace(string(out))
 		if len(str) > 0 {
-			WriteInfo("stdout")
-			WriteInfo(str)
+			core.WriteInfo("stdout")
+			core.WriteInfo(str)
 		}
 	}
 	if err != nil {
-		WriteError("script result", err)
+		core.WriteError("script result", err)
 		if exitError, ok := err.(*exec.ExitError); ok {
 			return exitError.ExitCode() == 0
 		}
@@ -76,21 +78,21 @@ func (s script) Validate(token, mac string) bool {
 		}
 		return false
 	}
-	c := ComposeFlags{Mode: ModeValidate, MAC: mac, Token: token, Command: s.command}
+	c := core.ComposeFlags{Mode: core.ModeValidate, MAC: mac, Token: token, Command: s.command}
 	return s.execute(c)
 }
 
 func (s script) Server() bool {
-	c := ComposeFlags{Mode: ModeServer, Hash: s.hash}
+	c := core.ComposeFlags{Mode: core.ModeServer, Hash: s.hash}
 	return s.execute(c)
 }
 
 func (s script) Fetch() bool {
-	return s.execute(ComposeFlags{Mode: ModeFetch})
+	return s.execute(core.ComposeFlags{Mode: core.ModeFetch})
 }
 
 func (s script) Build() bool {
-	return s.execute(ComposeFlags{Mode: ModeBuild})
+	return s.execute(core.ComposeFlags{Mode: core.ModeBuild})
 }
 
 // SetAllowed hard sets which token+mac combos are allowed
@@ -108,14 +110,14 @@ func SetAllowed(payload []string) {
 }
 
 // Manage configures the backend for access checks
-func Manage(cfg *Configuration) error {
+func Manage(cfg *core.Configuration) error {
 	if len(cfg.Configurator.Payload) == 0 {
 		return fmt.Errorf("no command configured for management")
 	}
 	if len(cfg.Configurator.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	backend = &script{debug: cfg.Configurator.Debug, timeout: time.Duration(cfg.Configurator.Timeout) * time.Second, repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: MD4(cfg.Configurator.ServerKey)}
+	backend = &script{debug: cfg.Configurator.Debug, timeout: time.Duration(cfg.Configurator.Timeout) * time.Second, repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: core.MD4(cfg.Configurator.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()
@@ -136,16 +138,16 @@ func CheckTokenMAC(token, mac string) bool {
 func run(sleep time.Duration) {
 	for {
 		time.Sleep(sleep)
-		WriteInfo("running fetch and update")
+		core.WriteInfo("running fetch and update")
 		if !backend.Fetch() {
-			WriteWarn("fetch failed")
+			core.WriteWarn("fetch failed")
 			continue
 		}
 		lock.Lock()
 		result := backend.Build()
 		lock.Unlock()
 		if !result {
-			WriteWarn("config backend update failed")
+			core.WriteWarn("config backend update failed")
 		}
 	}
 }

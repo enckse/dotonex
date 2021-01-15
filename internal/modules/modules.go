@@ -1,4 +1,4 @@
-package internal
+package modules
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"layeh.com/radius/rfc2865"
+	"voidedtech.com/dotonex/internal/core"
+	"voidedtech.com/dotonex/internal/op"
 )
 
 type (
@@ -28,15 +30,15 @@ func (l *AccountingModule) Name() string {
 	return "accounting"
 }
 
-func (l *TraceModule) Trace(t TraceType, packet *ClientPacket) {
+func (l *TraceModule) Trace(t op.TraceType, packet *op.ClientPacket) {
 	moduleWrite("tracing", t, packet)
 }
 
-func (l *AccountingModule) Account(packet *ClientPacket) {
-	moduleWrite("accounting", NoTrace, packet)
+func (l *AccountingModule) Account(packet *op.ClientPacket) {
+	moduleWrite("accounting", op.NoTrace, packet)
 }
 
-func moduleWrite(mode string, objType TraceType, packet *ClientPacket) {
+func moduleWrite(mode string, objType op.TraceType, packet *op.ClientPacket) {
 	go func() {
 		dump := NewRequestDump(packet, mode)
 		messages := dump.DumpPacket(KeyValue{Key: "Info", Value: fmt.Sprintf("%d", int(objType))})
@@ -52,7 +54,7 @@ func (l *ProxyModule) Name() string {
 	return "proxy"
 }
 
-func (l *ProxyModule) Pre(packet *ClientPacket) bool {
+func (l *ProxyModule) Pre(packet *op.ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }
 
@@ -66,7 +68,7 @@ func clean(in string) string {
 	return result
 }
 
-func checkUserMac(p *ClientPacket) error {
+func checkUserMac(p *op.ClientPacket) error {
 	userName, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
@@ -80,11 +82,11 @@ func checkUserMac(p *ClientPacket) error {
 	success := true
 	var failure error
 	valid := true
-	cleaned, isMAC := CleanMAC(calling)
+	cleaned, isMAC := core.CleanMAC(calling)
 	if isMAC {
 		if calling != clean(token) {
 			// This is NOT a MAB situation
-			valid = CheckTokenMAC(token, cleaned)
+			valid = op.CheckTokenMAC(token, cleaned)
 		}
 	} else {
 		valid = false
@@ -97,7 +99,7 @@ func checkUserMac(p *ClientPacket) error {
 	return failure
 }
 
-func mark(success bool, user, calling string, p *ClientPacket, cached bool) {
+func mark(success bool, user, calling string, p *op.ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"

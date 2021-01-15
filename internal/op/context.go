@@ -1,4 +1,4 @@
-package internal
+package op
 
 import (
 	"bufio"
@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"layeh.com/radius"
+	"voidedtech.com/dotonex/internal/core"
 )
 
 const (
@@ -74,13 +75,13 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 		return valid
 	}
 	if err := ctx.checkSecret(packet); err != nil {
-		WriteError("invalid radius secret", err)
+		core.WriteError("invalid radius secret", err)
 		valid = badSecretCode
 	}
 	if ctx.preauthYes {
 		failure := !ctx.preauth.Pre(packet)
 		if failure {
-			WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", ctx.preauth.Name()))
+			core.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", ctx.preauth.Name()))
 			if valid == successCode {
 				valid = preAuthCode
 			}
@@ -93,16 +94,16 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 }
 
 // FromConfig parses config data into a Context object
-func (ctx *Context) FromConfig(libPath string, c *Configuration) {
+func (ctx *Context) FromConfig(libPath string, c *core.Configuration) {
 	ctx.noReject = c.NoReject
 	secrets := filepath.Join(libPath, "secrets")
 	ctx.parseSecrets(secrets)
 	ctx.secrets = make(map[string][]byte)
 	secrets = filepath.Join(libPath, "clients")
-	if PathExists(secrets) {
+	if core.PathExists(secrets) {
 		mappings, err := parseSecretMappings(secrets)
 		if err != nil {
-			Fatal("invalid client secret mappings", err)
+			core.Fatal("invalid client secret mappings", err)
 		}
 		for k, v := range mappings {
 			ctx.secrets[k] = []byte(v)
@@ -125,7 +126,7 @@ func parseSecretMappings(filename string) (map[string][]byte, error) {
 func (ctx *Context) parseSecrets(secretFile string) {
 	s, err := parseSecretFile(secretFile)
 	if err != nil {
-		Fatal(fmt.Sprintf("unable to read secrets: %s", secretFile), err)
+		core.Fatal(fmt.Sprintf("unable to read secrets: %s", secretFile), err)
 	}
 	ctx.secret = []byte(s)
 }
@@ -139,7 +140,7 @@ func parseSecretFile(secretFile string) (string, error) {
 }
 
 func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
-	if !PathExists(secretFile) {
+	if !core.PathExists(secretFile) {
 		return nil, fmt.Errorf("no secrets file")
 	}
 	f, err := os.Open(secretFile)
@@ -176,11 +177,11 @@ func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, er
 // DebugDump dumps context information for debugging
 func (ctx *Context) DebugDump() {
 	if ctx.Debug {
-		WriteDebug("secret", string(ctx.secret))
+		core.WriteDebug("secret", string(ctx.secret))
 		if len(ctx.secrets) > 0 {
-			WriteDebug("client mappings")
+			core.WriteDebug("client mappings")
 			for k, v := range ctx.secrets {
-				WriteDebug(k, string(v))
+				core.WriteDebug(k, string(v))
 			}
 		}
 	}
@@ -206,7 +207,7 @@ func (ctx *Context) checkSecret(p *ClientPacket) error {
 		}
 		ip = h
 		good := false
-		WriteInfo(ip)
+		core.WriteInfo(ip)
 		for k, v := range ctx.secrets {
 			if strings.HasPrefix(ip, k) || k == allKey {
 				if bytes.Equal(v, inSecret) {
@@ -258,16 +259,16 @@ func HandlePreAuth(ctx *Context, b []byte, addr *net.UDPAddr, write writeBack) b
 				p = p.Response(radius.CodeAccessReject)
 				rej, err := p.Encode()
 				if err == nil {
-					WriteDebug("rejecting client")
+					core.WriteDebug("rejecting client")
 					write(rej)
 				} else {
 					if ctx.Debug {
-						WriteError("unable to encode rejection", err)
+						core.WriteError("unable to encode rejection", err)
 					}
 				}
 			} else {
 				if ctx.Debug && packet.Error != nil {
-					WriteError("unable to parse packets", packet.Error)
+					core.WriteError("unable to parse packets", packet.Error)
 				}
 			}
 		}

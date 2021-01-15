@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"voidedtech.com/dotonex/internal"
+	"voidedtech.com/dotonex/internal/core"
 )
 
 type (
@@ -85,19 +85,19 @@ internals:
 func main() {
 	tmpl, err := template.New("script").Parse(strings.Replace(config, "\t", "    ", -1))
 	if err != nil {
-		internal.Fatal("unable to parse template", err)
+		core.Fatal("unable to parse template", err)
 	}
 	proxy := &Config{Accounting: "false", To: true, Bind: "1812", file: "proxy"}
 	accounting := &Config{Accounting: "true", To: false, Bind: "1813", file: "accounting"}
 	for _, c := range []*Config{proxy, accounting} {
-		output := filepath.Join(target, c.file+internal.InstanceConfig)
-		internal.WriteInfo(output)
+		output := filepath.Join(target, c.file+core.InstanceConfig)
+		core.WriteInfo(output)
 		var b bytes.Buffer
 		if err := tmpl.Execute(&b, c); err != nil {
-			internal.Fatal("template execution failure", err)
+			core.Fatal("template execution failure", err)
 		}
 		if err := ioutil.WriteFile(output, b.Bytes(), 0644); err != nil {
-			internal.Fatal("unable to write file", err)
+			core.Fatal("unable to write file", err)
 		}
 	}
 }

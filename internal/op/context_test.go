@@ -1,4 +1,4 @@
-package internal
+package op
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	testDir = "../tests/unittests/"
+	testDir = "../../tests/unittests/"
 )
 
 type MockModule struct {
