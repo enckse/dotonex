@@ -311,7 +311,8 @@ func resetHostapd() error {
 	core.WriteInfo("hostapd reset")
 	pids, err := piped([]string{"pidof", "hostapd"})
 	if err != nil {
-		return err
+		core.WriteWarn(fmt.Sprintf("unable to get hostapd pids: %v", err))
+		return nil
 	}
 	for _, pid := range strings.Split(pids, " ") {
 		p := strings.TrimSpace(pid)

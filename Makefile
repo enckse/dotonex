@@ -43,6 +43,9 @@ endif
 ifeq ($(GITLAB_TLD),)
 	$(error "please set GITLAB_TLD for server installion")
 endif
+ifeq ($(RADIUS_KEY),)
+	$(error "please set RADIUS_KEY for server installion")
+endif
 	install -d $(DESTDIR)/var/lib/dotonex
 	install -d $(DESTDIR)/etc/dotonex/hostapd
 	install -d $(DESTDIR)/usr/lib/dotonex
