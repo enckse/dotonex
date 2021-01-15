@@ -50,26 +50,18 @@ type (
 	// TraceType indicates how to trace a request
 	TraceType int
 
-	// Module represents a plugin module for packet checking
-	Module interface {
-		Name() string
-	}
-
 	// PreAuth represents the interface required to pre-authorize a packet
 	PreAuth interface {
-		Module
 		Pre(*ClientPacket) bool
 	}
 
 	// Tracing represents the interface required to trace requests
 	Tracing interface {
-		Module
 		Trace(TraceType, *ClientPacket)
 	}
 
 	// Accounting represents the interface required to handle accounting
 	Accounting interface {
-		Module
 		Account(*ClientPacket)
 	}
 
@@ -124,7 +116,7 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 	if ctx.preauthYes {
 		failure := !ctx.preauth.Pre(packet)
 		if failure {
-			core.WriteDebug(fmt.Sprintf("unauthorized (failed: %s)", ctx.preauth.Name()))
+			core.WriteDebug("unauthorized (failed preauth)")
 			if valid == successCode {
 				valid = preAuthCode
 			}
