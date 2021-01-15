@@ -111,20 +111,20 @@ func SetAllowed(payload []string) {
 
 // Manage configures the backend for access checks
 func Manage(cfg *core.Configuration) error {
-	if len(cfg.Configurator.Payload) == 0 {
+	if len(cfg.Compose.Payload) == 0 {
 		return fmt.Errorf("no command configured for management")
 	}
-	if len(cfg.Configurator.ServerKey) == 0 {
+	if len(cfg.Compose.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	backend = &script{debug: cfg.Configurator.Debug, timeout: time.Duration(cfg.Configurator.Timeout) * time.Second, repo: cfg.Configurator.Repository, command: cfg.Configurator.Payload, hash: core.MD4(cfg.Configurator.ServerKey)}
+	backend = &script{debug: cfg.Compose.Debug, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, repo: cfg.Compose.Repository, command: cfg.Compose.Payload, hash: core.MD4(cfg.Compose.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()
 	if !result {
 		return fmt.Errorf("server command failed")
 	}
-	go run(time.Duration(cfg.Configurator.Refresh) * time.Minute)
+	go run(time.Duration(cfg.Compose.Refresh) * time.Minute)
 	return nil
 }
 

@@ -16,7 +16,7 @@ type (
 		NoReject     bool
 		Log          string
 		NoTrace      bool
-		Configurator struct {
+		Compose struct {
 			Debug      bool
 			Static     bool
 			Repository string
@@ -65,12 +65,12 @@ func (c *Configuration) Defaults(backing []byte) {
 			c.Bind = 1812
 		}
 	}
-	c.Configurator.Repository = defaultString(c.Configurator.Repository, "/var/cache/dotonex/config")
-	if c.Configurator.Refresh <= 0 {
-		c.Configurator.Refresh = 5
+	c.Compose.Repository = defaultString(c.Compose.Repository, "/var/cache/dotonex/config")
+	if c.Compose.Refresh <= 0 {
+		c.Compose.Refresh = 5
 	}
-	if c.Configurator.Timeout <= 0 {
-		c.Configurator.Timeout = 30
+	if c.Compose.Timeout <= 0 {
+		c.Compose.Timeout = 30
 	}
 	if c.Internals.Logs <= 0 {
 		c.Internals.Logs = 10

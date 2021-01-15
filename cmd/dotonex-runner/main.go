@@ -220,8 +220,8 @@ func main() {
 		go account(ctx)
 	} else {
 		core.WriteInfo("proxy mode")
-		if conf.Configurator.Static {
-			op.SetAllowed(conf.Configurator.Payload)
+		if conf.Compose.Static {
+			op.SetAllowed(conf.Compose.Payload)
 		} else {
 			if err := op.Manage(conf); err != nil {
 				core.Fatal("unable to setup management of configs", err)

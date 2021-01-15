@@ -52,7 +52,7 @@ log: /var/log/dotonex/
 notrace: false
 
 # backend configuration management
-configurator:
+compose:
 	# utilizies internal payload instead of backend scripts (false)
 	static: false
 	# repository path (/var/cache/dotonex/config)
