@@ -28,9 +28,6 @@ func ErrorIfNotPre(t *testing.T, m *ProxyModule, p *op.ClientPacket, message str
 
 func newTestSet(t *testing.T, user, mac string, valid bool) (*op.ClientPacket, *ProxyModule) {
 	m := setupUserMac()
-	if m.Name() != "proxy" {
-		t.Error("invalid/wrong name")
-	}
 	var secret = []byte("secret")
 	p := op.NewClientPacket(nil, nil)
 	p.Packet = radius.New(radius.CodeAccessRequest, secret)

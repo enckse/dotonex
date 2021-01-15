@@ -12,14 +12,12 @@ import (
 )
 
 type (
+	// ProxyModule is for preauth proxy checks
 	ProxyModule struct {
 	}
 )
 
-func (l *ProxyModule) Name() string {
-	return "proxy"
-}
-
+// Pre performs pre-authorization checks
 func (l *ProxyModule) Pre(packet *op.ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }

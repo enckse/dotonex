@@ -5,14 +5,12 @@ import (
 )
 
 type (
+	// AccountingModule for accounting servers
 	AccountingModule struct {
 	}
 )
 
-func (l *AccountingModule) Name() string {
-	return "accounting"
-}
-
+// Account will do accounting operations
 func (l *AccountingModule) Account(packet *op.ClientPacket) {
 	moduleWrite("accounting", op.NoTrace, packet)
 }
