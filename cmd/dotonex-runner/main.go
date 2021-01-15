@@ -162,11 +162,11 @@ func main() {
 	ctx.FromConfig(conf)
 	core.WriteInfo("loading plugins")
 	if conf.Accounting {
-		ctx.SetAccounting(&modules.AccountingModule{})
+		ctx.SetAccounting(modules.Account)
 	} else {
-		ctx.SetPreAuth(&modules.ProxyModule{})
+		ctx.SetPreAuth(modules.Pre)
 	}
-	ctx.SetTrace(&modules.TraceModule{})
+	ctx.SetTrace(modules.Trace)
 
 	if !conf.Internals.NoLogs {
 		logBuffer := time.Duration(conf.Internals.Logs) * time.Second

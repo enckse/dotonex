@@ -13,7 +13,7 @@ func TestUserMacBasics(t *testing.T) {
 	newTestSet(t, "test", "12-22-33-44-55-66", false)
 }
 
-func ErrorIfNotPre(t *testing.T, m *ProxyModule, p *op.ClientPacket, message string) {
+func ErrorIfNotPre(t *testing.T, p *op.ClientPacket, message string) {
 	err := checkUserMac(p)
 	if err == nil {
 		if message != "" {
@@ -26,38 +26,32 @@ func ErrorIfNotPre(t *testing.T, m *ProxyModule, p *op.ClientPacket, message str
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) (*op.ClientPacket, *ProxyModule) {
-	m := setupUserMac()
+func newTestSet(t *testing.T, user, mac string, valid bool) *op.ClientPacket {
+	op.SetAllowed([]string{"test/112233445566"})
 	var secret = []byte("secret")
 	p := op.NewClientPacket(nil, nil)
 	p.Packet = radius.New(radius.CodeAccessRequest, secret)
-	ErrorIfNotPre(t, m, p, "radius: attribute not found")
+	ErrorIfNotPre(t, p, "radius: attribute not found")
 	if err := rfc2865.UserName_AddString(p.Packet, user); err != nil {
 		t.Error("unable to add user name")
 	}
-	ErrorIfNotPre(t, m, p, "radius: attribute not found")
+	ErrorIfNotPre(t, p, "radius: attribute not found")
 	if err := rfc2865.CallingStationID_AddString(p.Packet, mac); err != nil {
 		t.Error("unable to add calling station")
 	}
 	if valid {
-		ErrorIfNotPre(t, m, p, "")
+		ErrorIfNotPre(t, p, "")
 	}
 	if !valid {
-		ErrorIfNotPre(t, m, p, "failed preauth: test "+clean(mac))
+		ErrorIfNotPre(t, p, "failed preauth: test "+clean(mac))
 	}
-	return p, m
-}
-
-func setupUserMac() *ProxyModule {
-	op.SetAllowed([]string{"test/112233445566"})
-	m := &ProxyModule{}
-	return m
+	return p
 }
 
 func TestUserMacCache(t *testing.T) {
-	pg, m := newTestSet(t, "test", "11-22-33-44-55-66", true)
-	pb, _ := newTestSet(t, "test", "11-22-33-44-55-68", false)
+	pg := newTestSet(t, "test", "11-22-33-44-55-66", true)
+	pb := newTestSet(t, "test", "11-22-33-44-55-68", false)
 	first := "failed preauth: test 112233445568"
-	ErrorIfNotPre(t, m, pg, "")
-	ErrorIfNotPre(t, m, pb, first)
+	ErrorIfNotPre(t, pg, "")
+	ErrorIfNotPre(t, pb, first)
 }

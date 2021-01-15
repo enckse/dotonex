@@ -11,14 +11,13 @@ import (
 	"voidedtech.com/dotonex/internal/op"
 )
 
-type (
-	// ProxyModule is for preauth proxy checks
-	ProxyModule struct {
-	}
-)
+// Account will do accounting operations
+func Account(packet *op.ClientPacket) {
+	moduleWrite("accounting", op.NoTrace, packet)
+}
 
 // Pre performs pre-authorization checks
-func (l *ProxyModule) Pre(packet *op.ClientPacket) bool {
+func Pre(packet *op.ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }
 
@@ -108,4 +107,9 @@ func (kv keyValueStore) strings() []string {
 		offset = "  "
 	}
 	return objs
+}
+
+// Trace for running trace of packets
+func Trace(t op.TraceType, packet *op.ClientPacket) {
+	moduleWrite("trace", t, packet)
 }

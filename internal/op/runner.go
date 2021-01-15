@@ -37,8 +37,8 @@ type (
 		Debug    bool
 		secret   []byte
 		pre      PreAuth
-		acct     Accounting
-		trace    Tracing
+		acct     Account
+		trace    Trace
 		secrets  map[string][]byte
 		noReject bool
 		// shortcuts
@@ -50,20 +50,14 @@ type (
 	// TraceType indicates how to trace a request
 	TraceType int
 
-	// PreAuth represents the interface required to pre-authorize a packet
-	PreAuth interface {
-		Pre(*ClientPacket) bool
-	}
+	// PreAuth represents the function required to pre-authorize a packet
+	PreAuth func(*ClientPacket) bool
 
-	// Tracing represents the interface required to trace requests
-	Tracing interface {
-		Trace(TraceType, *ClientPacket)
-	}
+	// Tracing represents the function required to trace requests
+	Trace func(TraceType, *ClientPacket)
 
-	// Accounting represents the interface required to handle accounting
-	Accounting interface {
-		Account(*ClientPacket)
-	}
+	// Accounting represents the function required to handle accounting
+	Account func(*ClientPacket)
 
 	// ClientPacket represents the radius packet from the client
 	ClientPacket struct {
@@ -80,7 +74,7 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 }
 
 // SetTrace adds a tracing check to the context
-func (ctx *Context) SetTrace(t Tracing) {
+func (ctx *Context) SetTrace(t Trace) {
 	ctx.hasTrace = true
 	ctx.trace = t
 }
@@ -92,7 +86,7 @@ func (ctx *Context) SetPreAuth(p PreAuth) {
 }
 
 // SetAccounting adds an accounting check to the context
-func (ctx *Context) SetAccounting(a Accounting) {
+func (ctx *Context) SetAccounting(a Account) {
 	ctx.hasAcct = true
 	ctx.acct = a
 }
@@ -114,7 +108,7 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 		valid = badSecretCode
 	}
 	if ctx.hasPre {
-		failure := !ctx.pre.Pre(packet)
+		failure := !ctx.pre(packet)
 		if failure {
 			core.WriteDebug("unauthorized (failed preauth)")
 			if valid == successCode {
@@ -123,7 +117,7 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 		}
 	}
 	if ctx.hasTrace {
-		ctx.trace.Trace(TraceRequest, packet)
+		ctx.trace(TraceRequest, packet)
 	}
 	return valid
 }
@@ -280,7 +274,7 @@ func (ctx *Context) Account(packet *ClientPacket) {
 		// unable to parse, exit early
 		return
 	}
-	ctx.acct.Account(packet)
+	ctx.acct(packet)
 }
 
 // HandlePreAuth handles the actual pre-authorization checks
