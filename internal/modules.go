@@ -1,4 +1,4 @@
-package modules
+package internal
 
 import (
 	"fmt"
@@ -7,28 +7,52 @@ import (
 	"strings"
 
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/dotonex/internal"
 )
 
 type (
-	keyValueStore struct {
-		keyValues []internal.KeyValue
+	AccountingModule struct {
 	}
 
-	proxyModule struct {
+	keyValueStore struct {
+		keyValues []KeyValue
+	}
+
+	ProxyModule struct {
+	}
+
+	TraceModule struct {
 	}
 )
 
-func (l *proxyModule) Name() string {
+func (l *AccountingModule) Name() string {
+	return "accounting"
+}
+
+func (l *TraceModule) Trace(t TraceType, packet *ClientPacket) {
+	moduleWrite("tracing", t, packet)
+}
+
+func (l *AccountingModule) Account(packet *ClientPacket) {
+	moduleWrite("accounting", NoTrace, packet)
+}
+
+func moduleWrite(mode string, objType TraceType, packet *ClientPacket) {
+	go func() {
+		dump := NewRequestDump(packet, mode)
+		messages := dump.DumpPacket(KeyValue{Key: "Info", Value: fmt.Sprintf("%d", int(objType))})
+		LogPluginMessages(mode, messages)
+	}()
+}
+
+func (l *TraceModule) Name() string {
+	return "trace"
+}
+
+func (l *ProxyModule) Name() string {
 	return "proxy"
 }
 
-var (
-	// ProxyModule represents the instance for the system
-	ProxyModule proxyModule
-)
-
-func (l *proxyModule) Pre(packet *internal.ClientPacket) bool {
+func (l *ProxyModule) Pre(packet *ClientPacket) bool {
 	return checkUserMac(packet) == nil
 }
 
@@ -42,7 +66,7 @@ func clean(in string) string {
 	return result
 }
 
-func checkUserMac(p *internal.ClientPacket) error {
+func checkUserMac(p *ClientPacket) error {
 	userName, err := rfc2865.UserName_LookupString(p.Packet)
 	if err != nil {
 		return err
@@ -56,11 +80,11 @@ func checkUserMac(p *internal.ClientPacket) error {
 	success := true
 	var failure error
 	valid := true
-	cleaned, isMAC := internal.CleanMAC(calling)
+	cleaned, isMAC := CleanMAC(calling)
 	if isMAC {
 		if calling != clean(token) {
 			// This is NOT a MAB situation
-			valid = internal.CheckTokenMAC(token, cleaned)
+			valid = CheckTokenMAC(token, cleaned)
 		}
 	} else {
 		valid = false
@@ -73,7 +97,7 @@ func checkUserMac(p *internal.ClientPacket) error {
 	return failure
 }
 
-func mark(success bool, user, calling string, p *internal.ClientPacket, cached bool) {
+func mark(success bool, user, calling string, p *ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -103,11 +127,11 @@ func mark(success bool, user, calling string, p *internal.ClientPacket, cached b
 	kv.add("NAS-IPAddress", nasip)
 	kv.add("NAS-Port", fmt.Sprintf("%d", nasport))
 	kv.add("Id", strconv.Itoa(int(p.Packet.Identifier)))
-	internal.LogPluginMessages(&ProxyModule, kv.strings())
+	LogPluginMessages("proxy", kv.strings())
 }
 
 func (kv *keyValueStore) add(key, val string) {
-	kv.keyValues = append(kv.keyValues, internal.KeyValue{Key: key, Value: val})
+	kv.keyValues = append(kv.keyValues, KeyValue{Key: key, Value: val})
 }
 
 func (kv keyValueStore) strings() []string {

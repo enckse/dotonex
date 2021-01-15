@@ -161,10 +161,10 @@ func WritePluginMessages(path, instance string) {
 }
 
 // LogPluginMessages adds messages to the plugin log queue
-func LogPluginMessages(mod Module, messages []string) {
+func LogPluginMessages(module string, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
-	name := strings.ToUpper(mod.Name())
+	name := strings.ToUpper(module)
 	t := time.Now().Format("2006-01-02T15:04:05.000")
 	idx := pluginLID
 	for _, m := range messages {

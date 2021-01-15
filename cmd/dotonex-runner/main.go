@@ -13,7 +13,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 	"layeh.com/radius"
 	"voidedtech.com/dotonex/internal"
-	"voidedtech.com/dotonex/internal/modules"
 )
 
 var (
@@ -160,21 +159,12 @@ func main() {
 	ctx := &internal.Context{Debug: p.Debug}
 	ctx.FromConfig(conf.Dir, conf)
 	internal.WriteInfo("loading plugins")
-	var plugin internal.Module
 	if conf.Accounting {
-		plugin = &modules.AccountingModule
+		ctx.SetAccounting(&internal.AccountingModule{})
 	} else {
-		plugin = &modules.ProxyModule
+		ctx.SetPreAuth(&internal.ProxyModule{})
 	}
-	if i, ok := plugin.(internal.Accounting); ok {
-		ctx.SetAccounting(i)
-	}
-	if i, ok := plugin.(internal.Tracing); ok {
-		ctx.SetTrace(i)
-	}
-	if i, ok := plugin.(internal.PreAuth); ok {
-		ctx.SetPreAuth(i)
-	}
+	ctx.SetTrace(&internal.TraceModule{})
 
 	if !conf.Internals.NoLogs {
 		logBuffer := time.Duration(conf.Internals.Logs) * time.Second

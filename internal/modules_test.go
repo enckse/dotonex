@@ -1,11 +1,10 @@
-package modules
+package internal
 
 import (
 	"testing"
 
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"voidedtech.com/dotonex/internal"
 )
 
 func TestUserMacBasics(t *testing.T) {
@@ -13,7 +12,7 @@ func TestUserMacBasics(t *testing.T) {
 	newTestSet(t, "test", "12-22-33-44-55-66", false)
 }
 
-func ErrorIfNotPre(t *testing.T, m *proxyModule, p *internal.ClientPacket, message string) {
+func ErrorIfNotPre(t *testing.T, m *ProxyModule, p *ClientPacket, message string) {
 	err := checkUserMac(p)
 	if err == nil {
 		if message != "" {
@@ -26,13 +25,13 @@ func ErrorIfNotPre(t *testing.T, m *proxyModule, p *internal.ClientPacket, messa
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) (*internal.ClientPacket, *proxyModule) {
+func newTestSet(t *testing.T, user, mac string, valid bool) (*ClientPacket, *ProxyModule) {
 	m := setupUserMac()
 	if m.Name() != "proxy" {
 		t.Error("invalid/wrong name")
 	}
 	var secret = []byte("secret")
-	p := internal.NewClientPacket(nil, nil)
+	p := NewClientPacket(nil, nil)
 	p.Packet = radius.New(radius.CodeAccessRequest, secret)
 	ErrorIfNotPre(t, m, p, "radius: attribute not found")
 	if err := rfc2865.UserName_AddString(p.Packet, user); err != nil {
@@ -51,9 +50,9 @@ func newTestSet(t *testing.T, user, mac string, valid bool) (*internal.ClientPac
 	return p, m
 }
 
-func setupUserMac() *proxyModule {
-	internal.SetAllowed([]string{"test/112233445566"})
-	m := &proxyModule{}
+func setupUserMac() *ProxyModule {
+	SetAllowed([]string{"test/112233445566"})
+	m := &ProxyModule{}
 	return m
 }
 
@@ -67,7 +66,7 @@ func TestUserMacCache(t *testing.T) {
 
 func TestKeyValueStrings(t *testing.T) {
 	c := keyValueStore{}
-	c.keyValues = append(c.keyValues, internal.KeyValue{Key: "key", Value: "val"})
+	c.keyValues = append(c.keyValues, KeyValue{Key: "key", Value: "val"})
 	c.add("key2", "val2")
 	c.add("key2", "val3")
 	res := c.strings()
