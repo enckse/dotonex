@@ -12,43 +12,9 @@ import (
 )
 
 type (
-	AccountingModule struct {
-	}
-
-	keyValueStore struct {
-		keyValues []KeyValue
-	}
-
 	ProxyModule struct {
 	}
-
-	TraceModule struct {
-	}
 )
-
-func (l *AccountingModule) Name() string {
-	return "accounting"
-}
-
-func (l *TraceModule) Trace(t op.TraceType, packet *op.ClientPacket) {
-	moduleWrite("tracing", t, packet)
-}
-
-func (l *AccountingModule) Account(packet *op.ClientPacket) {
-	moduleWrite("accounting", op.NoTrace, packet)
-}
-
-func moduleWrite(mode string, objType op.TraceType, packet *op.ClientPacket) {
-	go func() {
-		dump := NewRequestDump(packet, mode)
-		messages := dump.DumpPacket(KeyValue{Key: "Info", Value: fmt.Sprintf("%d", int(objType))})
-		LogPluginMessages(mode, messages)
-	}()
-}
-
-func (l *TraceModule) Name() string {
-	return "trace"
-}
 
 func (l *ProxyModule) Name() string {
 	return "proxy"
@@ -129,18 +95,18 @@ func mark(success bool, user, calling string, p *op.ClientPacket, cached bool) {
 	kv.add("NAS-IPAddress", nasip)
 	kv.add("NAS-Port", fmt.Sprintf("%d", nasport))
 	kv.add("Id", strconv.Itoa(int(p.Packet.Identifier)))
-	LogPluginMessages("proxy", kv.strings())
+	logPluginMessages("proxy", kv.strings())
 }
 
 func (kv *keyValueStore) add(key, val string) {
-	kv.keyValues = append(kv.keyValues, KeyValue{Key: key, Value: val})
+	kv.keyValues = append(kv.keyValues, keyValue{key: key, value: val})
 }
 
 func (kv keyValueStore) strings() []string {
 	var objs []string
 	offset := ""
 	for _, k := range kv.keyValues {
-		objs = append(objs, fmt.Sprintf("%s%s", offset, k.String()))
+		objs = append(objs, fmt.Sprintf("%s%s", offset, k.str()))
 		offset = "  "
 	}
 	return objs

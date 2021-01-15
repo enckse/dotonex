@@ -23,25 +23,27 @@ var (
 
 type (
 	// RequestDump represents the interfaces available to log/dump a request
-	RequestDump struct {
+	requestDump struct {
 		data *op.ClientPacket
 		mode string
 	}
 
 	// KeyValue represents a simple key/value object
-	KeyValue struct {
-		Key   string
-		Value string
+	keyValue struct {
+		key   string
+		value string
+	}
+
+	keyValueStore struct {
+		keyValues []keyValue
 	}
 )
 
-// NewRequestDump prepares a packet request for dumping
-func NewRequestDump(packet *op.ClientPacket, mode string) *RequestDump {
-	return &RequestDump{data: packet, mode: mode}
+func newRequestDump(packet *op.ClientPacket, mode string) *requestDump {
+	return &requestDump{data: packet, mode: mode}
 }
 
-// DumpPacket dumps packet information to a string array of outputs
-func (packet *RequestDump) DumpPacket(kv KeyValue) []string {
+func (packet *requestDump) dumpPacket(kv keyValue) []string {
 	var w bytes.Buffer
 	io.WriteString(&w, fmt.Sprintf(fmt.Sprintf("Mode = %s\n", packet.mode)))
 	if packet.data.ClientAddr != nil {
@@ -50,7 +52,7 @@ func (packet *RequestDump) DumpPacket(kv KeyValue) []string {
 	conf := &debug.Config{}
 	conf.Dictionary = debug.IncludedDictionary
 	debug.Dump(&w, conf, packet.data.Packet)
-	results := []string{kv.String()}
+	results := []string{kv.str()}
 	for _, m := range strings.Split(w.String(), "\n") {
 		if len(m) == 0 {
 			continue
@@ -99,8 +101,7 @@ func WritePluginMessages(path, instance string) {
 	pluginLID = 0
 }
 
-// LogPluginMessages adds messages to the plugin log queue
-func LogPluginMessages(module string, messages []string) {
+func logPluginMessages(module string, messages []string) {
 	pluginLock.Lock()
 	defer pluginLock.Unlock()
 	name := strings.ToUpper(module)
@@ -112,7 +113,14 @@ func LogPluginMessages(module string, messages []string) {
 	pluginLID++
 }
 
-// String converts the KeyValue to a string representation
-func (kv KeyValue) String() string {
-	return fmt.Sprintf("%s = %s", kv.Key, kv.Value)
+func (kv keyValue) str() string {
+	return fmt.Sprintf("%s = %s", kv.key, kv.value)
+}
+
+func moduleWrite(mode string, objType op.TraceType, packet *op.ClientPacket) {
+	go func() {
+		dump := newRequestDump(packet, mode)
+		messages := dump.dumpPacket(keyValue{key: "Info", value: fmt.Sprintf("%d", int(objType))})
+		logPluginMessages(mode, messages)
+	}()
 }
