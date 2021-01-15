@@ -165,7 +165,9 @@ func main() {
 	} else {
 		ctx.SetPreAuth(op.PrePacket)
 	}
-	ctx.SetTrace(op.TracePacket)
+	if !conf.NoTrace {
+		ctx.SetTrace(op.TracePacket)
+	}
 
 	if !conf.Internals.NoLogs {
 		logBuffer := time.Duration(conf.Internals.Logs) * time.Second

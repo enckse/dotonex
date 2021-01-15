@@ -15,6 +15,7 @@ type (
 		Dir          string
 		NoReject     bool
 		Log          string
+		NoTrace      bool
 		Configurator struct {
 			Debug      bool
 			Static     bool

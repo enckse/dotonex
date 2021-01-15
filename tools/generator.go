@@ -48,6 +48,9 @@ dir: /var/lib/dotonex/
 # log dir
 log: /var/log/dotonex/
 
+# notrace will turn off packet tracing
+notrace: false
+
 # backend configuration management
 configurator:
 	# utilizies internal payload instead of backend scripts (false)
