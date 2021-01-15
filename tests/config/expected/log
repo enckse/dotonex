@@ -7,7 +7,7 @@
 [INFO] xyz (MAB)
 [INFO]  -> aabbccddeeff
 [INFO] hostapd reset
-[ERROR] config failure ([exit status 1])
+[WARN] unable to get hostapd pids: exit status 1
 [INFO] hash update
 [INFO] configuring
 [INFO] xyz (MAB)
@@ -29,7 +29,8 @@
 [INFO] xyz (MAB)
 [INFO]  -> aabbccddeeff
 [INFO] hostapd reset
-[ERROR] config failure ([exit status 1])
+[WARN] unable to get hostapd pids: exit status 1
+[ERROR] config failure ([1122334455aa file not found])
 [INFO] validating inputs
 [INFO] stdout
 [INFO] {"username":"user.name"}
@@ -42,7 +43,8 @@
 [INFO] xyz (MAB)
 [INFO]  -> aabbccddeeff
 [INFO] hostapd reset
-[ERROR] config failure ([exit status 1])
+[WARN] unable to get hostapd pids: exit status 1
+[INFO] validated
 [INFO] validating inputs
 [INFO] token is known
 [INFO] user found: user.name
