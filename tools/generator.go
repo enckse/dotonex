@@ -58,7 +58,7 @@ configurator:
 	# repository path (/var/cache/dotonex/config)
 	repository: /var/cache/dotonex/config
 	# payload command to run to validate a user OR static list of token+mac pairs ([])
-	payload: ["curl", "-s", "https://gitlab.url/api/v4/user?access_token={}"]
+	payload: ["curl", "-s", "https://gitlab.url/api/v4/user?access_token=%s"]
 	# shared login key for all users (empty)
 	serverkey: secretkey
 	# refresh time for how often to rebuild dynamic config in minutes (5)
