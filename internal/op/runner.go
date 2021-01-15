@@ -36,15 +36,15 @@ type (
 	Context struct {
 		Debug    bool
 		secret   []byte
-		preauth  PreAuth
+		pre      PreAuth
 		acct     Accounting
 		trace    Tracing
 		secrets  map[string][]byte
 		noReject bool
 		// shortcuts
-		preauthYes bool
-		acctYes    bool
-		traceYes   bool
+		hasPre   bool
+		hasAcct  bool
+		hasTrace bool
 	}
 
 	// TraceType indicates how to trace a request
@@ -81,19 +81,19 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 
 // SetTrace adds a tracing check to the context
 func (ctx *Context) SetTrace(t Tracing) {
-	ctx.traceYes = true
+	ctx.hasTrace = true
 	ctx.trace = t
 }
 
 // SetPreAuth adds a pre-authorization check to the context
 func (ctx *Context) SetPreAuth(p PreAuth) {
-	ctx.preauthYes = true
-	ctx.preauth = p
+	ctx.hasPre = true
+	ctx.pre = p
 }
 
 // SetAccounting adds an accounting check to the context
 func (ctx *Context) SetAccounting(a Accounting) {
-	ctx.acctYes = true
+	ctx.hasAcct = true
 	ctx.acct = a
 }
 
@@ -113,8 +113,8 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 		core.WriteError("invalid radius secret", err)
 		valid = badSecretCode
 	}
-	if ctx.preauthYes {
-		failure := !ctx.preauth.Pre(packet)
+	if ctx.hasPre {
+		failure := !ctx.pre.Pre(packet)
 		if failure {
 			core.WriteDebug("unauthorized (failed preauth)")
 			if valid == successCode {
@@ -122,7 +122,7 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 			}
 		}
 	}
-	if ctx.traceYes {
+	if ctx.hasTrace {
 		ctx.trace.Trace(TraceRequest, packet)
 	}
 	return valid
@@ -272,14 +272,15 @@ func (ctx *Context) packet(p *ClientPacket) {
 
 // Account is responsible for performing all accounting module operations
 func (ctx *Context) Account(packet *ClientPacket) {
+	if !ctx.hasAcct {
+		return
+	}
 	ctx.packet(packet)
 	if packet.Error != nil {
 		// unable to parse, exit early
 		return
 	}
-	if ctx.acctYes {
-		ctx.acct.Account(packet)
-	}
+	ctx.acct.Account(packet)
 }
 
 // HandlePreAuth handles the actual pre-authorization checks

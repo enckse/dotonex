@@ -138,7 +138,7 @@ func checkAuthMode(t *testing.T) {
 	if cnt != 2 {
 		t.Error("didn't mod auth")
 	}
-	ctx.traceYes = false
+	ctx.hasTrace = false
 	if ctx.authorize(p) != reasonCode {
 		t.Error("did authorize")
 	}
