@@ -37,14 +37,6 @@ type (
 	// TraceType indicates how to trace a request
 	TraceType int
 
-	// PluginContext is the context given to a plugin module
-	PluginContext struct {
-		// Backing config
-		config *Configuration
-		// Lib represents the library path for dotonex
-		Lib string
-	}
-
 	// Module represents a plugin module for packet checking
 	Module interface {
 		Name() string
@@ -86,14 +78,6 @@ type (
 // NewClientPacket creates a client packet from an input data packet
 func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
-}
-
-// NewPluginContext prepares a context from a configuration
-func NewPluginContext(config *Configuration) *PluginContext {
-	p := &PluginContext{}
-	p.config = config
-	p.Lib = config.Dir
-	return p
 }
 
 // NewRequestDump prepares a packet request for dumping
