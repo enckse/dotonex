@@ -12,7 +12,9 @@ GITLAB_TLD   :=
 
 .PHONY: $(UTESTS)
 
-build: $(HOSTAPD) $(EXES) configuration test
+all: build test
+
+build: $(HOSTAPD) $(EXES) configuration
 
 $(UTESTS):
 	cd $@ && go test -v

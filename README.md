@@ -1,14 +1,15 @@
 dotonex
 ===
 
-Designed for using a go proxy+hostapd as an 802.1x RADIUS server for network authentication (or how to live without freeradius)
+Designed for using a go proxy+hostapd as an 802.1x RADIUS server for network authentication (or how to live without freeradius).
+This is the 4th generation implementation and deployment of custom configurations in this area
 
 # purpose
 
 This is a go proxy+hostapd setup that provides a very simple configuration to manage 802.1x authentication and management on a LAN.
 
 Expectations:
-* Running on debian as a host/server
+* Running on Linux as a host/server
 * hostapd can do a lot with EAP and RADIUS as a service, this should serve as an exploration of these features
 * Fully replace freeradius for 802.1x/AAA/etc.
 
@@ -20,6 +21,7 @@ Expectations:
 
 ## Goals
 
+* Utilize a backend service to authorize users
 * Support a port-restricted LAN (+wifi) in a controlled, physical area
 * Provide a singular authentication strategy for supported clients using peap+mschapv2 (no CA validation).
 * Windows 10
@@ -32,7 +34,7 @@ Expectations:
 * Centralized configuration file
 * As few open endpoints as possible on the radius server (only open ports 1812 and 1813 for radius)
 
-**These goals began with our usage of freeradius and continue to be vital to our operation**
+**These goals began with the usage of freeradius and continue to be vital to our operation**
 
 ## Proxy
 
@@ -47,48 +49,39 @@ the proxy:
 
 # setup
 
-## services
+## build
 
-setup your `/etc/hostapd/hostapd.conf`
-```
-systemctl enable --now hostapd.service
-```
+Requires base development tools and go to build, it will build the whole stack and a local instance
+of hostapd as certain flags are not always set for each distribution.
 
-if using radiucal as a proxy (make sure to bind hostapd to not 1812 for radius)
 ```
-# to use the default supplied proxy config
-ln -s /etc/radiucal/proxy.conf.example /etc/radiucal/radiucal.proxy.conf
-systemctl enable --now radiucal@proxy.service
+make build
 ```
 
-to run an accounting server via radiucal
+## install
+
+to deploy and utilize the utilize default backend:
+- gitlab auth for user names (mapping to gitlab user token's)
+- repository containing simplistic user+MAC combinations and VLAN definitions/configurations
+
 ```
-# to use the default supplied accounting config
-ln -s /etc/radiucal/accounting.conf.example /etc/radiucal/radiucal.accounting.conf
-systemctl enable --now radiucal@accounting.service
+sudo make install \
+    SERVER_REPO="/path/to/repo" \
+    RADIUS_KEY="radius_client_key" \
+    SHARED_KEY="shared_server_key_for_user_pass" \
+    GITLAB_TLD="the.gitlab.tld"
 ```
 
-you may view an example config for more settings: `/etc/radiucal/example.conf`
+## configure
 
-## certs
-
-if you wish to generate certs for hostapd
+It is **suggested** to initially run the daemon by-hand to verify setup (not required)
 ```
-cd /etc/radiucal/certs
-./renew.sh
-```
-and follow the prompts
-
-## build (dev)
-
-clone this repository
-```
-make
+sudo dotonex-daemon
 ```
 
-run (with a socket listening to be proxied to, e.g. hostapd)
+Also make sure to enable the necessary services
 ```
-./radiucal
+sudo systemctl enable dotonex.service
 ```
 
 ## debugging
