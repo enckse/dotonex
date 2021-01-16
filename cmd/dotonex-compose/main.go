@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	yaml "gopkg.in/yaml.v2"
-	"voidedtech.com/dotonex/internal/core"
 	"voidedtech.com/dotonex/internal/compose"
+	"voidedtech.com/dotonex/internal/core"
 )
 
 const (

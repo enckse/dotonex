@@ -7,16 +7,16 @@ import (
 type (
 	// Configuration is the configuration definition
 	Configuration struct {
-		Cache        bool
-		Host         string
-		Accounting   bool
-		To           int
-		Bind         int
-		Dir          string
-		NoReject     bool
-		Log          string
-		NoTrace      bool
-		Compose struct {
+		Cache      bool
+		Host       string
+		Accounting bool
+		To         int
+		Bind       int
+		Dir        string
+		NoReject   bool
+		Log        string
+		NoTrace    bool
+		Compose    struct {
 			Debug      bool
 			Static     bool
 			Repository string

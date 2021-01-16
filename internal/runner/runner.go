@@ -53,10 +53,10 @@ type (
 	// PreAuth represents the function required to pre-authorize a packet
 	PreAuth func(*ClientPacket) bool
 
-	// Tracing represents the function required to trace requests
+	// Trace represents the function required to trace requests
 	Trace func(TraceType, *ClientPacket)
 
-	// Accounting represents the function required to handle accounting
+	// Account represents the function required to handle accounting
 	Account func(*ClientPacket)
 
 	// ClientPacket represents the radius packet from the client
