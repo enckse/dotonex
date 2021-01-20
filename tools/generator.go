@@ -21,7 +21,7 @@ type (
 )
 
 const (
-	target = "configs/"
+	target = ""
 	config = `# dotonex config
 
 # to support caching operations (false)
