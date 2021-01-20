@@ -67,6 +67,8 @@ compose:
 	timeout: 30
 	# debug is enabled for backend
 	debug: false
+	# binary name to call
+	binary: dotonex-compose
 
 # internal operations (do NOT change except for debugging)
 internals:

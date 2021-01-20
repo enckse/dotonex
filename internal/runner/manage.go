@@ -26,6 +26,7 @@ type (
 		timeout time.Duration
 		payload []string
 		debug   bool
+		binary  string
 	}
 )
 
@@ -39,7 +40,7 @@ func (s script) execute(flags core.ComposeFlags) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "dotonex-compose", arguments...)
+	cmd := exec.CommandContext(ctx, s.binary, arguments...)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
@@ -117,7 +118,7 @@ func Manage(cfg *core.Configuration) error {
 	if len(cfg.Compose.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	backend = &script{debug: cfg.Compose.Debug, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, repo: cfg.Compose.Repository, command: cfg.Compose.Payload, hash: core.MD4(cfg.Compose.ServerKey)}
+	backend = &script{binary: cfg.Compose.Binary, debug: cfg.Compose.Debug, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, repo: cfg.Compose.Repository, command: cfg.Compose.Payload, hash: core.MD4(cfg.Compose.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()

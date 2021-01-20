@@ -24,6 +24,7 @@ type (
 			ServerKey  string
 			Refresh    int
 			Timeout    int
+			Binary     string
 		}
 		Internals struct {
 			NoInterrupt bool
