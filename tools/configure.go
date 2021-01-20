@@ -22,6 +22,7 @@ type (
 		ServerRepository string
 		AllowInstall     bool
 		BuildOnly        bool
+		errored          bool
 	}
 )
 
@@ -34,19 +35,21 @@ const (
 	radiusFlag     = "radius-key"
 )
 
-func nonEmptyFatal(cat, key, value string) {
+func (m Make) nonEmptyFatal(cat, key, value string) {
 	if strings.TrimSpace(value) == "" {
 		category := cat
-		if len(category) > 0 {
-			category = fmt.Sprintf("[-%s] ", category)
+		if len(category) == 0 {
+			category = "global"
+		} else {
+			category = fmt.Sprintf("-%s", category)
 		}
-		fail(fmt.Errorf("%s'-%s' must be set", category, key))
+		m.fail(fmt.Errorf("[%s] '-%s' must be set", category, key))
 	}
 }
 
-func fail(err error) {
-	fmt.Println("[ERROR] %v", err)
-	os.Exit(1)
+func (m Make) fail(err error) {
+	fmt.Println(fmt.Sprintf("[ERROR] %v", err))
+	m.errored = true
 }
 
 func main() {
@@ -60,29 +63,33 @@ func main() {
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
 	m := Make{BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m.errored = false
 	m.AllowInstall = !m.BuildOnly
 	if m.AllowInstall {
-		nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
-		nonEmptyFatal("", radiusFlag, m.RADIUSKey)
-		nonEmptyFatal("", sharedFlag, m.SharedKey)
+		m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
+		m.nonEmptyFatal("", radiusFlag, m.RADIUSKey)
+		m.nonEmptyFatal("", sharedFlag, m.SharedKey)
 		if m.Gitlab {
-			nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
-			nonEmptyFatal(gitlabFlag, repoFlag, m.ServerRepository)
+			m.nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
+			m.nonEmptyFatal(gitlabFlag, repoFlag, m.ServerRepository)
 		}
 	}
 	b, err := ioutil.ReadFile("tools/Makefile.in")
 	if err != nil {
-		fail(err)
+		m.fail(err)
 	}
 	tmpl, err := template.New("make").Parse(string(b))
 	if err != nil {
-		fail(err)
+		m.fail(err)
 	}
 	var buffer bytes.Buffer
 	if err := tmpl.Execute(&buffer, &m); err != nil {
-		fail(err)
+		m.fail(err)
 	}
 	if err := ioutil.WriteFile("Makefile", buffer.Bytes(), 0644); err != nil {
-		fail(err)
+		m.fail(err)
+	}
+	if m.errored {
+		os.Exit(1)
 	}
 }
