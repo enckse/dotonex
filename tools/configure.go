@@ -42,6 +42,10 @@ type (
 	}
 )
 
+var (
+	generated = []string{"Makefile", "clients", "env", "secrets"}
+)
+
 const (
 	hostapdFlag    = "hostap-version"
 	gitlabFlag     = "enable-gitlab"
@@ -87,6 +91,25 @@ func main() {
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
 	m := Make{BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	cleanup := generated
+	files, err := ioutil.ReadDir(".")
+	if err != nil {
+		m.fail(err, true)
+	}
+	for _, f := range files {
+		name := f.Name()
+		if strings.HasSuffix(name, core.InstanceConfig) {
+			cleanup = append(cleanup, name)
+		}
+	}
+	for _, g := range cleanup {
+		show("cleanup", g)
+		if core.PathExists(g) {
+			if err := os.Remove(g); err != nil {
+				m.fail(err, true)
+			}
+		}
+	}
 	m.errored = false
 	m.AllowInstall = !m.BuildOnly
 	m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
@@ -114,6 +137,7 @@ func main() {
 		os.Exit(1)
 	}
 	for _, file := range []string{"Makefile", "clients", "env", "secrets"} {
+		show("generating", file)
 		b, err := ioutil.ReadFile(filepath.Join(toolDir, file+".in"))
 		if err != nil {
 			m.fail(err, true)
@@ -144,7 +168,7 @@ func main() {
 	for _, c := range []*Config{proxy, accounting} {
 		m.Configuration = c
 		output := c.file + core.InstanceConfig
-		show("generating", output)
+		show("configs", output)
 		var b bytes.Buffer
 		if err := tmpl.Execute(&b, &m); err != nil {
 			m.fail(err, true)
