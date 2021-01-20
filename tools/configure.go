@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
+
+	"voidedtech.com/dotonex/internal/core"
 )
 
 type (
@@ -23,6 +26,19 @@ type (
 		AllowInstall     bool
 		BuildOnly        bool
 		errored          bool
+		Accounting       string
+		To               bool
+		Bind             string
+		file             string
+		Configuration    *Config
+	}
+
+	// Config generation
+	Config struct {
+		Accounting string
+		To         bool
+		Bind       string
+		file       string
 	}
 )
 
@@ -33,9 +49,14 @@ const (
 	repoFlag       = "server-repository"
 	sharedFlag     = "shared-key"
 	radiusFlag     = "radius-key"
+	toolDir        = "tools"
 )
 
-func (m Make) nonEmptyFatal(cat, key, value string) {
+func show(cat, message string) {
+	fmt.Println(fmt.Sprintf("[%s] %s", cat, message))
+}
+
+func (m *Make) nonEmptyFatal(cat, key, value string) {
 	if strings.TrimSpace(value) == "" {
 		category := cat
 		if len(category) == 0 {
@@ -43,13 +64,16 @@ func (m Make) nonEmptyFatal(cat, key, value string) {
 		} else {
 			category = fmt.Sprintf("-%s", category)
 		}
-		m.fail(fmt.Errorf("[%s] '-%s' must be set", category, key))
+		m.fail(fmt.Errorf("[%s] '-%s' must be set", category, key), false)
 	}
 }
 
-func (m Make) fail(err error) {
-	fmt.Println(fmt.Sprintf("[ERROR] %v", err))
+func (m *Make) fail(err error, exit bool) {
+	show("ERROR", fmt.Sprintf("%v", err))
 	m.errored = true
+	if exit {
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -65,31 +89,68 @@ func main() {
 	m := Make{BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
 	m.errored = false
 	m.AllowInstall = !m.BuildOnly
+	m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
+	defaults := true
+	defaultGitlab := true
 	if m.AllowInstall {
-		m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
+		defaults = false
 		m.nonEmptyFatal("", radiusFlag, m.RADIUSKey)
 		m.nonEmptyFatal("", sharedFlag, m.SharedKey)
 		if m.Gitlab {
+			defaultGitlab = false
 			m.nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
 			m.nonEmptyFatal(gitlabFlag, repoFlag, m.ServerRepository)
 		}
 	}
-	b, err := ioutil.ReadFile("tools/Makefile.in")
-	if err != nil {
-		m.fail(err)
+	if defaults {
+		m.RADIUSKey = "radiuskey"
+		m.SharedKey = "sharedkey"
 	}
-	tmpl, err := template.New("make").Parse(string(b))
-	if err != nil {
-		m.fail(err)
-	}
-	var buffer bytes.Buffer
-	if err := tmpl.Execute(&buffer, &m); err != nil {
-		m.fail(err)
-	}
-	if err := ioutil.WriteFile("Makefile", buffer.Bytes(), 0644); err != nil {
-		m.fail(err)
+	if defaultGitlab {
+		m.GitlabFQDN = "gitlab.example.com"
+		m.ServerRepository = "."
 	}
 	if m.errored {
 		os.Exit(1)
+	}
+	for _, file := range []string{"Makefile", "clients", "env", "secrets"} {
+		b, err := ioutil.ReadFile(filepath.Join(toolDir, file+".in"))
+		if err != nil {
+			m.fail(err, true)
+		}
+		tmpl, err := template.New(file).Parse(string(b))
+		if err != nil {
+			m.fail(err, true)
+		}
+		var buffer bytes.Buffer
+		if err := tmpl.Execute(&buffer, &m); err != nil {
+			m.fail(err, true)
+		}
+		if err := ioutil.WriteFile(file, buffer.Bytes(), 0644); err != nil {
+			m.fail(err, true)
+		}
+	}
+
+	b, err := ioutil.ReadFile(filepath.Join(toolDir, "conf.in"))
+	if err != nil {
+		m.fail(err, true)
+	}
+	tmpl, err := template.New("script").Parse(string(b))
+	if err != nil {
+		m.fail(err, true)
+	}
+	proxy := &Config{Accounting: "false", To: true, Bind: "1812", file: "proxy"}
+	accounting := &Config{Accounting: "true", To: false, Bind: "1813", file: "accounting"}
+	for _, c := range []*Config{proxy, accounting} {
+		m.Configuration = c
+		output := c.file + core.InstanceConfig
+		show("generating", output)
+		var b bytes.Buffer
+		if err := tmpl.Execute(&b, &m); err != nil {
+			m.fail(err, true)
+		}
+		if err := ioutil.WriteFile(output, b.Bytes(), 0644); err != nil {
+			m.fail(err, true)
+		}
 	}
 }

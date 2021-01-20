@@ -3,6 +3,9 @@ Makefile
 tests/plugins/
 log/
 *.conf
+clients
+env
+secrets
 plugins/**/tests/
 dotonex*
 hostap/hostap/

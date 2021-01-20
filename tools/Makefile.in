@@ -54,15 +54,7 @@ baseinstall:
 	install -Dm644 systemd/dotonex.conf $(DESTDIR)/usr/lib/tmpfiles.d/
 	install -Dm644 systemd/dotonex.service $(DESTDIR)/usr/lib/systemd/system/
 	cp -r hostap/certs $(DESTDIR)/etc/dotonex/hostapd/
-	sed -i "s/serverkey: secretkey/serverkey: $(SHARED_KEY)/g" $(DESTDIR)/etc/dotonex/*.conf
-	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/dotonex/clients
-	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/dotonex/secrets
-	echo "0.0.0.0 $(RADIUS_KEY)" >> $(DESTDIR)/var/lib/dotonex/secrets
-{{ if .Gitlab }}
-install: baseinstall
-	sed -i "s/gitlab.url/$(GITLAB_TLD)/g" $(DESTDIR)/etc/dotonex/*.conf
-	echo "export SERVER_REPO=$(SERVER_REPO)" > $(DESTDIR)/etc/dotonex/env
-{{ else }}
-install: baseinstall
-{{ end }}
+	install -Dm600 clients $(DESTDIR)/var/lib/dotonex/clients
+	install -Dm600 secrets $(DESTDIR)/var/lib/dotonex/secrets
+	install -Dm600 env $(DESTDIR)/etc/dotonex/env
 {{ end }}

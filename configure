@@ -4,7 +4,6 @@ if [ $? -ne 0 ]; then
     echo "go not found"
     exit 1
 fi
-rm -f Makefile
 go run tools/configure.go $@
 if [ $? -ne 0 ]; then
     echo "^^^ configuration failed ^^^"
