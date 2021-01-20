@@ -49,6 +49,7 @@ ifeq ($(RADIUS_KEY),)
 	$(error "please set RADIUS_KEY for server installion")
 endif
 	install -dm700 $(DESTDIR)/var/lib/dotonex
+	install -dm700 $(DESTDIR)/etc/dotonex
 	install -dm700 $(DESTDIR)/etc/dotonex/hostapd
 	install -dm700 $(DESTDIR)/var/cache/dotonex
 	install -dm700 $(DESTDIR)/var/log/dotonex
