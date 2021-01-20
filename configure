@@ -1,0 +1,11 @@
+#!/bin/bash
+go version > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "go not found"
+    exit 1
+fi
+go run tools/configure.go $@
+if [ $? -ne 0 ]; then
+    echo "^^^ configuration failed ^^^"
+    exit 1
+fi

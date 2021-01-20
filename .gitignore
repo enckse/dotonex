@@ -1,4 +1,5 @@
 bin/
+Makefile
 tests/plugins/
 log/
 configs/*.conf
