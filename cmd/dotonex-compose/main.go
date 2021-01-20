@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -83,16 +82,11 @@ func validate(flags core.ComposeFlags) error {
 		if err != nil {
 			return err
 		}
-		m := make(map[string]interface{})
-		if err := json.Unmarshal([]byte(output), &m); err != nil {
+		user, err = compose.TryGetUser([]byte(output), func(possibleUser string) bool {
+			return core.PathExists(filepath.Join(flags.Repo, possibleUser))
+		})
+		if err != nil {
 			return err
-		}
-		if _, ok := m["username"]; !ok {
-			return fmt.Errorf("invalid json, required key missing")
-		}
-		user, ok = m["username"].(string)
-		if !ok {
-			return fmt.Errorf("username is not a string")
 		}
 		core.WriteInfo(fmt.Sprintf("%s token changed", user))
 		if err := ioutil.WriteFile(tokenFile, []byte(user), perms); err != nil {

@@ -76,3 +76,79 @@ func TestValidateVLANs(t *testing.T) {
 		t.Error("invalid VLANs")
 	}
 }
+
+func TestTryGetUserArray(t *testing.T) {
+	valid := func(u string) bool {
+		return u == "test"
+	}
+	user, err := TryGetUser([]byte("[{}]"), valid)
+	if err == nil {
+		t.Error("json is valid but no user")
+	}
+	user, err = TryGetUser([]byte("[{}, {}]"), valid)
+	if err == nil {
+		t.Error("json is valid but no user")
+	}
+	user, err = TryGetUser([]byte("[]"), valid)
+	if err == nil {
+		t.Error("json is valid but no user")
+	}
+	user, err = TryGetUser([]byte("[{\"usernazme\": \"test\"}]"), valid)
+	if err == nil {
+		t.Error("json is valid and has invalid key")
+	}
+	user, err = TryGetUser([]byte("[{\"username\": \"test2\"}]"), valid)
+	if err == nil {
+		t.Error("json is valid and has invalid user")
+	}
+	user, err = TryGetUser([]byte("[{\"userID\": \"test\"}]"), valid)
+	if err != nil {
+		t.Error("json is valid and has user")
+	}
+	if user != "test" {
+		t.Error("wrong user return")
+	}
+	user, err = TryGetUser([]byte("[{\"username\": \"test\"}]"), valid)
+	if err != nil {
+		t.Error("json is valid and has user")
+	}
+	if user != "test" {
+		t.Error("wrong user return")
+	}
+}
+
+func TestTryGetUserSingleton(t *testing.T) {
+	valid := func(u string) bool {
+		return u == "test"
+	}
+	user, err := TryGetUser([]byte(""), valid)
+	if err == nil {
+		t.Error("json is invalid")
+	}
+	user, err = TryGetUser([]byte("{}"), valid)
+	if err == nil {
+		t.Error("json is valid but no user")
+	}
+	user, err = TryGetUser([]byte("{\"usernazme\": \"test\"}"), valid)
+	if err == nil {
+		t.Error("json is valid and has invalid key")
+	}
+	user, err = TryGetUser([]byte("{\"username\": \"test2\"}"), valid)
+	if err == nil {
+		t.Error("json is valid and has invalid user")
+	}
+	user, err = TryGetUser([]byte("{\"userID\": \"test\"}"), valid)
+	if err != nil {
+		t.Error("json is valid and has user")
+	}
+	if user != "test" {
+		t.Error("wrong user return")
+	}
+	user, err = TryGetUser([]byte("{\"username\": \"test\"}"), valid)
+	if err != nil {
+		t.Error("json is valid and has user")
+	}
+	if user != "test" {
+		t.Error("wrong user return")
+	}
+}
