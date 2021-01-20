@@ -2,7 +2,7 @@ bin/
 Makefile
 tests/plugins/
 log/
-configs/*.conf
+*.conf
 plugins/**/tests/
 dotonex*
 hostap/hostap/
