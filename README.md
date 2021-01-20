@@ -100,7 +100,7 @@ Builds can use the `-build-only` boolean to disable install setups/requirements
 ./configure -build-only
 ```
 
-and then
+and then to build and run tests
 
 ```
 make

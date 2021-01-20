@@ -21,6 +21,7 @@ type (
 		GitlabFQDN       string
 		ServerRepository string
 		AllowInstall     bool
+		BuildOnly        bool
 	}
 )
 
@@ -58,7 +59,8 @@ func main() {
 	sharedKey := flag.String(sharedFlag, "", "shared radius key for all users given unique tokens")
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
-	m := Make{AllowInstall: !*buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m := Make{BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m.AllowInstall = !m.BuildOnly
 	if m.AllowInstall {
 		nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
 		nonEmptyFatal("", radiusFlag, m.RADIUSKey)

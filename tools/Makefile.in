@@ -12,7 +12,9 @@ SERVER_REPO  := {{ .ServerRepository }}
 
 .PHONY: $(UTESTS)
 
-all: $(HOSTAPD) $(EXES) configuration
+all: build{{ if .BuildOnly }} check{{ end }}
+	
+build: $(HOSTAPD) $(EXES) configuration
 	
 $(UTESTS):
 	cd $@ && go test -v
