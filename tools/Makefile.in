@@ -5,17 +5,13 @@ SRC          := $(shell find . -type f -name "*.go" | grep -v "test")
 HOSTAPD      := hostap/hostap/hostapd/hostapd
 DESTDIR      :=
 HOSTAP_VERS  := {{ .HostapdVersion }}
-RADIUS_KEY   := {{ .RADIUSKey }}
-SHARED_KEY   := {{ .SharedKey }}
-GITLAB_FQDN  := {{ .GitlabFQDN }}
-SERVER_REPO  := {{ .ServerRepository }}
 
 .PHONY: $(UTESTS)
 
 all: build{{ if .BuildOnly }} check{{ end }}
 
-build: $(HOSTAPD) $(EXES) configuration
-	
+build: $(HOSTAPD) $(EXES)
+
 $(UTESTS):
 	cd $@ && go test -v
 
@@ -31,9 +27,6 @@ $(HOSTAPD):
 clean:
 	rm -rf $(EXES)
 	rm -rf hostap/hostap
-
-configuration:
-	go run tools/generator.go
 
 {{ if .AllowInstall }}
 baseinstall:
