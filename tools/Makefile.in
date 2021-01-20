@@ -28,8 +28,7 @@ clean:
 	rm -rf $(EXES)
 	rm -rf hostap/hostap
 
-{{ if .AllowInstall }}
-baseinstall:
+install:
 	install -dm700 $(DESTDIR)/var/lib/dotonex
 	install -dm700 $(DESTDIR)/etc/dotonex
 	install -dm700 $(DESTDIR)/etc/dotonex/hostapd
@@ -50,4 +49,3 @@ baseinstall:
 	install -Dm600 clients $(DESTDIR)/var/lib/dotonex/clients
 	install -Dm600 secrets $(DESTDIR)/var/lib/dotonex/secrets
 	install -Dm600 env $(DESTDIR)/etc/dotonex/env
-{{ end }}

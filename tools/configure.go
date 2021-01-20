@@ -23,7 +23,6 @@ type (
 		RADIUSKey        string
 		GitlabFQDN       string
 		ServerRepository string
-		AllowInstall     bool
 		BuildOnly        bool
 		errored          bool
 		Accounting       string
@@ -111,11 +110,10 @@ func main() {
 		}
 	}
 	m.errored = false
-	m.AllowInstall = !m.BuildOnly
 	m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
 	defaults := true
 	defaultGitlab := true
-	if m.AllowInstall {
+	if !m.BuildOnly {
 		defaults = false
 		m.nonEmptyFatal("", radiusFlag, m.RADIUSKey)
 		m.nonEmptyFatal("", sharedFlag, m.SharedKey)
