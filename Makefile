@@ -50,13 +50,13 @@ ifeq ($(RADIUS_KEY),)
 endif
 	install -dm700 $(DESTDIR)/var/lib/dotonex
 	install -dm700 $(DESTDIR)/etc/dotonex/hostapd
-	install -dm700 $(DESTDIR)/usr/lib/dotonex
 	install -dm700 $(DESTDIR)/var/cache/dotonex
 	install -dm700 $(DESTDIR)/var/log/dotonex
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/dotonex/clients
 	echo "127.0.0.1 $(RADIUS_KEY)" > $(DESTDIR)/var/lib/dotonex/secrets
 	echo "0.0.0.0 $(RADIUS_KEY)" >> $(DESTDIR)/var/lib/dotonex/secrets
 	echo "export SERVER_REPO=$(SERVER_REPO)" > $(DESTDIR)/etc/dotonex/env
+	install -d $(DESTDIR)/usr/lib/dotonex
 	install -Dm755 $(HOSTAPD) $(DESTDIR)/usr/lib/dotonex/hostapd
 	install -Dm644 hostap/hostapd.conf $(DESTDIR)/etc/dotonex/hostapd/
 	install -Dm755 dotonex $(DESTDIR)/usr/bin/
