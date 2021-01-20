@@ -30,6 +30,7 @@ type (
 		Bind             string
 		file             string
 		Configuration    *Config
+		Static           string
 	}
 
 	// Config generation
@@ -113,11 +114,13 @@ func main() {
 	m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
 	defaults := true
 	defaultGitlab := true
+	m.Static = "true"
 	if !m.BuildOnly {
 		defaults = false
 		m.nonEmptyFatal("", radiusFlag, m.RADIUSKey)
 		m.nonEmptyFatal("", sharedFlag, m.SharedKey)
 		if m.Gitlab {
+			m.Static = "false"
 			defaultGitlab = false
 			m.nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
 			m.nonEmptyFatal(gitlabFlag, repoFlag, m.ServerRepository)

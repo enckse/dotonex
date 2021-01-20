@@ -30,7 +30,7 @@ notrace: false
 # backend configuration management
 compose:
     # utilizies internal payload instead of backend scripts (false)
-    static: false
+    static: {{ .Static }}
     # repository path (/var/cache/dotonex/config)
     repository: /var/cache/dotonex/config
     # payload command to run to validate a user OR static list of token+mac pairs ([])
