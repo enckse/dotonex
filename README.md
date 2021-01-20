@@ -54,22 +54,28 @@ the proxy:
 Requires base development tools and go to build, it will build the whole stack and a local instance
 of hostapd as certain flags are not always set for each distribution.
 
-```
-make build
-```
-
-## install
-
 to deploy and utilize the utilize default backend:
 - gitlab auth for user names (mapping to gitlab user token's)
 - repository containing simplistic user+MAC combinations and VLAN definitions/configurations
 
 ```
-sudo make install \
-    SERVER_REPO="/path/to/repo" \
-    RADIUS_KEY="radius_client_key" \
-    SHARED_KEY="shared_server_key_for_user_pass" \
-    GITLAB_TLD="the.gitlab.tld"
+./configure \
+    -radius-key networkkey \
+    -shared-key clientkey \
+    -enable-gitlab \
+    -gitlab-fqdn gitlab.example.com \
+    -server-repository /path/to/repo
+```
+
+to build the solution
+
+```
+make
+```
+
+and finally to install it
+```
+sudo make install
 ```
 
 ## configure
@@ -85,6 +91,20 @@ sudo systemctl enable dotonex.service
 ```
 
 ## debugging
+
+### builds
+
+Builds can use the `-build-only` boolean to disable install setups/requirements
+
+```
+./configure -build-only
+```
+
+and then
+
+```
+make
+```
 
 ### remotely
 
