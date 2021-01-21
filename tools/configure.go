@@ -66,16 +66,30 @@ func show(cat, message string) {
 	fmt.Println(fmt.Sprintf("[%s] %s", cat, message))
 }
 
+func (m *Make) nonEmptyFatalKey(key, value string) {
+	m.nonEmptyFatal("", key, value)
+	for _, c := range strings.ToLower(value) {
+		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
+			continue
+		}
+		m.deferFatal("", key, "invalid character ([a-zA-Z0-9])")
+	}
+}
+
 func (m *Make) nonEmptyFatal(cat, key, value string) {
 	if strings.TrimSpace(value) == "" {
-		category := cat
-		if len(category) == 0 {
-			category = "global"
-		} else {
-			category = fmt.Sprintf("-%s", category)
-		}
-		m.fail(fmt.Errorf("[%s] '-%s' must be set", category, key), false)
+		m.deferFatal(cat, key, "must be set")
 	}
+}
+
+func (m *Make) deferFatal(cat, key, reason string) {
+	category := cat
+	if len(category) == 0 {
+		category = "global"
+	} else {
+		category = fmt.Sprintf("-%s", category)
+	}
+	m.fail(fmt.Errorf("[%s] '-%s' %s", category, key, reason), false)
 }
 
 func (m *Make) fail(err error, exit bool) {
@@ -128,9 +142,9 @@ func main() {
 	m.Static = "true"
 	if !m.BuildOnly {
 		defaults = false
-		m.nonEmptyFatal("", radiusFlag, m.RADIUSKey)
-		m.nonEmptyFatal("", sharedFlag, m.SharedKey)
-		m.nonEmptyFatal("", certKeyFlag, m.CertKey)
+		m.nonEmptyFatalKey(radiusFlag, m.RADIUSKey)
+		m.nonEmptyFatalKey(sharedFlag, m.SharedKey)
+		m.nonEmptyFatalKey(certKeyFlag, m.CertKey)
 		if m.Gitlab {
 			m.Static = "false"
 			defaultGitlab = false
