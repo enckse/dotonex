@@ -34,9 +34,9 @@ UDPAddr
 UDPAddr
 UDPAddr
 UDPAddr
-User-Name "test"
-User-Name "test"
-User-Name "test"
-User-Name "test"
-User-Name "test"
-User-Name "test"
+User-Name "user:test"
+User-Name "user:test"
+User-Name "user:test"
+User-Name "user:test"
+User-Name "user:test@vlan.id"
+User-Name "user:test@vlan.id"
