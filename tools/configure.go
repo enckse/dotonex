@@ -131,6 +131,12 @@ func main() {
 			m.Static = "false"
 			defaultGitlab = false
 			m.nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
+			for _, c := range m.GitlabFQDN {
+				if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' {
+					continue
+				}
+				m.fail(fmt.Errorf("invalid character in FQDN"), false)
+			}
 			m.nonEmptyFatal(gitlabFlag, repoFlag, m.ServerRepository)
 		}
 	}
