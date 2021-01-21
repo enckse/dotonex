@@ -164,8 +164,11 @@ func checkUserMac(p *ClientPacket) error {
 	cleaned, isMAC := core.CleanMAC(calling)
 	if isMAC {
 		if calling != clean(token) {
-			token = core.GetUserFromVLANLogin(token)
-			valid = CheckTokenMAC(token, cleaned)
+			valid = false
+			token = core.GetTokenFromLogin(token)
+			if token != "" {
+				valid = CheckTokenMAC(token, cleaned)
+			}
 		}
 	} else {
 		valid = false

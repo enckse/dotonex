@@ -236,7 +236,7 @@ func (ctx *Context) checkSecret(p *ClientPacket) error {
 		}
 		ip = h
 		good := false
-		core.WriteInfo(ip)
+		core.WriteDebug(ip)
 		for k, v := range ctx.secrets {
 			if strings.HasPrefix(ip, k) || k == allKey {
 				if bytes.Equal(v, inSecret) {

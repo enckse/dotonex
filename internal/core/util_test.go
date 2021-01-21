@@ -19,12 +19,27 @@ func TestUserVLANLogin(t *testing.T) {
 	}
 }
 
-func TestGetUserVLAN(t *testing.T) {
-	if GetUserFromVLANLogin("user") != "user" {
-		t.Error("no vlan indicator")
+func TestGetTokenFrom(t *testing.T) {
+	if GetTokenFromLogin("user") != "" {
+		t.Error("not valid")
 	}
-	if GetUserFromVLANLogin("user@vlan.t") != "user" {
-		t.Error("invalid parse")
+	if GetTokenFromLogin("user@vlan.t") != "" {
+		t.Error("no user")
+	}
+	if GetTokenFromLogin("user:token") != "token" {
+		t.Error("user token was valid")
+	}
+	if GetTokenFromLogin("user:token:test") != "token:test" {
+		t.Error("still valid with another delimiter")
+	}
+	if GetTokenFromLogin("user:token:test@vlan.id") != "token:test" {
+		t.Error("still valid with another delimiter")
+	}
+}
+
+func TestNewUserLogin(t *testing.T) {
+	if NewUserLogin("abc", "xyz") != "abc:xyz" {
+		t.Error("invalid login")
 	}
 }
 

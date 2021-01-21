@@ -54,10 +54,12 @@ const (
 	ModeRebuild = "rebuild"
 	// DebugEnvOn indicates environment variable debugging is on for processes
 	DebugEnvOn = "true"
+	// DebugEnvVariable is the environment variable to indicate debug state
 	DebugEnvVariable = "DOTONEX_DEBUG"
 )
 
-func (c ComposeFlags) Info(message string) {
+// Debugging writes potential information from composition if debugging is one
+func (c ComposeFlags) Debugging(message string) {
 	if c.Debug {
 		WriteInfo(message)
 	}

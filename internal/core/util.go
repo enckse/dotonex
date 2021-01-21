@@ -8,6 +8,7 @@ import (
 
 const (
 	userVLANLogin = "@vlan."
+	userLogin     = ":"
 )
 
 // PathExists reports if a path exists or does not exist
@@ -28,18 +29,26 @@ func IntegerIn(i int, list []int) bool {
 	return false
 }
 
+// NewUserLogin creates a login name for a user+token
+func NewUserLogin(user, token string) string {
+	return fmt.Sprintf("%s%s%s", user, userLogin, token)
+}
+
 // NewUserVLANLogin creates a new user+vlan login name
 func NewUserVLANLogin(user, vlan string) string {
 	return fmt.Sprintf("%s%s%s", user, userVLANLogin, vlan)
 }
 
-// GetUserFromVLANLogin gets the user part from a FQDN user+vlan login
-func GetUserFromVLANLogin(input string) string {
-	if !strings.Contains(input, userVLANLogin) {
-		return input
+// GetTokenFromLogin gets the user's token part from a FQDN user+token+vlan login
+func GetTokenFromLogin(input string) string {
+	token := input
+	if strings.Contains(input, userVLANLogin) {
+		token = strings.Split(input, userVLANLogin)[0]
 	}
-	parts := strings.Split(input, userVLANLogin)
-	return parts[0]
+	if !strings.Contains(token, userLogin) {
+		return ""
+	}
+	return strings.Join(strings.Split(token, userLogin)[1:], userLogin)
 }
 
 // CleanMAC will clean a MAC and check that it is valid

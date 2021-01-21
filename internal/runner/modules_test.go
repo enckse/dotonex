@@ -35,8 +35,8 @@ func TestKeyValueStrings(t *testing.T) {
 }
 
 func TestUserMacBasics(t *testing.T) {
-	newTestSet(t, "test", "11-22-33-44-55-66", true)
-	newTestSet(t, "test", "12-22-33-44-55-66", false)
+	newTestSet(t, "user:test", "11-22-33-44-55-66", true)
+	newTestSet(t, "user:test", "12-22-33-44-55-66", false)
 }
 
 func ErrorIfNotPre(t *testing.T, p *ClientPacket, message string) {
@@ -69,15 +69,15 @@ func newTestSet(t *testing.T, user, mac string, valid bool) *ClientPacket {
 		ErrorIfNotPre(t, p, "")
 	}
 	if !valid {
-		ErrorIfNotPre(t, p, "failed preauth: test "+clean(mac))
+		ErrorIfNotPre(t, p, "failed preauth: user:test "+clean(mac))
 	}
 	return p
 }
 
 func TestUserMacCache(t *testing.T) {
-	pg := newTestSet(t, "test", "11-22-33-44-55-66", true)
-	pb := newTestSet(t, "test", "11-22-33-44-55-68", false)
-	first := "failed preauth: test 112233445568"
+	pg := newTestSet(t, "user:test", "11-22-33-44-55-66", true)
+	pb := newTestSet(t, "user:test", "11-22-33-44-55-68", false)
+	first := "failed preauth: user:test 112233445568"
 	ErrorIfNotPre(t, pg, "")
 	ErrorIfNotPre(t, pb, first)
 }

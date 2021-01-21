@@ -39,20 +39,20 @@ func piped(flags core.ComposeFlags, args []string) (string, error) {
 	}
 	o := strings.TrimSpace(stdout.String())
 	if len(o) > 0 {
-		flags.Info("stdout")
-		flags.Info(o)
+		flags.Debugging("stdout")
+		flags.Debugging(o)
 	}
 	e := stderr.String()
 	if len(e) > 0 {
-		flags.Info("stderr")
-		flags.Info(e)
+		flags.Debugging("stderr")
+		flags.Debugging(e)
 		return "", fmt.Errorf("command errored")
 	}
 	return o, nil
 }
 
 func validate(flags core.ComposeFlags) error {
-	flags.Info("validating inputs")
+	flags.Debugging("validating inputs")
 	mac, ok := core.CleanMAC(flags.MAC)
 	if !ok {
 		return fmt.Errorf("invalid MAC")
@@ -61,7 +61,7 @@ func validate(flags core.ComposeFlags) error {
 	tokenFile := flags.LocalFile(hash)
 	user := ""
 	if core.PathExists(tokenFile) {
-		flags.Info("token is known")
+		flags.Debugging("token is known")
 		b, err := ioutil.ReadFile(tokenFile)
 		if err != nil {
 			return err
@@ -88,19 +88,19 @@ func validate(flags core.ComposeFlags) error {
 		if err != nil {
 			return err
 		}
-		flags.Info(fmt.Sprintf("%s token changed", user))
+		flags.Debugging(fmt.Sprintf("%s token changed", user))
 		if err := ioutil.WriteFile(tokenFile, []byte(user), perms); err != nil {
 			return err
 		}
 		change = true
-		flags.Info("token validated")
+		flags.Debugging("token validated")
 	}
 	if user == "" {
 		return fmt.Errorf("empty user found")
 	}
-	flags.Info(fmt.Sprintf("user found: %s", user))
+	flags.Debugging(fmt.Sprintf("user found: %s", user))
 	if change {
-		flags.Info("user is new")
+		flags.Debugging("user is new")
 		userFile := flags.LocalFile(user)
 		if err := ioutil.WriteFile(userFile, []byte(flags.Token), perms); err != nil {
 			return err
@@ -115,7 +115,7 @@ func validate(flags core.ComposeFlags) error {
 			return fmt.Errorf("%s file not found", file)
 		}
 	}
-	flags.Info("validated")
+	flags.Debugging("validated")
 	return nil
 }
 
@@ -150,7 +150,7 @@ func server(flags core.ComposeFlags) error {
 			return nil
 		}
 	}
-	flags.Info("hash update")
+	flags.Debugging("hash update")
 	if err := ioutil.WriteFile(hash, []byte(flags.Hash), perms); err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 		}
 		path := filepath.Join(flags.Repo, name)
 		if id, ok := def.IsVLAN(name); ok {
-			flags.Info(fmt.Sprintf("%s (MAB)", name))
+			flags.Debugging(fmt.Sprintf("%s (MAB)", name))
 			sub, err := ioutil.ReadDir(path)
 			if err != nil {
 				return nil, err
@@ -195,7 +195,7 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 				if !ok {
 					continue
 				}
-				flags.Info(fmt.Sprintf(" -> %s", cleaned))
+				flags.Debugging(fmt.Sprintf(" -> %s", cleaned))
 				result = append(result, compose.NewHostapd(cleaned, cleaned, id))
 			}
 			continue
@@ -208,7 +208,7 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 		if !core.PathExists(secret) {
 			continue
 		}
-		flags.Info(fmt.Sprintf("%s (USER)", name))
+		flags.Debugging(fmt.Sprintf("%s (USER)", name))
 		b, err := ioutil.ReadFile(secret)
 		if err != nil {
 			return nil, err
@@ -218,6 +218,7 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 			core.WriteWarn("empty login name")
 			continue
 		}
+		loginName = core.NewUserLogin(name, loginName)
 		b, err = ioutil.ReadFile(possible)
 		if err != nil {
 			return nil, err
@@ -269,7 +270,7 @@ func getVLANs(flags core.ComposeFlags) (compose.Definition, error) {
 }
 
 func configure(flags core.ComposeFlags) error {
-	flags.Info("configuring")
+	flags.Debugging("configuring")
 	vlans, err := getVLANs(flags)
 	if err != nil {
 		return err
@@ -294,7 +295,7 @@ func configure(flags core.ComposeFlags) error {
 			return err
 		}
 		if same {
-			flags.Info("no hostapd changes")
+			flags.Debugging("no hostapd changes")
 			return nil
 		}
 	}
@@ -305,7 +306,7 @@ func configure(flags core.ComposeFlags) error {
 }
 
 func resetHostapd(flags core.ComposeFlags) error {
-	flags.Info("hostapd reset")
+	flags.Debugging("hostapd reset")
 	pids, err := piped(flags, []string{"pidof", "hostapd"})
 	if err != nil {
 		core.WriteWarn(fmt.Sprintf("unable to get hostapd pids: %v", err))
@@ -343,7 +344,7 @@ func build(flags core.ComposeFlags, force bool) error {
 				return err
 			}
 			if same {
-				flags.Info("no config changes found")
+				flags.Debugging("no config changes found")
 				return nil
 			}
 		}
@@ -365,7 +366,7 @@ func run() error {
 
 	target := filepath.Dir(flags.LocalFile(""))
 	if !core.PathExists(target) {
-		flags.Info("creating target")
+		flags.Debugging("creating target")
 		if err := os.Mkdir(target, 0700); err != nil {
 			return err
 		}
