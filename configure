@@ -8,8 +8,7 @@ if [ ! -d .git ]; then
     echo "please run from a git repository"
     exit 1
 fi
-VERS=$(git log -n 1 --format=%h)
-go run tools/configure.go --git $VERS $@
+go run tools/configure.go $@
 if [ $? -ne 0 ]; then
     echo "^^^ configuration failed ^^^"
     exit 1
