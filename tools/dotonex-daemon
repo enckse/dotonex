@@ -25,13 +25,12 @@ fi
 _init() {
     local pass cwd
     echo "setting up hostapd/dotonex"
-    sed -i "s/{PASSWORD}/$CERTKEY/g" /etc/dotonex/hostapd/certs/*.cnf /etc/dotonex/hostapd/hostapd.conf
     cwd=$PWD
     cd /etc/dotonex/hostapd/certs/ && ./bootstrap
     cd $cwd
 }
 
-
+sed -i "s/{PASSWORD}/$CERTKEY/g" /etc/dotonex/hostapd/certs/*.cnf /etc/dotonex/hostapd/hostapd.conf
 if [ ! -e $SETUP ]; then
     echo "performing first-time dotonex setup"
     _init >> $SETUP 2>&1
