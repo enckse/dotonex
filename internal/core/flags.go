@@ -3,6 +3,7 @@ package core
 import (
 	"flag"
 	"fmt"
+	"os"
 	"path/filepath"
 )
 
@@ -21,6 +22,7 @@ type (
 		Hash    string
 		MAC     string
 		Token   string
+		Debug   bool
 		Command []string
 	}
 )
@@ -50,7 +52,16 @@ const (
 	ModeBuild = "build"
 	// ModeRebuild will force rebuild
 	ModeRebuild = "rebuild"
+	// DebugEnvOn indicates environment variable debugging is on for processes
+	DebugEnvOn = "true"
+	DebugEnvVariable = "DOTONEX_DEBUG"
 )
+
+func (c ComposeFlags) Info(message string) {
+	if c.Debug {
+		WriteInfo(message)
+	}
+}
 
 // LocalFile gets a local file from the configuration store
 func (c ComposeFlags) LocalFile(name string) string {
@@ -88,11 +99,13 @@ func GetComposeFlags() ComposeFlags {
 	token := flag.String(tokenFlag, "", "token to validate")
 	flag.Parse()
 	args := flag.Args()
+	debug := os.Getenv(DebugEnvVariable) == DebugEnvOn
 	return ComposeFlags{Mode: *mode,
 		Repo:    *repo,
 		MAC:     *mac,
 		Token:   *token,
 		Hash:    *hash,
+		Debug:   debug,
 		Command: args}
 }
 

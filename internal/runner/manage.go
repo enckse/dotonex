@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -41,6 +42,9 @@ func (s script) execute(flags core.ComposeFlags) bool {
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, s.binary, arguments...)
+	if s.debug {
+		cmd.Env = append(os.Environ(), fmt.Sprintf("%s=%s", core.DebugEnvVariable, core.DebugEnvOn))
+	}
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()

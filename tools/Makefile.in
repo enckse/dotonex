@@ -48,3 +48,8 @@ install:
 	install -Dm600 clients $(DESTDIR)/var/lib/dotonex/clients
 	install -Dm600 secrets $(DESTDIR)/var/lib/dotonex/secrets
 	install -Dm600 env $(DESTDIR)/etc/dotonex/env
+
+uninstall:
+	rm -rf $(DESTDIR)/etc/dotonex
+	rm -rf $(DESTDIR)/var/cache/dotonex
+	rm -rf $(DESTDIR)/var/lib/dotonex
