@@ -2,6 +2,7 @@
 
 TAG={{ .HostapdVersion }}
 export CFLAGS="{{ .CFlags }}"
+export LDFLAGS="{{ .LDFlags }}"
 if [ ! -d hostap ]; then
     git clone git://w1.fi/hostap.git hostap
 fi

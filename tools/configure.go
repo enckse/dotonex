@@ -33,6 +33,7 @@ type (
 		Static           string
 		GitVersion       string
 		CFlags           string
+		LDFlags          string
 	}
 
 	// Config generation
@@ -83,12 +84,10 @@ func (m *Make) fail(err error, exit bool) {
 	}
 }
 
-/*
-LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"*/
-
 func main() {
 	hostapd := flag.String(hostapdFlag, "hostap_2_9", "hostapd version to build")
-	cFlags := flag.String("cflags", "-march=x86-64 -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for builds")
+	cFlags := flag.String("cflags", "-march=x86-64 -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for hostapd build")
+	ldFlags := flag.String("ldflags", "-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now", "LDFLAGS for hostapd build")
 	buildOnly := flag.Bool("development", false, "development build only, no setup/install")
 	doGitlab := flag.Bool(gitlabFlag, true, "enable gitlab configuration")
 	gitlabFQDN := flag.String(gitlabFQDNFlag, "", "gitlab fully-qualified-domain-name")
@@ -98,7 +97,7 @@ func main() {
 	sharedKey := flag.String(sharedFlag, "", "shared radius key for all users given unique tokens")
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
-	m := Make{CFlags: *cFlags, GitVersion: *git, BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m := Make{CFlags: *cFlags, LDFlags: *ldFlags, GitVersion: *git, BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
 	cleanup := generated
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
