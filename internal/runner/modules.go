@@ -158,30 +158,33 @@ func checkUserMac(p *ClientPacket) error {
 	}
 	token := userName
 	calling = clean(calling)
-	success := true
 	var failure error
-	valid := true
+	reason := ""
 	cleaned, isMAC := core.CleanMAC(calling)
 	if isMAC {
+		// MAB case is if the calling != clean the token
 		if calling != clean(token) {
-			valid = false
 			token = core.GetTokenFromLogin(token)
-			if token != "" {
-				valid = CheckTokenMAC(token, cleaned)
+			if token == "" {
+				reason = "INVALIDTOKEN"
+			} else {
+				reason = "TOKENMACFAIL"
+				if CheckTokenMAC(token, cleaned) {
+					reason = ""
+				}
 			}
 		}
 	} else {
-		valid = false
+		reason = "INVALIDMAC"
 	}
-	if !valid {
-		failure = fmt.Errorf("failed preauth: %s %s", userName, calling)
-		success = false
+	if reason != "" {
+		failure = fmt.Errorf("failed preauth: %s %s (%s)", userName, calling, reason)
 	}
-	go mark(success, userName, calling, p, false)
+	go mark(reason, userName, calling, p, false)
 	return failure
 }
 
-func mark(success bool, user, calling string, p *ClientPacket, cached bool) {
+func mark(reason, user, calling string, p *ClientPacket, cached bool) {
 	nas := clean(rfc2865.NASIdentifier_GetString(p.Packet))
 	if len(nas) == 0 {
 		nas = "unknown"
@@ -200,11 +203,15 @@ func mark(success bool, user, calling string, p *ClientPacket, cached bool) {
 	}
 	nasport := rfc2865.NASPort_Get(p.Packet)
 	result := "PASSED"
-	if !success {
+	showReason := reason != ""
+	if showReason {
 		result = "FAILED"
 	}
 	kv := keyValueStore{}
 	kv.add("Result", result)
+	if showReason {
+		kv.add("Reason", reason)
+	}
 	kv.add("User-Name", user)
 	kv.add("Calling-Station-Id", calling)
 	kv.add("NAS-Id", nas)

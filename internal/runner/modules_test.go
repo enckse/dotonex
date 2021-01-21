@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"testing"
 
 	"layeh.com/radius"
@@ -35,8 +36,10 @@ func TestKeyValueStrings(t *testing.T) {
 }
 
 func TestUserMacBasics(t *testing.T) {
-	newTestSet(t, "user:test", "11-22-33-44-55-66", true)
-	newTestSet(t, "user:test", "12-22-33-44-55-66", false)
+	newTestSet(t, "user:test", "11-22-33-44-55-66", true, "")
+	newTestSet(t, "user:test@vlan.test", "11-22-33-44-55-66", true, "")
+	newTestSet(t, "test", "11-22-33-44-55-66", false, "INVALIDTOKEN")
+	newTestSet(t, "user:test", "12-22-33-44-55-66", false, "TOKENMACFAIL")
 }
 
 func ErrorIfNotPre(t *testing.T, p *ClientPacket, message string) {
@@ -52,7 +55,7 @@ func ErrorIfNotPre(t *testing.T, p *ClientPacket, message string) {
 	}
 }
 
-func newTestSet(t *testing.T, user, mac string, valid bool) *ClientPacket {
+func newTestSet(t *testing.T, user, mac string, valid bool, reason string) *ClientPacket {
 	SetAllowed([]string{"test/112233445566"})
 	var secret = []byte("secret")
 	p := NewClientPacket(nil, nil)
@@ -69,15 +72,15 @@ func newTestSet(t *testing.T, user, mac string, valid bool) *ClientPacket {
 		ErrorIfNotPre(t, p, "")
 	}
 	if !valid {
-		ErrorIfNotPre(t, p, "failed preauth: user:test "+clean(mac))
+		ErrorIfNotPre(t, p, fmt.Sprintf("failed preauth: %s %s (%s)", user, clean(mac), reason))
 	}
 	return p
 }
 
 func TestUserMacCache(t *testing.T) {
-	pg := newTestSet(t, "user:test", "11-22-33-44-55-66", true)
-	pb := newTestSet(t, "user:test", "11-22-33-44-55-68", false)
-	first := "failed preauth: user:test 112233445568"
+	pg := newTestSet(t, "user:test", "11-22-33-44-55-66", true, "")
+	pb := newTestSet(t, "user:test", "11-22-33-44-55-68", false, "TOKENMACFAIL")
+	first := "failed preauth: user:test 112233445568 (TOKENMACFAIL)"
 	ErrorIfNotPre(t, pg, "")
 	ErrorIfNotPre(t, pb, first)
 }
