@@ -1,8 +1,13 @@
 package core
 
 import (
+	"fmt"
 	"os"
 	"strings"
+)
+
+const (
+	userVLANLogin = "@vlan."
 )
 
 // PathExists reports if a path exists or does not exist
@@ -21,6 +26,20 @@ func IntegerIn(i int, list []int) bool {
 		}
 	}
 	return false
+}
+
+// NewUserVLANLogin creates a new user+vlan login name
+func NewUserVLANLogin(user, vlan string) string {
+	return fmt.Sprintf("%s%s%s", user, userVLANLogin, vlan)
+}
+
+// GetUserFromVLANLogin gets the user part from a FQDN user+vlan login
+func GetUserFromVLANLogin(input string) string {
+	if !strings.Contains(input, userVLANLogin) {
+		return input
+	}
+	parts := strings.Split(input, userVLANLogin)
+	return parts[0]
 }
 
 // CleanMAC will clean a MAC and check that it is valid

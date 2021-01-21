@@ -242,7 +242,7 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 				result = append(result, compose.NewHostapd(loginName, hash, id))
 				first = false
 			}
-			result = append(result, compose.NewHostapd(fmt.Sprintf("%s:%s", member.VLAN, loginName), hash, id))
+			result = append(result, compose.NewHostapd(core.NewUserVLANLogin(loginName, member.VLAN), hash, id))
 		}
 	}
 	return result, nil

@@ -3,13 +3,6 @@ radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:2
 
-"abc:token" PEAP
-
-"abc:token" MSCHAPV2 hash:HASH [2]
-radius_accept_attr=64:d:13
-radius_accept_attr=65:d:6
-radius_accept_attr=81:s:1
-
 "token" PEAP
 
 "token" MSCHAPV2 hash:HASH [2]
@@ -17,9 +10,16 @@ radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:1
 
-"xyz:token" PEAP
+"token@vlan.abc" PEAP
 
-"xyz:token" MSCHAPV2 hash:HASH [2]
+"token@vlan.abc" MSCHAPV2 hash:HASH [2]
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:1
+
+"token@vlan.xyz" PEAP
+
+"token@vlan.xyz" MSCHAPV2 hash:HASH [2]
 radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:2

@@ -13,6 +13,21 @@ func TestIn(t *testing.T) {
 	}
 }
 
+func TestUserVLANLogin(t *testing.T) {
+	if NewUserVLANLogin("user", "test") != "user@vlan.test" {
+		t.Error("invalid user/vlan login")
+	}
+}
+
+func TestGetUserVLAN(t *testing.T) {
+	if GetUserFromVLANLogin("user") != "user" {
+		t.Error("no vlan indicator")
+	}
+	if GetUserFromVLANLogin("user@vlan.t") != "user" {
+		t.Error("invalid parse")
+	}
+}
+
 func TestCleanMAC(t *testing.T) {
 	mac, ok := CleanMAC("aba")
 	if ok {
