@@ -94,10 +94,10 @@ sudo systemctl enable dotonex.service
 
 ### builds
 
-Builds can use the `-build-only` boolean to disable install setups/requirements
+Builds can use the `-development` boolean to disable install setups/requirements for developmental efforts
 
 ```
-./configure -build-only
+./configure -development
 ```
 
 and then to build and run tests

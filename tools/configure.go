@@ -31,6 +31,7 @@ type (
 		file             string
 		Configuration    *Config
 		Static           string
+		GitVersion       string
 	}
 
 	// Config generation
@@ -54,6 +55,7 @@ const (
 	sharedFlag     = "shared-key"
 	radiusFlag     = "radius-key"
 	toolDir        = "tools"
+	gitFlag        = "git"
 )
 
 func show(cat, message string) {
@@ -82,15 +84,16 @@ func (m *Make) fail(err error, exit bool) {
 
 func main() {
 	hostapd := flag.String(hostapdFlag, "hostap_2_9", "hostapd version to build")
-	buildOnly := flag.Bool("build-only", false, "build only, no setup/install")
+	buildOnly := flag.Bool("development", false, "development build only, no setup/install")
 	doGitlab := flag.Bool(gitlabFlag, true, "enable gitlab configuration")
 	gitlabFQDN := flag.String(gitlabFQDNFlag, "", "gitlab fully-qualified-domain-name")
 	repo := flag.String(repoFlag, "", "server repository for backend management")
+	git := flag.String(gitFlag, "", "git commit")
 	radiusKey := flag.String(radiusFlag, "", "radius key between server and networking components")
 	sharedKey := flag.String(sharedFlag, "", "shared radius key for all users given unique tokens")
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
-	m := Make{BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m := Make{GitVersion: *git, BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
 	cleanup := generated
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -111,6 +114,7 @@ func main() {
 		}
 	}
 	m.errored = false
+	m.nonEmptyFatal("", gitFlag, m.GitVersion)
 	m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
 	defaults := true
 	defaultGitlab := true

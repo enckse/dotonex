@@ -4,7 +4,12 @@ if [ $? -ne 0 ]; then
     echo "go not found"
     exit 1
 fi
-go run tools/configure.go $@
+if [ ! -d .git ]; then
+    echo "please run from a git repository"
+    exit 1
+fi
+VERS=$(git log -n 1 --format=%h)
+go run tools/configure.go --git $VERS $@
 if [ $? -ne 0 ]; then
     echo "^^^ configuration failed ^^^"
     exit 1

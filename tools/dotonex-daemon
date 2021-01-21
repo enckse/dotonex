@@ -6,6 +6,7 @@ REPO=/var/cache/dotonex/config
 
 if [ -e $ENV ]; then
     source $ENV
+    echo "version: $VERSION"
 fi
 
 if [ ! -z "$SERVER_REPO" ]; then
