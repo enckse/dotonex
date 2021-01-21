@@ -9,3 +9,4 @@ secrets
 plugins/**/tests/
 dotonex*
 hostap/hostap/
+hostap/configure

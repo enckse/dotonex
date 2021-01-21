@@ -32,6 +32,7 @@ type (
 		Configuration    *Config
 		Static           string
 		GitVersion       string
+		CFlags           string
 	}
 
 	// Config generation
@@ -82,8 +83,12 @@ func (m *Make) fail(err error, exit bool) {
 	}
 }
 
+/*
+LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"*/
+
 func main() {
 	hostapd := flag.String(hostapdFlag, "hostap_2_9", "hostapd version to build")
+	cFlags := flag.String("cflags", "-march=x86-64 -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for builds")
 	buildOnly := flag.Bool("development", false, "development build only, no setup/install")
 	doGitlab := flag.Bool(gitlabFlag, true, "enable gitlab configuration")
 	gitlabFQDN := flag.String(gitlabFQDNFlag, "", "gitlab fully-qualified-domain-name")
@@ -93,7 +98,7 @@ func main() {
 	sharedKey := flag.String(sharedFlag, "", "shared radius key for all users given unique tokens")
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
-	m := Make{GitVersion: *git, BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m := Make{CFlags: *cFlags, GitVersion: *git, BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
 	cleanup := generated
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -143,28 +148,22 @@ func main() {
 	}
 	for _, file := range []string{"Makefile", "clients", "env", "secrets"} {
 		show("generating", file)
-		b, err := ioutil.ReadFile(filepath.Join(toolDir, file+".in"))
+		tmpl, err := getTemplate(file)
 		if err != nil {
 			m.fail(err, true)
 		}
-		tmpl, err := template.New(file).Parse(string(b))
-		if err != nil {
-			m.fail(err, true)
-		}
-		var buffer bytes.Buffer
-		if err := tmpl.Execute(&buffer, &m); err != nil {
-			m.fail(err, true)
-		}
-		if err := ioutil.WriteFile(file, buffer.Bytes(), 0644); err != nil {
+		if err := writeTemplate(tmpl, file, m, 0644); err != nil {
 			m.fail(err, true)
 		}
 	}
-
-	b, err := ioutil.ReadFile(filepath.Join(toolDir, "conf.in"))
+	tmpl, err := getTemplate("hostapd.configure")
 	if err != nil {
 		m.fail(err, true)
 	}
-	tmpl, err := template.New("script").Parse(string(b))
+	if err := writeTemplate(tmpl, filepath.Join("hostap", "configure"), m, 0755); err != nil {
+		m.fail(err, true)
+	}
+	tmpl, err = getTemplate("conf")
 	if err != nil {
 		m.fail(err, true)
 	}
@@ -174,12 +173,31 @@ func main() {
 		m.Configuration = c
 		output := c.file + core.InstanceConfig
 		show("configs", output)
-		var b bytes.Buffer
-		if err := tmpl.Execute(&b, &m); err != nil {
-			m.fail(err, true)
-		}
-		if err := ioutil.WriteFile(output, b.Bytes(), 0644); err != nil {
+		if err := writeTemplate(tmpl, output, m, 0644); err != nil {
 			m.fail(err, true)
 		}
 	}
+}
+
+func writeTemplate(tmpl *template.Template, file string, m Make, mode os.FileMode) error {
+	var buffer bytes.Buffer
+	if err := tmpl.Execute(&buffer, &m); err != nil {
+		m.fail(err, true)
+	}
+	if err := ioutil.WriteFile(file, buffer.Bytes(), mode); err != nil {
+		m.fail(err, true)
+	}
+	return nil
+}
+
+func getTemplate(file string) (*template.Template, error) {
+	b, err := ioutil.ReadFile(filepath.Join(toolDir, file+".in"))
+	if err != nil {
+		return nil, err
+	}
+	tmpl, err := template.New(file).Parse(string(b))
+	if err != nil {
+		return nil, err
+	}
+	return tmpl, err
 }
