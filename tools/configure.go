@@ -34,6 +34,7 @@ type (
 		GitVersion       string
 		CFlags           string
 		LDFlags          string
+		CertKey          string
 	}
 
 	// Config generation
@@ -58,6 +59,7 @@ const (
 	radiusFlag     = "radius-key"
 	toolDir        = "tools"
 	gitFlag        = "git"
+	certKeyFlag    = "hostapd-certkey"
 )
 
 func show(cat, message string) {
@@ -88,6 +90,7 @@ func main() {
 	hostapd := flag.String(hostapdFlag, "hostap_2_9", "hostapd version to build")
 	cFlags := flag.String("cflags", "-march=x86-64 -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for hostapd build")
 	ldFlags := flag.String("ldflags", "-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now", "LDFLAGS for hostapd build")
+	certKey := flag.String(certKeyFlag, "", "hostapd certificate password key")
 	buildOnly := flag.Bool("development", false, "development build only, no setup/install")
 	doGitlab := flag.Bool(gitlabFlag, true, "enable gitlab configuration")
 	gitlabFQDN := flag.String(gitlabFQDNFlag, "", "gitlab fully-qualified-domain-name")
@@ -97,7 +100,7 @@ func main() {
 	sharedKey := flag.String(sharedFlag, "", "shared radius key for all users given unique tokens")
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
-	m := Make{CFlags: *cFlags, LDFlags: *ldFlags, GitVersion: *git, BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m := Make{CertKey: *certKey, CFlags: *cFlags, LDFlags: *ldFlags, GitVersion: *git, BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
 	cleanup := generated
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -127,6 +130,7 @@ func main() {
 		defaults = false
 		m.nonEmptyFatal("", radiusFlag, m.RADIUSKey)
 		m.nonEmptyFatal("", sharedFlag, m.SharedKey)
+		m.nonEmptyFatal("", certKeyFlag, m.CertKey)
 		if m.Gitlab {
 			m.Static = "false"
 			defaultGitlab = false
@@ -141,6 +145,7 @@ func main() {
 		}
 	}
 	if defaults {
+		m.CertKey = "certkey"
 		m.RADIUSKey = "radiuskey"
 		m.SharedKey = "sharedkey"
 	}

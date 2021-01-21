@@ -4,10 +4,12 @@ SETUP=$LIBRARY/setup.log
 ENV=/etc/dotonex/env
 REPO=/var/cache/dotonex/config
 
-if [ -e $ENV ]; then
-    source $ENV
-    echo "version: $VERSION"
+if [ ! -e $ENV ]; then
+    echo "required environment file missing: $ENV"
+    exit 1
 fi
+source $ENV
+echo "version: $VERSION"
 
 if [ ! -z "$SERVER_REPO" ]; then
     if [ ! -d $REPO ]; then
@@ -20,15 +22,10 @@ if [ $UID -ne 0 ]; then
     exit 1
 fi
 
-_random-string() {
-    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
-}
-
 _init() {
     local pass cwd
     echo "setting up hostapd/dotonex"
-    pass=$(_random-string)
-    sed -i "s/{PASSWORD}/$pass/g" /etc/dotonex/hostapd/certs/*.cnf /etc/dotonex/hostapd/hostapd.conf
+    sed -i "s/{PASSWORD}/$CERTKEY/g" /etc/dotonex/hostapd/certs/*.cnf /etc/dotonex/hostapd/hostapd.conf
     cwd=$PWD
     cd /etc/dotonex/hostapd/certs/ && ./bootstrap
     cd $cwd
