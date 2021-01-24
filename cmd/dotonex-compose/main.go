@@ -28,7 +28,7 @@ func main() {
 	}
 }
 
-func piped(flags core.ComposeFlags, args []string) (string, error) {
+func piped(wrapper core.ComposeFlags, args []string) (string, error) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	cmd := exec.Command(args[0], args[1:]...)
@@ -39,29 +39,29 @@ func piped(flags core.ComposeFlags, args []string) (string, error) {
 	}
 	o := strings.TrimSpace(stdout.String())
 	if len(o) > 0 {
-		flags.Debugging("stdout")
-		flags.Debugging(o)
+		wrapper.Debugging("stdout")
+		wrapper.Debugging(o)
 	}
 	e := stderr.String()
 	if len(e) > 0 {
-		flags.Debugging("stderr")
-		flags.Debugging(e)
+		wrapper.Debugging("stderr")
+		wrapper.Debugging(e)
 		return "", fmt.Errorf("command errored")
 	}
 	return o, nil
 }
 
-func validate(flags core.ComposeFlags) error {
-	flags.Debugging("validating inputs")
-	mac, ok := core.CleanMAC(flags.MAC)
+func validate(wrapper core.ComposeFlags) error {
+	wrapper.Debugging("validating inputs")
+	mac, ok := core.CleanMAC(wrapper.MAC)
 	if !ok {
 		return fmt.Errorf("invalid MAC")
 	}
-	hash := core.MD4(flags.Token)
-	tokenFile := flags.LocalFile(hash)
+	hash := core.MD4(wrapper.Token)
+	tokenFile := wrapper.LocalFile(hash)
 	user := ""
 	if core.PathExists(tokenFile) {
-		flags.Debugging("token is known")
+		wrapper.Debugging("token is known")
 		b, err := ioutil.ReadFile(tokenFile)
 		if err != nil {
 			return err
@@ -71,57 +71,57 @@ func validate(flags core.ComposeFlags) error {
 	change := false
 	if user == "" {
 		command := []string{}
-		for _, c := range flags.Command {
+		for _, c := range wrapper.Command {
 			text := c
 			if strings.Contains(c, "%s") {
-				text = fmt.Sprintf(c, flags.Token)
+				text = fmt.Sprintf(c, wrapper.Token)
 			}
 			command = append(command, text)
 		}
-		output, err := piped(flags, command)
+		output, err := piped(wrapper, command)
 		if err != nil {
 			return err
 		}
 		user, err = compose.TryGetUser([]byte(output), func(possibleUser string) bool {
-			return core.PathExists(filepath.Join(flags.Repo, possibleUser))
+			return core.PathExists(filepath.Join(wrapper.Repo, possibleUser))
 		})
 		if err != nil {
 			return err
 		}
-		flags.Debugging(fmt.Sprintf("%s token changed", user))
+		wrapper.Debugging(fmt.Sprintf("%s token changed", user))
 		if err := ioutil.WriteFile(tokenFile, []byte(user), perms); err != nil {
 			return err
 		}
 		change = true
-		flags.Debugging("token validated")
+		wrapper.Debugging("token validated")
 	}
 	if user == "" {
 		return fmt.Errorf("empty user found")
 	}
-	flags.Debugging(fmt.Sprintf("user found: %s", user))
+	wrapper.Debugging(fmt.Sprintf("user found: %s", user))
 	if change {
-		flags.Debugging("user is new")
-		userFile := flags.LocalFile(user)
-		if err := ioutil.WriteFile(userFile, []byte(flags.Token), perms); err != nil {
+		wrapper.Debugging("user is new")
+		userFile := wrapper.LocalFile(user)
+		if err := ioutil.WriteFile(userFile, []byte(wrapper.Token), perms); err != nil {
 			return err
 		}
-		if err := build(flags, true); err != nil {
+		if err := build(wrapper, true); err != nil {
 			return err
 		}
 	}
-	userDir := filepath.Join(flags.Repo, user)
+	userDir := filepath.Join(wrapper.Repo, user)
 	for _, file := range []string{mac, vlanConfig} {
 		if !core.PathExists(filepath.Join(userDir, file)) {
 			return fmt.Errorf("%s file not found", file)
 		}
 	}
-	flags.Debugging("validated")
+	wrapper.Debugging("validated")
 	return nil
 }
 
-func fetch(flags core.ComposeFlags) error {
+func fetch(wrapper core.ComposeFlags) error {
 	for _, cmd := range []string{"fetch", "pull"} {
-		command := exec.Command("git", "-C", flags.Repo, cmd)
+		command := exec.Command("git", "-C", wrapper.Repo, cmd)
 		command.Stdout = os.Stdout
 		command.Stderr = os.Stderr
 		if err := command.Run(); err != nil {
@@ -139,10 +139,10 @@ func compareFileToText(file, text string) (bool, error) {
 	return text == string(b), nil
 }
 
-func server(flags core.ComposeFlags) error {
-	hash := flags.LocalFile(serverHash)
+func server(wrapper core.ComposeFlags) error {
+	hash := wrapper.LocalFile(serverHash)
 	if core.PathExists(hash) {
-		same, err := compareFileToText(hash, flags.Hash)
+		same, err := compareFileToText(hash, wrapper.Hash)
 		if err != nil {
 			return err
 		}
@@ -150,15 +150,15 @@ func server(flags core.ComposeFlags) error {
 			return nil
 		}
 	}
-	flags.Debugging("hash update")
-	if err := ioutil.WriteFile(hash, []byte(flags.Hash), perms); err != nil {
+	wrapper.Debugging("hash update")
+	if err := ioutil.WriteFile(hash, []byte(wrapper.Hash), perms); err != nil {
 		return err
 	}
-	return build(flags, true)
+	return build(wrapper, true)
 }
 
-func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Hostapd, error) {
-	hashFile := flags.LocalFile(serverHash)
+func getHostapd(wrapper core.ComposeFlags, def compose.Definition) ([]compose.Hostapd, error) {
+	hashFile := wrapper.LocalFile(serverHash)
 	if !core.PathExists(hashFile) {
 		return nil, fmt.Errorf("no server hash found")
 	}
@@ -167,7 +167,7 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 		return nil, err
 	}
 	hash := string(b)
-	dirs, err := ioutil.ReadDir(flags.Repo)
+	dirs, err := ioutil.ReadDir(wrapper.Repo)
 	if err != nil {
 		return nil, err
 	}
@@ -183,9 +183,9 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 		if name == core.ComposeTarget {
 			continue
 		}
-		path := filepath.Join(flags.Repo, name)
+		path := filepath.Join(wrapper.Repo, name)
 		if id, ok := def.IsVLAN(name); ok {
-			flags.Debugging(fmt.Sprintf("%s (MAB)", name))
+			wrapper.Debugging(fmt.Sprintf("%s (MAB)", name))
 			sub, err := ioutil.ReadDir(path)
 			if err != nil {
 				return nil, err
@@ -195,7 +195,7 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 				if !ok {
 					continue
 				}
-				flags.Debugging(fmt.Sprintf(" -> %s", cleaned))
+				wrapper.Debugging(fmt.Sprintf(" -> %s", cleaned))
 				result = append(result, compose.NewHostapd(cleaned, cleaned, id))
 			}
 			continue
@@ -204,11 +204,11 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 		if !core.PathExists(possible) {
 			continue
 		}
-		secret := flags.LocalFile(name)
+		secret := wrapper.LocalFile(name)
 		if !core.PathExists(secret) {
 			continue
 		}
-		flags.Debugging(fmt.Sprintf("%s (USER)", name))
+		wrapper.Debugging(fmt.Sprintf("%s (USER)", name))
 		b, err := ioutil.ReadFile(secret)
 		if err != nil {
 			return nil, err
@@ -249,8 +249,8 @@ func getHostapd(flags core.ComposeFlags, def compose.Definition) ([]compose.Host
 	return result, nil
 }
 
-func getVLANs(flags core.ComposeFlags) (compose.Definition, error) {
-	cfg := filepath.Join(flags.Repo, vlanConfig)
+func getVLANs(wrapper core.ComposeFlags) (compose.Definition, error) {
+	cfg := filepath.Join(wrapper.Repo, vlanConfig)
 	d := compose.Definition{}
 	if !core.PathExists(cfg) {
 		return d, fmt.Errorf("no root vlan config found")
@@ -269,13 +269,13 @@ func getVLANs(flags core.ComposeFlags) (compose.Definition, error) {
 	return d, nil
 }
 
-func configure(flags core.ComposeFlags) error {
-	flags.Debugging("configuring")
-	vlans, err := getVLANs(flags)
+func configure(wrapper core.ComposeFlags) error {
+	wrapper.Debugging("configuring")
+	vlans, err := getVLANs(wrapper)
 	if err != nil {
 		return err
 	}
-	hostapd, err := getHostapd(flags, vlans)
+	hostapd, err := getHostapd(wrapper, vlans)
 	if err != nil {
 		return err
 	}
@@ -287,7 +287,7 @@ func configure(flags core.ComposeFlags) error {
 		return fmt.Errorf("no hostapd configurations found")
 	}
 	sort.Strings(eapUsers)
-	hostapdFile := filepath.Join(flags.Repo, core.ComposeTarget, "eap_users")
+	hostapdFile := filepath.Join(wrapper.Repo, core.ComposeTarget, "eap_users")
 	hostapdText := strings.Join(eapUsers, "\n\n") + "\n"
 	if core.PathExists(hostapdFile) {
 		same, err := compareFileToText(hostapdFile, hostapdText)
@@ -295,19 +295,19 @@ func configure(flags core.ComposeFlags) error {
 			return err
 		}
 		if same {
-			flags.Debugging("no hostapd changes")
+			wrapper.Debugging("no hostapd changes")
 			return nil
 		}
 	}
 	if err := ioutil.WriteFile(hostapdFile, []byte(hostapdText), perms); err != nil {
 		return err
 	}
-	return resetHostapd(flags)
+	return resetHostapd(wrapper)
 }
 
-func resetHostapd(flags core.ComposeFlags) error {
-	flags.Debugging("hostapd reset")
-	pids, err := piped(flags, []string{"pidof", "hostapd"})
+func resetHostapd(wrapper core.ComposeFlags) error {
+	wrapper.Debugging("hostapd reset")
+	pids, err := piped(wrapper, []string{"pidof", "hostapd"})
 	if err != nil {
 		core.WriteWarn(fmt.Sprintf("unable to get hostapd pids: %v", err))
 		return nil
@@ -327,9 +327,9 @@ func resetHostapd(flags core.ComposeFlags) error {
 	return nil
 }
 
-func build(flags core.ComposeFlags, force bool) error {
+func build(wrapper core.ComposeFlags, force bool) error {
 	if !force {
-		last, err := piped(flags, []string{"git", "-C", flags.Repo, "log", "-n", "1", "--format=%h"})
+		last, err := piped(wrapper, []string{"git", "-C", wrapper.Repo, "log", "-n", "1", "--format=%h"})
 		if err != nil {
 			return err
 		}
@@ -337,14 +337,14 @@ func build(flags core.ComposeFlags, force bool) error {
 		if len(last) == 0 {
 			return fmt.Errorf("no commit retrieved")
 		}
-		lastFile := flags.LocalFile("commit")
+		lastFile := wrapper.LocalFile("commit")
 		if core.PathExists(lastFile) {
 			same, err := compareFileToText(lastFile, last)
 			if err != nil {
 				return err
 			}
 			if same {
-				flags.Debugging("no config changes found")
+				wrapper.Debugging("no config changes found")
 				return nil
 			}
 		}
@@ -352,42 +352,42 @@ func build(flags core.ComposeFlags, force bool) error {
 			return err
 		}
 	}
-	return configure(flags)
+	return configure(wrapper)
 }
 
 func run() error {
-	flags := core.GetComposeFlags()
-	if !flags.Valid() {
+	wrapper := core.GetComposeFlags()
+	if !wrapper.Valid() {
 		return fmt.Errorf("invalid arguments")
 	}
-	if !core.PathExists(flags.Repo) {
+	if !core.PathExists(wrapper.Repo) {
 		return fmt.Errorf("repository invalid/does not exist")
 	}
 
-	target := filepath.Dir(flags.LocalFile(""))
+	target := filepath.Dir(wrapper.LocalFile(""))
 	if !core.PathExists(target) {
-		flags.Debugging("creating target")
+		wrapper.Debugging("creating target")
 		if err := os.Mkdir(target, 0700); err != nil {
 			return err
 		}
 	}
-	switch flags.Mode {
+	switch wrapper.Mode {
 	case core.ModeValidate:
-		if len(flags.Command) == 0 || len(flags.Token) == 0 || len(flags.MAC) == 0 {
+		if len(wrapper.Command) == 0 || len(wrapper.Token) == 0 || len(wrapper.MAC) == 0 {
 			return fmt.Errorf("missing flags for validation")
 		}
-		return validate(flags)
+		return validate(wrapper)
 	case core.ModeServer:
-		if len(flags.Hash) == 0 {
+		if len(wrapper.Hash) == 0 {
 			return fmt.Errorf("missing flags for server")
 		}
-		return server(flags)
+		return server(wrapper)
 	case core.ModeFetch:
-		return fetch(flags)
+		return fetch(wrapper)
 	case core.ModeBuild:
-		return build(flags, false)
+		return build(wrapper, false)
 	case core.ModeRebuild:
-		return build(flags, true)
+		return build(wrapper, true)
 	default:
 		return fmt.Errorf("unknown mode")
 	}
