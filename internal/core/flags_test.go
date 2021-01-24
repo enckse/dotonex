@@ -4,13 +4,6 @@ import (
 	"testing"
 )
 
-func TestComposeLocalFile(t *testing.T) {
-	c := ComposeFlags{Repo: "test"}
-	if "test/bin/file.db" != c.LocalFile("file") {
-		t.Error("invalid file result")
-	}
-}
-
 func TestComposeArgs(t *testing.T) {
 	c := ComposeFlags{}
 	if len(c.Args()) != 0 {

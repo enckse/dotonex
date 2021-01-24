@@ -2,7 +2,41 @@ package compose
 
 import (
 	"testing"
+
+	"github.com/tidwall/buntdb"
 )
+
+func TestNewKey(t *testing.T) {
+	s := Store{}
+	if "serverhash=>key" != s.NewKey(ServerHashKey, "key") {
+		t.Error("invalid key")
+	}
+}
+
+func TestSaveGet(t *testing.T) {
+	s := Store{}
+	db, err := buntdb.Open(":memory:")
+	if err != nil {
+		t.Error("memory db failed")
+	}
+	defer db.Close()
+	s.db = db
+	val, ok, err := s.Get("TEST")
+	if ok || err != nil || val != "" {
+		t.Error("not found")
+	}
+	err = s.Save("TEST", "TEST2")
+	if err != nil {
+		t.Error("unable to save")
+	}
+	val, ok, err = s.Get("TEST")
+	if err != nil || !ok {
+		t.Error("invalid response")
+	}
+	if val != "TEST2" {
+		t.Error("wrong value")
+	}
+}
 
 func TestValidateMembership(t *testing.T) {
 	d := Definition{}

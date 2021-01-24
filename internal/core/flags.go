@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 type (
@@ -37,9 +36,6 @@ const (
 	macFlag      = "mac"
 	tokenFlag    = "token"
 	hashFlag     = "hash"
-	// ComposeTarget for composition/config outputs
-	ComposeTarget = "bin"
-	composeData   = ".db"
 	// InstanceConfig indicates a configuration file of instance type
 	InstanceConfig = ".conf"
 	// ModeValidate tells configuration to validate a user+mac
@@ -63,11 +59,6 @@ func (c ComposeFlags) Debugging(message string) {
 	if c.Debug {
 		WriteInfo(message)
 	}
-}
-
-// LocalFile gets a local file from the configuration store
-func (c ComposeFlags) LocalFile(name string) string {
-	return filepath.Join(c.Repo, ComposeTarget, name+composeData)
 }
 
 func argIfSet(flag, value string, appendTo []string) []string {

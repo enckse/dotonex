@@ -3,6 +3,16 @@ package compose
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/tidwall/buntdb"
+	"voidedtech.com/dotonex/internal/core"
+)
+
+const (
+	ServerHashKey Category = "serverhash"
+	CommitKey     Category = "commit"
+	SecretKey     Category = "secret"
+	UserKey       Category = "user"
 )
 
 var (
@@ -10,6 +20,8 @@ var (
 )
 
 type (
+	Category string
+
 	userMap map[string]interface{}
 
 	// GetUser is a callback to verify if a user is valid within the backend system
@@ -29,7 +41,49 @@ type (
 		VLANs      []VLAN
 		Membership []Member
 	}
+
+	// Store is backend handling of data
+	Store struct {
+		core.ComposeFlags
+		db *buntdb.DB
+	}
 )
+
+func (s Store) Get(key string) (string, bool, error) {
+	var val string
+	rErr := s.db.View(func(tx *buntdb.Tx) error {
+		var err error
+		val, err = tx.Get(key)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("value is %s\n", val)
+		return nil
+	})
+	if rErr == nil {
+		return val, true, nil
+	}
+	if rErr == buntdb.ErrNotFound {
+		return "", false, nil
+	}
+	return "", false, rErr
+}
+
+func (s Store) Save(key, value string) error {
+	err := s.db.Update(func(tx *buntdb.Tx) error {
+		_, _, err := tx.Set(key, value, nil)
+		return err
+	})
+	return err
+}
+
+func (s Store) NewKey(cat Category, name string) string {
+	return fmt.Sprintf("%s=>%s", string(cat), name)
+}
+
+func NewStore(flags core.ComposeFlags, db *buntdb.DB) Store {
+	return Store{ComposeFlags: flags, db: db}
+}
 
 // ValidateMembership will check if membership settings are valid
 func (d Definition) ValidateMembership() error {
