@@ -8,20 +8,11 @@ import (
 	"voidedtech.com/dotonex/internal/core"
 )
 
-const (
-	ServerHashKey Category = "serverhash"
-	CommitKey     Category = "commit"
-	SecretKey     Category = "secret"
-	UserKey       Category = "user"
-)
-
 var (
 	userNameFields = []string{"username", "name", "user", "userid", "userName", "UserName", "userId", "userID"}
 )
 
 type (
-	Category string
-
 	userMap map[string]interface{}
 
 	// GetUser is a callback to verify if a user is valid within the backend system
@@ -49,6 +40,7 @@ type (
 	}
 )
 
+// Get will get a store value
 func (s Store) Get(key string) (string, bool, error) {
 	var val string
 	rErr := s.db.View(func(tx *buntdb.Tx) error {
@@ -57,7 +49,6 @@ func (s Store) Get(key string) (string, bool, error) {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("value is %s\n", val)
 		return nil
 	})
 	if rErr == nil {
@@ -69,6 +60,7 @@ func (s Store) Get(key string) (string, bool, error) {
 	return "", false, rErr
 }
 
+// Save commits a value to the store
 func (s Store) Save(key, value string) error {
 	err := s.db.Update(func(tx *buntdb.Tx) error {
 		_, _, err := tx.Set(key, value, nil)
@@ -77,10 +69,12 @@ func (s Store) Save(key, value string) error {
 	return err
 }
 
-func (s Store) NewKey(cat Category, name string) string {
-	return fmt.Sprintf("%s=>%s", string(cat), name)
+// NewKey creates a database key
+func (s Store) NewKey(name string) string {
+	return fmt.Sprintf("root=>%s", name)
 }
 
+// NewStore initializes a storage backend
 func NewStore(flags core.ComposeFlags, db *buntdb.DB) Store {
 	return Store{ComposeFlags: flags, db: db}
 }

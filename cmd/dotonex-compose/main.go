@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	bin        = "bin"
 	serverHash = "server"
 	perms      = 0600
 	vlanConfig = "vlans.cfg"
@@ -59,7 +60,7 @@ func validate(wrapper compose.Store) error {
 		return fmt.Errorf("invalid MAC")
 	}
 	hash := core.MD4(wrapper.Token)
-	tokenKey := wrapper.NewKey(compose.UserKey, hash)
+	tokenKey := wrapper.NewKey(hash)
 	user, ok, err := wrapper.Get(tokenKey)
 	if err != nil {
 		return err
@@ -100,7 +101,7 @@ func validate(wrapper compose.Store) error {
 	wrapper.Debugging(fmt.Sprintf("user found: %s", user))
 	if change {
 		wrapper.Debugging("user is new")
-		userKey := wrapper.NewKey(compose.UserKey, user)
+		userKey := wrapper.NewKey(user)
 		if err := wrapper.Save(userKey, wrapper.Token); err != nil {
 			return err
 		}
@@ -131,7 +132,7 @@ func fetch(wrapper compose.Store) error {
 }
 
 func server(wrapper compose.Store) error {
-	serverKey := wrapper.NewKey(compose.ServerHashKey, serverHash)
+	serverKey := wrapper.NewKey(serverHash)
 	val, ok, err := wrapper.Get(serverKey)
 	if err != nil {
 		return err
@@ -149,7 +150,7 @@ func server(wrapper compose.Store) error {
 }
 
 func getHostapd(wrapper compose.Store, def compose.Definition) ([]compose.Hostapd, error) {
-	hashKey := wrapper.NewKey(compose.ServerHashKey, serverHash)
+	hashKey := wrapper.NewKey(serverHash)
 	hash, ok, err := wrapper.Get(hashKey)
 	if err != nil {
 		return nil, err
@@ -191,7 +192,7 @@ func getHostapd(wrapper compose.Store, def compose.Definition) ([]compose.Hostap
 		if !core.PathExists(possible) {
 			continue
 		}
-		secretKey := wrapper.NewKey(compose.SecretKey, name)
+		secretKey := wrapper.NewKey(name)
 		loginName, ok, err := wrapper.Get(secretKey)
 		if err != nil {
 			return nil, err
@@ -273,7 +274,7 @@ func configure(wrapper compose.Store) error {
 		return fmt.Errorf("no hostapd configurations found")
 	}
 	sort.Strings(eapUsers)
-	hostapdFile := filepath.Join(wrapper.Repo, "eap_users")
+	hostapdFile := filepath.Join(wrapper.Repo, bin, "eap_users")
 	hostapdText := strings.Join(eapUsers, "\n\n") + "\n"
 	if core.PathExists(hostapdFile) {
 		b, err := ioutil.ReadFile(hostapdFile)
@@ -323,7 +324,7 @@ func build(wrapper compose.Store, force bool) error {
 		if len(last) == 0 {
 			return fmt.Errorf("no commit retrieved")
 		}
-		lastKey := wrapper.NewKey(compose.CommitKey, "last")
+		lastKey := wrapper.NewKey("last")
 		val, ok, err := wrapper.Get(lastKey)
 		if err != nil {
 			return err
@@ -349,7 +350,14 @@ func run() error {
 	if !core.PathExists(flags.Repo) {
 		return fmt.Errorf("repository invalid/does not exist")
 	}
-	db, err := buntdb.Open(filepath.Join(flags.Repo, "dotonex.db"))
+	target := filepath.Join(flags.Repo, bin)
+	if !core.PathExists(target) {
+		flags.Debugging("creating target")
+		if err := os.Mkdir(target, 0700); err != nil {
+			return err
+		}
+	}
+	db, err := buntdb.Open(filepath.Join(target, "dotonex.db"))
 	if err != nil {
 		return err
 	}

@@ -8,7 +8,7 @@ import (
 
 func TestNewKey(t *testing.T) {
 	s := Store{}
-	if "serverhash=>key" != s.NewKey(ServerHashKey, "key") {
+	if "root=>key" != s.NewKey("key") {
 		t.Error("invalid key")
 	}
 }
