@@ -5,6 +5,19 @@ import (
 )
 
 type (
+	// Composition represents compose configurations
+	Composition struct {
+		Debug      bool
+		Static     bool
+		Repository string
+		Payload    []string
+		ServerKey  string
+		Refresh    int
+		Timeout    int
+		Binary     string
+		Socket     bool
+	}
+
 	// Configuration is the configuration definition
 	Configuration struct {
 		Cache      bool
@@ -16,17 +29,8 @@ type (
 		NoReject   bool
 		Log        string
 		NoTrace    bool
-		Compose    struct {
-			Debug      bool
-			Static     bool
-			Repository string
-			Payload    []string
-			ServerKey  string
-			Refresh    int
-			Timeout    int
-			Binary     string
-		}
-		Internals struct {
+		Compose    Composition
+		Internals  struct {
 			NoInterrupt bool
 			NoLogs      bool
 			Logs        int

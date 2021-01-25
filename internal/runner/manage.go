@@ -20,30 +20,34 @@ var (
 
 type (
 	script struct {
-		repo    string
-		command []string
+		cfg     core.Composition
 		hash    string
 		static  bool
 		timeout time.Duration
 		payload []string
-		debug   bool
-		binary  string
 	}
 )
 
 func (s script) execute(flags core.ComposeFlags) bool {
-	flags.Repo = s.repo
+	flags.Repo = s.cfg.Repository
 	arguments := flags.Args()
 
-	if s.debug {
+	if s.cfg.Debug {
 		core.WriteInfo(fmt.Sprintf("running: %v", arguments))
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, s.binary, arguments...)
-	if s.debug {
-		cmd.Env = append(os.Environ(), fmt.Sprintf("%s=%s", core.DebugEnvVariable, core.DebugEnvOn))
+	cmd := exec.CommandContext(ctx, s.cfg.Binary, arguments...)
+	var env []string
+	if s.cfg.Debug {
+		env = append(env, fmt.Sprintf("%s=%s", core.DebugEnvVariable, core.DebugEnvOn))
+	}
+	if !s.cfg.Socket {
+		env = append(env, fmt.Sprintf("%s=%s", core.NoSocketEnvVariable, core.SocketEnvOff))
+	}
+	if len(env) > 0 {
+		cmd.Env = append(os.Environ(), env...)
 	}
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -57,7 +61,7 @@ func (s script) execute(flags core.ComposeFlags) bool {
 		core.WriteInfo("stderr")
 		core.WriteInfo(str)
 	}
-	if s.debug {
+	if s.cfg.Debug {
 		str = strings.TrimSpace(string(out))
 		if len(str) > 0 {
 			core.WriteInfo("stdout")
@@ -83,7 +87,7 @@ func (s script) Validate(token, mac string) bool {
 		}
 		return false
 	}
-	c := core.ComposeFlags{Mode: core.ModeValidate, MAC: mac, Token: token, Command: s.command}
+	c := core.ComposeFlags{Mode: core.ModeValidate, MAC: mac, Token: token, Command: s.cfg.Payload}
 	return s.execute(c)
 }
 
@@ -122,7 +126,7 @@ func Manage(cfg *core.Configuration) error {
 	if len(cfg.Compose.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	backend = &script{binary: cfg.Compose.Binary, debug: cfg.Compose.Debug, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, repo: cfg.Compose.Repository, command: cfg.Compose.Payload, hash: core.MD4(cfg.Compose.ServerKey)}
+	backend = &script{cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()

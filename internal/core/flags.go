@@ -23,6 +23,7 @@ type (
 		Token   string
 		Debug   bool
 		Command []string
+		NoBind  bool
 	}
 )
 
@@ -52,6 +53,10 @@ const (
 	DebugEnvOn = "true"
 	// DebugEnvVariable is the environment variable to indicate debug state
 	DebugEnvVariable = "DOTONEX_DEBUG"
+	// NoSocketEnvVariable is the environment variable to disable internal socket binds
+	NoSocketEnvVariable = "DOTONEX_NOSOCK"
+	// SocketEnvOff will turn socket binding off
+	SocketEnvOff = "true"
 )
 
 // Debugging writes potential information from composition if debugging is one
@@ -93,12 +98,14 @@ func GetComposeFlags() ComposeFlags {
 	flag.Parse()
 	args := flag.Args()
 	debug := os.Getenv(DebugEnvVariable) == DebugEnvOn
+	noSock := os.Getenv(NoSocketEnvVariable) == SocketEnvOff
 	return ComposeFlags{Mode: *mode,
 		Repo:    *repo,
 		MAC:     *mac,
 		Token:   *token,
 		Hash:    *hash,
 		Debug:   debug,
+		NoBind:  noSock,
 		Command: args}
 }
 

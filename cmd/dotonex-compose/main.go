@@ -344,14 +344,16 @@ func build(wrapper compose.Store, force bool) error {
 }
 
 func run() error {
-	listen, err := net.Listen("unix", "/tmp/dotonex.sock")
-	if err != nil {
-		return err
-	}
-	defer listen.Close()
 	flags := core.GetComposeFlags()
 	if !flags.Valid() {
 		return fmt.Errorf("invalid arguments")
+	}
+	if !flags.NoBind {
+		listen, err := net.Listen("unix", "/tmp/dotonex.sock")
+		if err != nil {
+			return err
+		}
+		defer listen.Close()
 	}
 	if !core.PathExists(flags.Repo) {
 		return fmt.Errorf("repository invalid/does not exist")
