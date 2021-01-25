@@ -15,7 +15,7 @@ type (
 		Refresh    int
 		Timeout    int
 		Binary     string
-		Socket     bool
+		Socket     string
 	}
 
 	// Configuration is the configuration definition

@@ -348,8 +348,8 @@ func run() error {
 	if !flags.Valid() {
 		return fmt.Errorf("invalid arguments")
 	}
-	if !flags.NoBind {
-		listen, err := net.Listen("unix", "/tmp/dotonex.sock")
+	if len(flags.Socket) > 0 {
+		listen, err := net.Listen("unix", flags.Socket)
 		if err != nil {
 			return err
 		}

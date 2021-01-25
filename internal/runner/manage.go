@@ -25,6 +25,7 @@ type (
 		static  bool
 		timeout time.Duration
 		payload []string
+		env     []string
 	}
 )
 
@@ -39,15 +40,8 @@ func (s script) execute(flags core.ComposeFlags) bool {
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, s.cfg.Binary, arguments...)
-	var env []string
-	if s.cfg.Debug {
-		env = append(env, fmt.Sprintf("%s=%s", core.DebugEnvVariable, core.DebugEnvOn))
-	}
-	if !s.cfg.Socket {
-		env = append(env, fmt.Sprintf("%s=%s", core.NoSocketEnvVariable, core.SocketEnvOff))
-	}
-	if len(env) > 0 {
-		cmd.Env = append(os.Environ(), env...)
+	if len(s.env) > 0 {
+		cmd.Env = s.env
 	}
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -126,7 +120,15 @@ func Manage(cfg *core.Configuration) error {
 	if len(cfg.Compose.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	backend = &script{cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
+	var env []string
+	if cfg.Compose.Debug {
+		env = newEnv(core.DebugEnvVariable, core.DebugEnvOn, env)
+	}
+	socket := strings.TrimSpace(cfg.Compose.Socket)
+	if len(socket) > 0 {
+		env = newEnv(core.SocketEnvVariable, socket, env)
+	}
+	backend = &script{env: env, cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()
@@ -135,6 +137,14 @@ func Manage(cfg *core.Configuration) error {
 	}
 	go run(time.Duration(cfg.Compose.Refresh) * time.Minute)
 	return nil
+}
+
+func newEnv(key, value string, env []string) []string {
+	keyVal := fmt.Sprintf("%s=%s", key, value)
+	if len(env) == 0 {
+		return append(os.Environ(), keyVal)
+	}
+	return append(env, keyVal)
 }
 
 // CheckTokenMAC validates a token+mac combination as valid
