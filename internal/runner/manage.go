@@ -120,15 +120,7 @@ func Manage(cfg *core.Configuration) error {
 	if len(cfg.Compose.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	var env []string
-	if cfg.Compose.Debug {
-		env = newEnv(core.DebugEnvVariable, core.DebugEnvOn, env)
-	}
-	socket := strings.TrimSpace(cfg.Compose.Socket)
-	if len(socket) > 0 {
-		env = newEnv(core.SocketEnvVariable, socket, env)
-	}
-	backend = &script{env: env, cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
+	backend = &script{env: cfg.Compose.ToEnv(os.Environ()), cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()
@@ -137,14 +129,6 @@ func Manage(cfg *core.Configuration) error {
 	}
 	go run(time.Duration(cfg.Compose.Refresh) * time.Minute)
 	return nil
-}
-
-func newEnv(key, value string, env []string) []string {
-	keyVal := fmt.Sprintf("%s=%s", key, value)
-	if len(env) == 0 {
-		return append(os.Environ(), keyVal)
-	}
-	return append(env, keyVal)
 }
 
 // CheckTokenMAC validates a token+mac combination as valid

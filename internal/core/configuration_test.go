@@ -1,8 +1,82 @@
 package core
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 )
+
+func envContains(env []string, key string) string {
+	keyVal := fmt.Sprintf("%s=", key)
+	for _, k := range env {
+		if strings.HasPrefix(k, keyVal) {
+			return strings.Split(k, "=")[1]
+		}
+	}
+	return ""
+}
+
+func TestToEnv(t *testing.T) {
+	c := &Composition{}
+	c.Debug = false
+	c.Socket = ""
+	env := c.ToEnv([]string{"TEST"})
+	if len(env) != 0 {
+		t.Error("invalid env")
+	}
+	if envContains(env, "DOTONEX_DEBUG") != "" {
+		t.Error("no debugging")
+	}
+	if envContains(env, "DOTONEX_SOCKET") != "" {
+		t.Error("no socket")
+	}
+	c.Debug = true
+	c.Socket = ""
+	env = c.ToEnv([]string{"TEST"})
+	if len(env) != 2 {
+		t.Error("invalid env")
+	}
+	if envContains(env, "DOTONEX_DEBUG") != "true" {
+		t.Error("debugging")
+	}
+	if envContains(env, "DOTONEX_SOCKET") != "" {
+		t.Error("no socket")
+	}
+	c.Debug = false
+	c.Socket = "socket"
+	env = c.ToEnv([]string{"TEST"})
+	if len(env) != 2 {
+		t.Error("invalid env")
+	}
+	if envContains(env, "DOTONEX_DEBUG") != "" {
+		t.Error("no debugging")
+	}
+	if envContains(env, "DOTONEX_SOCKET") != "socket" {
+		t.Error("socket")
+	}
+	c.Debug = true
+	c.Socket = "socket"
+	env = c.ToEnv([]string{"TEST"})
+	if len(env) != 3 {
+		t.Error("invalid env")
+	}
+	if envContains(env, "DOTONEX_DEBUG") != "true" {
+		t.Error("no debugging")
+	}
+	if envContains(env, "DOTONEX_SOCKET") != "socket" {
+		t.Error("no socket")
+	}
+	env = c.ToEnv([]string{})
+	if len(env) != 2 {
+		t.Error("invalid env")
+	}
+	if envContains(env, "DOTONEX_DEBUG") != "true" {
+		t.Error("no debugging")
+	}
+	if envContains(env, "DOTONEX_SOCKET") != "socket" {
+		t.Error("no socket")
+	}
+}
 
 func TestDefaults(t *testing.T) {
 	c := &Configuration{}

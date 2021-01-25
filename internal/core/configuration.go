@@ -1,6 +1,9 @@
 package core
 
 import (
+	"fmt"
+	"strings"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -89,4 +92,25 @@ func (c *Configuration) Defaults(backing []byte) {
 	if len(c.Internals.LifeHours) == 0 {
 		c.Internals.LifeHours = []int{22, 23, 0, 1, 2, 3, 4, 5}
 	}
+}
+
+// ToEnv will convert composition options to actual command environments
+func (c Composition) ToEnv(rootEnv []string) []string {
+	var env []string
+	if c.Debug {
+		env = newEnv(DebugEnvVariable, DebugEnvOn, env, rootEnv)
+	}
+	socket := strings.TrimSpace(c.Socket)
+	if len(socket) > 0 {
+		env = newEnv(SocketEnvVariable, socket, env, rootEnv)
+	}
+	return env
+}
+
+func newEnv(key, value string, env, root []string) []string {
+	keyVal := fmt.Sprintf("%s=%s", key, value)
+	if len(env) == 0 {
+		return append(root, keyVal)
+	}
+	return append(env, keyVal)
 }
