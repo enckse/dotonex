@@ -25,7 +25,6 @@ type (
 		RADIUSKey        string
 		GitlabFQDN       string
 		ServerRepository string
-		BuildOnly        bool
 		errored          bool
 		Accounting       string
 		To               bool
@@ -124,15 +123,14 @@ func main() {
 	cFlags := flag.String("cflags", "-march=x86-64 -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for hostapd build")
 	ldFlags := flag.String("ldflags", "-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now", "LDFLAGS for hostapd build")
 	certKey := flag.String(certKeyFlag, "", "hostapd certificate password key")
-	buildOnly := flag.Bool("development", false, "development build only, no setup/install")
-	doGitlab := flag.Bool(gitlabFlag, true, "enable gitlab configuration")
+	doGitlab := flag.Bool(gitlabFlag, false, "enable gitlab configuration")
 	gitlabFQDN := flag.String(gitlabFQDNFlag, "", "gitlab fully-qualified-domain-name")
 	repo := flag.String(repoFlag, "", "server repository for backend management")
 	radiusKey := flag.String(radiusFlag, "", "radius key between server and networking components")
 	sharedKey := flag.String(sharedFlag, "", "shared radius key for all users given unique tokens")
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
-	m := Make{CertKey: *certKey, CFlags: *cFlags, LDFlags: *ldFlags, BuildOnly: *buildOnly, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m := Make{CertKey: *certKey, CFlags: *cFlags, LDFlags: *ldFlags, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
 	cleanup := generated
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -157,23 +155,21 @@ func main() {
 	defaults := true
 	defaultGitlab := true
 	m.Static = "true"
-	if !m.BuildOnly {
-		defaults = false
-		m.RADIUSKey = useOrRandom(radiusFlag, m.RADIUSKey)
-		m.SharedKey = useOrRandom(sharedFlag, m.SharedKey)
-		m.CertKey = useOrRandom(certKeyFlag, m.CertKey)
-		if m.Gitlab {
-			m.Static = "false"
-			defaultGitlab = false
-			m.nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
-			for _, c := range m.GitlabFQDN {
-				if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' {
-					continue
-				}
-				m.fail(fmt.Errorf("invalid character in FQDN"), false)
+	defaults = false
+	m.RADIUSKey = useOrRandom(radiusFlag, m.RADIUSKey)
+	m.SharedKey = useOrRandom(sharedFlag, m.SharedKey)
+	m.CertKey = useOrRandom(certKeyFlag, m.CertKey)
+	if m.Gitlab {
+		m.Static = "false"
+		defaultGitlab = false
+		m.nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
+		for _, c := range m.GitlabFQDN {
+			if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' {
+				continue
 			}
-			m.nonEmptyFatal(gitlabFlag, repoFlag, m.ServerRepository)
+			m.fail(fmt.Errorf("invalid character in FQDN"), false)
 		}
+		m.nonEmptyFatal(gitlabFlag, repoFlag, m.ServerRepository)
 	}
 	if defaults {
 		m.CertKey = "certkey"

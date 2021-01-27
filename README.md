@@ -54,7 +54,7 @@ the proxy:
 Requires base development tools and go to build, it will build the whole stack and a local instance
 of hostapd as certain flags are not always set for each distribution.
 
-to deploy and utilize the utilize default backend:
+to deploy and utilize the utilize a built-in gitlab backend:
 - gitlab auth for user names (mapping to gitlab user token's)
 - repository containing simplistic user+MAC combinations and VLAN definitions/configurations
 
@@ -88,22 +88,6 @@ sudo dotonex-daemon
 Also make sure to enable the necessary services
 ```
 sudo systemctl enable dotonex.service
-```
-
-## debugging
-
-### builds
-
-Builds can use the `-development` boolean to disable install setups/requirements for developmental efforts
-
-```
-./configure -development
-```
-
-and then to build and run tests
-
-```
-make
 ```
 
 ### remotely

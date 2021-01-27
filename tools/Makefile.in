@@ -8,9 +8,7 @@ DESTDIR      :=
 
 .PHONY: $(UTESTS)
 
-all: build{{ if .BuildOnly }} check{{ end }}
-
-build: $(HOSTAPD) $(EXES)
+all: $(HOSTAPD) $(EXES)
 
 $(UTESTS):
 	cd $@ && go test -v
