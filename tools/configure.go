@@ -5,10 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	"voidedtech.com/dotonex/internal/core"
 )
@@ -46,7 +48,8 @@ type (
 )
 
 var (
-	generated = []string{"Makefile", "clients", "env", "secrets"}
+	generated     = []string{"Makefile", "clients", "env", "secrets"}
+	randomLetters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 )
 
 const (
@@ -98,7 +101,25 @@ func (m *Make) fail(err error, exit bool) {
 	}
 }
 
+func randSequence(length int) string {
+	b := make([]rune, length)
+	for i := range b {
+		b[i] = randomLetters[rand.Intn(len(randomLetters))]
+	}
+	return string(b)
+}
+
+func useOrRandom(name, input string) string {
+	if len(input) > 0 {
+		return input
+	}
+	val := randSequence(32)
+	show(name, fmt.Sprintf("randomly-generated: %s", val))
+	return val
+}
+
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	hostapd := flag.String(hostapdFlag, "hostap_2_9", "hostapd version to build")
 	cFlags := flag.String("cflags", "-march=x86-64 -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for hostapd build")
 	ldFlags := flag.String("ldflags", "-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now", "LDFLAGS for hostapd build")
@@ -138,9 +159,9 @@ func main() {
 	m.Static = "true"
 	if !m.BuildOnly {
 		defaults = false
-		m.nonEmptyFatalKey(radiusFlag, m.RADIUSKey)
-		m.nonEmptyFatalKey(sharedFlag, m.SharedKey)
-		m.nonEmptyFatalKey(certKeyFlag, m.CertKey)
+		m.RADIUSKey = useOrRandom(radiusFlag, m.RADIUSKey)
+		m.SharedKey = useOrRandom(sharedFlag, m.SharedKey)
+		m.CertKey = useOrRandom(certKeyFlag, m.CertKey)
 		if m.Gitlab {
 			m.Static = "false"
 			defaultGitlab = false
