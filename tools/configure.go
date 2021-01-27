@@ -113,7 +113,7 @@ func useOrRandom(name, input string) string {
 		return input
 	}
 	val := randSequence(20)
-	show("randomize", fmt.Sprintf("'%s' randomly-generated: %s", name, val))
+	show("randomize", fmt.Sprintf("'%s' -> %s", name, val))
 	return val
 }
 
