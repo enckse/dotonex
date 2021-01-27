@@ -48,7 +48,7 @@ type (
 
 var (
 	generated     = []string{"Makefile", "clients", "env", "secrets"}
-	randomLetters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+	randomLetters = []rune("abcdefghijklmnopqrstuvwxyz1234567890")
 )
 
 const (
@@ -112,7 +112,7 @@ func useOrRandom(name, input string) string {
 	if len(input) > 0 {
 		return input
 	}
-	val := randSequence(32)
+	val := randSequence(20)
 	show("randomize", fmt.Sprintf("'%s' randomly-generated: %s", name, val))
 	return val
 }
