@@ -32,6 +32,10 @@ type (
 		NoReject   bool
 		Log        string
 		NoTrace    bool
+		Secrets    []struct {
+			Match string
+			Key   string
+		}
 		Compose    Composition
 		Internals  struct {
 			NoInterrupt bool
