@@ -28,10 +28,10 @@ type (
 		Accounting bool
 		To         int
 		Bind       int
-		Dir        string
 		NoReject   bool
 		Log        string
 		NoTrace    bool
+		PacketKey  string
 		Compose    Composition
 		Internals  struct {
 			NoInterrupt bool
@@ -64,7 +64,6 @@ func defaultString(given, dflt string) string {
 // Defaults will set uninitialized values to default values
 func (c *Configuration) Defaults(backing []byte) {
 	c.Host = defaultString(c.Host, "localhost")
-	c.Dir = defaultString(c.Dir, "/var/lib/dotonex/")
 	c.Log = defaultString(c.Log, "/var/log/dotonex/")
 	if c.Bind <= 0 {
 		if c.Accounting {
