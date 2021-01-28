@@ -158,7 +158,9 @@ func main() {
 	}
 
 	ctx := &runner.Context{Debug: p.Debug}
-	ctx.FromConfig(conf)
+	if err := ctx.FromConfig(conf); err != nil {
+		core.Fatal("unable to build context from config", err)
+	}
 	core.WriteInfo("loading plugins")
 	if conf.Accounting {
 		ctx.SetAccounting(runner.AccountPacket)
