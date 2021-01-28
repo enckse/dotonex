@@ -54,7 +54,7 @@ compose:
     # binary name to call
     binary: dotonex-compose
     # regex for user name checking
-    userregex: "^[a-z0-9.]$"
+    userregex: "^[a-z0-9.]+$"
 
 # internal operations (do NOT change except for debugging)
 internals:
