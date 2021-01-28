@@ -22,6 +22,7 @@ type (
 	// Configuration is the configuration definition
 	Configuration struct {
 		Cache      bool
+		Preload    []string
 		Host       string
 		Accounting bool
 		To         int

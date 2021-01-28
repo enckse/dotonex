@@ -142,6 +142,23 @@ func main() {
 	if err := yaml.Unmarshal(b, conf); err != nil {
 		core.Fatal("unable to parse config", err)
 	}
+	if conf.Preload != nil && len(conf.Preload) > 0 {
+		var combined []byte
+		for _, preload := range conf.Preload {
+			core.WriteInfo(fmt.Sprintf("preloading: %s", preload))
+			loaded, err := ioutil.ReadFile(preload)
+			if err != nil {
+				core.Fatal(fmt.Sprintf("unable to preload: %s", preload), err)
+			}
+			combined = append(combined, loaded...)
+		}
+		conf = &core.Configuration{}
+		combined = append(combined, []byte("\n")...)
+		combined = append(combined, b...)
+		if err := yaml.Unmarshal(combined, conf); err != nil {
+			core.Fatal("unable to load combined file", err)
+		}
+	}
 	conf.Defaults(b)
 	if p.Debug {
 		conf.Dump()

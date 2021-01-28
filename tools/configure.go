@@ -26,9 +26,7 @@ type (
 		GitlabFQDN       string
 		ServerRepository string
 		errored          bool
-		Accounting       string
 		To               bool
-		Bind             string
 		file             string
 		Configuration    *Config
 		Static           string
@@ -39,10 +37,8 @@ type (
 
 	// Config generation
 	Config struct {
-		Accounting string
-		To         bool
-		Bind       string
-		file       string
+		IsAccounting bool
+		file         string
 	}
 )
 
@@ -204,8 +200,8 @@ func main() {
 	if err != nil {
 		m.fail(err, true)
 	}
-	proxy := &Config{Accounting: "false", To: true, Bind: "1812", file: "proxy"}
-	accounting := &Config{Accounting: "true", To: false, Bind: "1813", file: "accounting"}
+	proxy := &Config{IsAccounting: false, file: "proxy"}
+	accounting := &Config{IsAccounting: true, file: "accounting"}
 	for _, c := range []*Config{proxy, accounting} {
 		m.Configuration = c
 		output := c.file + core.InstanceConfig

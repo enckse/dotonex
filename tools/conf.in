@@ -1,5 +1,13 @@
 # dotonex config
+{{ if .Configuration.IsAccounting }}
+accounting: true
+bind: 1813
 
+# additional files to include prior to this file ([] by default)
+preload:
+    - /etc/dotonex/proxy.conf
+
+{{ else }}
 # to support caching operations (false)
 cache: true
 
@@ -7,16 +15,16 @@ cache: true
 host: localhost
 
 # accounting mode (false)
-accounting: {{ .Configuration.Accounting }}
+accounting: false
 
 # do NOT respond with a radius reject
 noreject: true
-{{ if .Configuration.To }}
+
 # proxy binding (not applicable in accounting mode, default: 1814)
 to: 1814
-{{ end }}
+
 # bind port (1812 by default, 1813 for accounting)
-bind: {{ .Configuration.Bind }}
+bind: 1812
 
 # packet key is the secret key used on the RADIUS packets
 packetkey: {{ .RADIUSKey }}
@@ -60,3 +68,4 @@ internals:
     spancheck: 1
     # hour range in which a recycle is allowed based on lifespan (day hour 0-23, default: 22, 23, 0, 1, 2, 3, 4, 5)
     lifehours: [22, 23, 0, 1, 2, 3, 4, 5]
+{{ end }}
