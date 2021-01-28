@@ -84,6 +84,9 @@ func TestDefaults(t *testing.T) {
 	if c.Host != "localhost" {
 		t.Error("invalid default host")
 	}
+	if c.Dir != "/var/lib/dotonex/" {
+		t.Error("invalid lib dir")
+	}
 	if c.Log != "/var/log/dotonex/" {
 		t.Error("invalid log dir")
 	}

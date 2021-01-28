@@ -31,6 +31,7 @@ version:
 	@sed -i "2iGIT_VERSION=\"$(GIT_VERSION)\"" env
 
 install: version
+	install -dm700 $(DESTDIR)/var/lib/dotonex
 	install -dm700 $(DESTDIR)/etc/dotonex
 	install -dm700 $(DESTDIR)/etc/dotonex/hostapd
 	install -dm700 $(DESTDIR)/etc/dotonex/hostapd/certs
@@ -48,5 +49,6 @@ install: version
 	install -Dm644 systemd/dotonex.conf $(DESTDIR)/usr/lib/tmpfiles.d/
 	install -Dm644 systemd/dotonex.service $(DESTDIR)/usr/lib/systemd/system/
 	cp -r hostap/certs/* $(DESTDIR)/etc/dotonex/hostapd/certs/
-	install -Dm600 clients $(DESTDIR)/etc/dotonex/hostapd/clients
+	install -Dm600 clients $(DESTDIR)/var/lib/dotonex/clients
+	install -Dm600 secrets $(DESTDIR)/var/lib/dotonex/secrets
 	install -Dm600 env $(DESTDIR)/etc/dotonex/env
