@@ -31,8 +31,8 @@ notrace: false
 compose:
     # utilizies internal payload instead of backend scripts (false)
     static: {{ .Static }}
-    # repository path (/var/cache/dotonex/config)
-    repository: /var/cache/dotonex/config
+    # repository path (/var/lib/dotonex/config)
+    repository: /var/lib/dotonex/config
     # payload command to run to validate a user OR static list of token+mac pairs ([])
     payload: ["curl", "-s", "https://{{ .GitlabFQDN }}/api/v4/user?access_token=%s"]
     # shared login key for all users (empty)

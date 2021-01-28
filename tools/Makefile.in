@@ -34,7 +34,7 @@ install: version
 	install -dm700 $(DESTDIR)/etc/dotonex
 	install -dm700 $(DESTDIR)/etc/dotonex/hostapd
 	install -dm700 $(DESTDIR)/etc/dotonex/hostapd/certs
-	install -dm700 $(DESTDIR)/var/cache/dotonex
+	install -dm700 $(DESTDIR)/var/lib/dotonex
 	install -dm700 $(DESTDIR)/var/log/dotonex
 	install -d $(DESTDIR)/usr/lib/dotonex
 	install -Dm755 $(HOSTAPD) $(DESTDIR)/usr/lib/dotonex/hostapd

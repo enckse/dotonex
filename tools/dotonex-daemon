@@ -1,7 +1,7 @@
 #!/bin/bash
-SETUP=/var/cache/dotonex/setup.log
+SETUP=/var/lib/dotonex/setup.log
 ENV=/etc/dotonex/env
-REPO=/var/cache/dotonex/config
+REPO=/var/lib/dotonex/config
 
 if [ ! -e $ENV ]; then
     echo "required environment file missing: $ENV"
@@ -12,7 +12,7 @@ echo "version: $VERSION"
 
 if [ ! -z "$SERVER_REPO" ]; then
     if [ ! -d $REPO ]; then
-        git clone $SERVER_REPO /var/cache/dotonex/config
+        git clone $SERVER_REPO /var/lib/dotonex/config
     fi
 fi
 
