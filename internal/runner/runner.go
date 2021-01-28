@@ -1,9 +1,12 @@
 package runner
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"net"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"layeh.com/radius"
@@ -122,10 +125,82 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 // FromConfig parses config data into a Context object
 func (ctx *Context) FromConfig(c *core.Configuration) {
 	ctx.noReject = c.NoReject
+	secrets := filepath.Join(c.Dir, "secrets")
+	ctx.parseSecrets(secrets)
 	ctx.secrets = make(map[string][]byte)
-	for _, obj := range c.Secrets {
-		ctx.secrets[obj.Match] = []byte(obj.Key)
+	secrets = filepath.Join(c.Dir, "clients")
+	if core.PathExists(secrets) {
+		mappings, err := parseSecretMappings(secrets)
+		if err != nil {
+			core.Fatal("invalid client secret mappings", err)
+		}
+		for k, v := range mappings {
+			ctx.secrets[k] = []byte(v)
+		}
 	}
+}
+
+func parseSecretMappings(filename string) (map[string][]byte, error) {
+	mappings, err := parseSecretFromFile(filename, true)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string][]byte)
+	for k, v := range mappings {
+		m[k] = []byte(v)
+	}
+	return m, nil
+}
+
+func (ctx *Context) parseSecrets(secretFile string) {
+	s, err := parseSecretFile(secretFile)
+	if err != nil {
+		core.Fatal(fmt.Sprintf("unable to read secrets: %s", secretFile), err)
+	}
+	ctx.secret = []byte(s)
+}
+
+func parseSecretFile(secretFile string) (string, error) {
+	s, err := parseSecretFromFile(secretFile, false)
+	if err != nil {
+		return "", err
+	}
+	return s[localKey], nil
+}
+
+func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
+	if !core.PathExists(secretFile) {
+		return nil, fmt.Errorf("no secrets file")
+	}
+	f, err := os.Open(secretFile)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	lines := make(map[string]string)
+	for scanner.Scan() {
+		l := scanner.Text()
+		if strings.HasPrefix(l, "#") {
+			continue
+		}
+		if mapping || strings.HasPrefix(l, localKey) {
+			parts := strings.Split(l, " ")
+			secret := strings.TrimSpace(strings.Join(parts[1:], " "))
+			if len(secret) > 0 {
+				if mapping {
+					lines[parts[0]] = secret
+				} else {
+					lines[localKey] = secret
+					break
+				}
+			}
+		}
+	}
+	if len(lines) == 0 && !mapping {
+		return nil, fmt.Errorf("no secrets found")
+	}
+	return lines, nil
 }
 
 // DebugDump dumps context information for debugging
