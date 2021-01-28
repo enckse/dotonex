@@ -18,9 +18,6 @@ to: 1814
 # bind port (1812 by default, 1813 for accounting)
 bind: {{ .Configuration.Bind }}
 
-# working directory (/var/lib/dotonex/)
-dir: /var/lib/dotonex/
-
 # log dir
 log: /var/log/dotonex/
 
