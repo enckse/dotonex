@@ -159,7 +159,7 @@ func main() {
 
 	ctx := &runner.Context{Debug: p.Debug}
 	ctx.FromConfig(conf)
-	core.WriteInfo("loading plugins")
+	core.WriteInfo("loading backend")
 	if conf.Accounting {
 		ctx.SetAccounting(runner.AccountPacket)
 	} else {
