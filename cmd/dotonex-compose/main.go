@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -347,13 +346,6 @@ func run() error {
 	flags := core.GetComposeFlags()
 	if !flags.Valid() {
 		return fmt.Errorf("invalid arguments")
-	}
-	if len(flags.Socket) > 0 {
-		listen, err := net.Listen("unix", flags.Socket)
-		if err != nil {
-			return err
-		}
-		defer listen.Close()
 	}
 	if !core.PathExists(flags.Repo) {
 		return fmt.Errorf("repository invalid/does not exist")

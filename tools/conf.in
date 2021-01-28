@@ -45,8 +45,6 @@ compose:
     debug: false
     # binary name to call
     binary: dotonex-compose
-    # socket to bind (empty to disable)
-    socket: /tmp/dotonex.sock
 
 # internal operations (do NOT change except for debugging)
 internals:

@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -18,7 +17,6 @@ type (
 		Refresh    int
 		Timeout    int
 		Binary     string
-		Socket     string
 	}
 
 	// Configuration is the configuration definition
@@ -98,10 +96,6 @@ func (c Composition) ToEnv(rootEnv []string) []string {
 	var env []string
 	if c.Debug {
 		env = newEnv(DebugEnvVariable, DebugEnvOn, env, rootEnv)
-	}
-	socket := strings.TrimSpace(c.Socket)
-	if len(socket) > 0 {
-		env = newEnv(SocketEnvVariable, socket, env, rootEnv)
 	}
 	return env
 }

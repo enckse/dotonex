@@ -23,7 +23,6 @@ type (
 		Token   string
 		Debug   bool
 		Command []string
-		Socket  string
 	}
 )
 
@@ -53,8 +52,6 @@ const (
 	DebugEnvOn = "true"
 	// DebugEnvVariable is the environment variable to indicate debug state
 	DebugEnvVariable = "DOTONEX_DEBUG"
-	// SocketEnvVariable to enable internal socket binding
-	SocketEnvVariable = "DOTONEX_SOCKET"
 )
 
 // Debugging writes potential information from composition if debugging is one
@@ -102,7 +99,6 @@ func GetComposeFlags() ComposeFlags {
 		Token:   *token,
 		Hash:    *hash,
 		Debug:   debug,
-		Socket:  os.Getenv(SocketEnvVariable),
 		Command: args}
 }
 
