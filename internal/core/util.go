@@ -40,15 +40,16 @@ func NewUserVLANLogin(user, vlan string) string {
 }
 
 // GetTokenFromLogin gets the user's token part from a FQDN user+token+vlan login
-func GetTokenFromLogin(input string) string {
+func GetTokenFromLogin(input string) (string, string) {
 	token := input
 	if strings.Contains(input, userVLANLogin) {
 		token = strings.Split(input, userVLANLogin)[0]
 	}
 	if !strings.Contains(token, userLogin) {
-		return ""
+		return "", ""
 	}
-	return strings.Join(strings.Split(token, userLogin)[1:], userLogin)
+	parts := strings.Split(token, userLogin)
+	return parts[0], strings.Join(parts[1:], userLogin)
 }
 
 // CleanMAC will clean a MAC and check that it is valid

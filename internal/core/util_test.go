@@ -20,19 +20,24 @@ func TestUserVLANLogin(t *testing.T) {
 }
 
 func TestGetTokenFrom(t *testing.T) {
-	if GetTokenFromLogin("user") != "" {
+	u, tok := GetTokenFromLogin("user")
+	if u != "" || tok != "" {
 		t.Error("not valid")
 	}
-	if GetTokenFromLogin("user@vlan.t") != "" {
+	u, tok = GetTokenFromLogin("user@vlan.t")
+	if u != "" || tok != "" {
 		t.Error("no user")
 	}
-	if GetTokenFromLogin("user:token") != "token" {
+	u, tok = GetTokenFromLogin("user:token")
+	if u != "user" || tok != "token" {
 		t.Error("user token was valid")
 	}
-	if GetTokenFromLogin("user:token:test") != "token:test" {
+	u, tok = GetTokenFromLogin("user:token:test")
+	if u != "user" || tok != "token:test" {
 		t.Error("still valid with another delimiter")
 	}
-	if GetTokenFromLogin("user:token:test@vlan.id") != "token:test" {
+	u, tok = GetTokenFromLogin("user:token:test@vlan.id")
+	if u != "user" || tok != "token:test" {
 		t.Error("still valid with another delimiter")
 	}
 }

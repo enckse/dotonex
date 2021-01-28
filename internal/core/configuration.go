@@ -17,6 +17,7 @@ type (
 		Refresh    int
 		Timeout    int
 		Binary     string
+		UserRegex  string
 	}
 
 	// Configuration is the configuration definition

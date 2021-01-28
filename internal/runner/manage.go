@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -26,6 +27,7 @@ type (
 		timeout time.Duration
 		payload []string
 		env     []string
+		regex   *regexp.Regexp
 	}
 )
 
@@ -71,7 +73,7 @@ func (s script) execute(flags core.ComposeFlags) bool {
 	return true
 }
 
-func (s script) Validate(token, mac string) bool {
+func (s script) Validate(user, token, mac string) bool {
 	if s.static {
 		key := fmt.Sprintf("%s/%s", token, mac)
 		for _, p := range s.payload {
@@ -80,6 +82,11 @@ func (s script) Validate(token, mac string) bool {
 			}
 		}
 		return false
+	}
+	if s.regex != nil {
+		if !s.regex.MatchString(user) {
+			return false
+		}
 	}
 	c := core.ComposeFlags{Mode: core.ModeValidate, MAC: mac, Token: token, Command: s.cfg.Payload}
 	return s.execute(c)
@@ -120,7 +127,11 @@ func Manage(cfg *core.Configuration) error {
 	if len(cfg.Compose.ServerKey) == 0 {
 		return fmt.Errorf("no server key/passphrase found")
 	}
-	backend = &script{env: cfg.Compose.ToEnv(os.Environ()), cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
+	var regex *regexp.Regexp
+	if len(cfg.Compose.UserRegex) > 0 {
+		regex = regexp.MustCompile(cfg.Compose.UserRegex)
+	}
+	backend = &script{regex: regex, env: cfg.Compose.ToEnv(os.Environ()), cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
 	lock.Lock()
 	result := backend.Server()
 	lock.Unlock()
@@ -132,10 +143,10 @@ func Manage(cfg *core.Configuration) error {
 }
 
 // CheckTokenMAC validates a token+mac combination as valid
-func CheckTokenMAC(token, mac string) bool {
+func CheckTokenMAC(user, token, mac string) bool {
 	lock.Lock()
 	defer lock.Unlock()
-	return backend.Validate(token, mac)
+	return backend.Validate(user, token, mac)
 }
 
 func run(sleep time.Duration) {
