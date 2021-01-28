@@ -1,6 +1,5 @@
 #!/bin/bash
-LIBRARY=/var/lib/dotonex
-SETUP=$LIBRARY/setup.log
+SETUP=/var/cache/dotonex/setup.log
 ENV=/etc/dotonex/env
 REPO=/var/cache/dotonex/config
 
