@@ -183,7 +183,7 @@ func main() {
 	if m.errored {
 		os.Exit(1)
 	}
-	for _, file := range []string{"Makefile", "clients", "env"} {
+	for _, file := range []string{"Makefile", "clients", "env", "secrets"} {
 		show("generating", file)
 		tmpl, err := getTemplate(file)
 		if err != nil {

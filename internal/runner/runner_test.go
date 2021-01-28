@@ -217,6 +217,34 @@ func TestSecretMappings(t *testing.T) {
 	}
 }
 
+func TestSecretParsing(t *testing.T) {
+	dir := testDir
+	_, err := parseSecretFile(dir + "nofile")
+	if err.Error() != "no secrets file" {
+		t.Error("file does not exist")
+	}
+	_, err = parseSecretFile(dir + "emptysecrets")
+	if err.Error() != "no secrets found" {
+		t.Error("file is empty")
+	}
+	_, err = parseSecretFile(dir + "nosecrets")
+	if err.Error() != "no secrets found" {
+		t.Error("file is empty")
+	}
+	s, _ := parseSecretFile(dir + "onesecret")
+	if s != "mysecretkey" {
+		t.Error("wrong parsed key")
+	}
+	s, _ = parseSecretFile(dir + "multisecret")
+	if s != "test" {
+		t.Error("wrong parsed key")
+	}
+	_, err = parseSecretFile(dir + "noopsecret")
+	if err.Error() != "no secrets found" {
+		t.Error("empty key")
+	}
+}
+
 func TestAcctNoMods(t *testing.T) {
 	ctx := &Context{}
 	ctx.Account(NewClientPacket(nil, nil))

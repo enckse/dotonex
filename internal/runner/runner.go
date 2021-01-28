@@ -123,21 +123,21 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 }
 
 // FromConfig parses config data into a Context object
-func (ctx *Context) FromConfig(c *core.Configuration) error {
+func (ctx *Context) FromConfig(c *core.Configuration) {
 	ctx.noReject = c.NoReject
+	secrets := filepath.Join(c.Dir, "secrets")
+	ctx.parseSecrets(secrets)
 	ctx.secrets = make(map[string][]byte)
-	secrets := filepath.Join(c.Dir, "clients")
+	secrets = filepath.Join(c.Dir, "clients")
 	if core.PathExists(secrets) {
 		mappings, err := parseSecretMappings(secrets)
 		if err != nil {
-			return err
+			core.Fatal("invalid client secret mappings", err)
 		}
 		for k, v := range mappings {
 			ctx.secrets[k] = []byte(v)
 		}
-		return nil
 	}
-	return fmt.Errorf("no secrets file found")
 }
 
 func parseSecretMappings(filename string) (map[string][]byte, error) {
@@ -150,6 +150,22 @@ func parseSecretMappings(filename string) (map[string][]byte, error) {
 		m[k] = []byte(v)
 	}
 	return m, nil
+}
+
+func (ctx *Context) parseSecrets(secretFile string) {
+	s, err := parseSecretFile(secretFile)
+	if err != nil {
+		core.Fatal(fmt.Sprintf("unable to read secrets: %s", secretFile), err)
+	}
+	ctx.secret = []byte(s)
+}
+
+func parseSecretFile(secretFile string) (string, error) {
+	s, err := parseSecretFromFile(secretFile, false)
+	if err != nil {
+		return "", err
+	}
+	return s[localKey], nil
 }
 
 func parseSecretFromFile(secretFile string, mapping bool) (map[string]string, error) {
