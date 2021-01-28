@@ -119,6 +119,9 @@ func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 func (ctx *Context) FromConfig(c *core.Configuration) {
 	ctx.noReject = c.NoReject
 	ctx.secret = []byte(c.PacketKey)
+	if len(c.PacketKey) == 0 {
+		core.Fatal("invalid packet key", fmt.Errorf("packet key must be set to process packets"))
+	}
 }
 
 // DebugDump dumps context information for debugging
