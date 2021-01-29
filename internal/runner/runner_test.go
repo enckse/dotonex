@@ -54,7 +54,8 @@ func TestPreAuthNoMods(t *testing.T) {
 func checkAuthMode(t *testing.T) {
 	ctx, p := getPacket(t)
 	m := &MockModule{}
-	ctx.SetTrace(m.Trace)
+	ctx.hasTrace = true
+	ctx.trace = m.Trace
 	// invalid packet
 	if ctx.authorize(NewClientPacket(nil, nil)) != successCode {
 		t.Error("didn't authorize")
@@ -74,7 +75,8 @@ func checkAuthMode(t *testing.T) {
 		return m.pre, m.preAuth
 	}
 	reasonCode = preAuthCode
-	ctx.SetPreAuth(m.Pre)
+	ctx.hasPre = true
+	ctx.pre = m.Pre
 	if ctx.authorize(p) != successCode {
 		t.Error("didn't authorize")
 	}
@@ -145,7 +147,8 @@ func TestAcct(t *testing.T) {
 	if m.acct != 0 {
 		t.Error("didn't account")
 	}
-	ctx.SetAccounting(m.Account)
+	ctx.hasAcct = true
+	ctx.acct = m.Account
 	ctx.Account(p)
 	if m.acct != 1 {
 		t.Error("didn't account")

@@ -176,15 +176,6 @@ func main() {
 
 	ctx := &runner.Context{Debug: p.Debug}
 	ctx.FromConfig(conf)
-	core.WriteInfo("loading backend")
-	if conf.Accounting {
-		ctx.SetAccounting(runner.AccountPacket)
-	} else {
-		ctx.SetPreAuth(runner.PrePacket)
-	}
-	if !conf.NoTrace {
-		ctx.SetTrace(runner.TracePacket)
-	}
 
 	if !conf.Internals.NoLogs {
 		logBuffer := time.Duration(conf.Internals.Logs) * time.Second

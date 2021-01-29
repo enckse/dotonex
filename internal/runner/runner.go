@@ -66,24 +66,6 @@ func NewClientPacket(buffer []byte, addr *net.UDPAddr) *ClientPacket {
 	return &ClientPacket{Buffer: buffer, ClientAddr: addr}
 }
 
-// SetTrace adds a tracing check to the context
-func (ctx *Context) SetTrace(t Trace) {
-	ctx.hasTrace = true
-	ctx.trace = t
-}
-
-// SetPreAuth adds a pre-authorization check to the context
-func (ctx *Context) SetPreAuth(p PreAuth) {
-	ctx.hasPre = true
-	ctx.pre = p
-}
-
-// SetAccounting adds an accounting check to the context
-func (ctx *Context) SetAccounting(a Account) {
-	ctx.hasAcct = true
-	ctx.acct = a
-}
-
 func (ctx *Context) authorize(packet *ClientPacket) ReasonCode {
 	if packet == nil {
 		return successCode
@@ -121,6 +103,17 @@ func (ctx *Context) FromConfig(c *core.Configuration) {
 	ctx.secret = []byte(c.PacketKey)
 	if len(c.PacketKey) == 0 {
 		core.Fatal("invalid packet key", fmt.Errorf("packet key must be set to process packets"))
+	}
+	if c.Accounting {
+		ctx.hasAcct = true
+		ctx.acct = AccountPacket
+	} else {
+		ctx.hasPre = true
+		ctx.pre = PrePacket
+	}
+	ctx.hasTrace = !c.NoTrace
+	if ctx.hasTrace {
+		ctx.trace = TracePacket
 	}
 }
 
