@@ -55,6 +55,8 @@ compose:
     binary: dotonex-compose
     # regex for user name checking
     userregex: "^[a-z0-9.]+$"
+    # search for how to find the user name in the json ('inarray' can provide complex searches)
+    search: ["username"]
 
 # internal operations (do NOT change except for debugging)
 internals:
