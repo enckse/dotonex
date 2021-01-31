@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -18,6 +19,7 @@ type (
 		Timeout    int
 		Binary     string
 		UserRegex  string
+		Search     []string
 	}
 
 	// Configuration is the configuration definition
@@ -98,6 +100,9 @@ func (c Composition) ToEnv(rootEnv []string) []string {
 	var env []string
 	if c.Debug {
 		env = newEnv(DebugEnvVariable, DebugEnvOn, env, rootEnv)
+	}
+	if len(c.Search) > 0 {
+		env = newEnv(SearchEnvVariable, strings.Join(c.Search, " "), env, rootEnv)
 	}
 	return env
 }

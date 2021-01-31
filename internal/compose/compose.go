@@ -3,18 +3,13 @@ package compose
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/tidwall/buntdb"
 	"voidedtech.com/dotonex/internal/core"
 )
 
-var (
-	userNameFields = []string{"username", "name", "user", "userid", "userName", "UserName", "userId", "userID"}
-)
-
 type (
-	userMap map[string]interface{}
-
 	// GetUser is a callback to verify if a user is valid within the backend system
 	GetUser func(string) bool
 
@@ -115,52 +110,63 @@ func (d Definition) IsVLAN(name string) (string, bool) {
 	return "", false
 }
 
-func tryUserMap(m userMap, verify GetUser) (string, error) {
-	for _, k := range userNameFields {
-		if _, ok := m[k]; !ok {
-			continue
-		}
-		user, ok := m[k].(string)
-		if !ok {
-			continue
-		}
-		if verify(user) {
-			return user, nil
-		}
-	}
-
-	return "", fmt.Errorf("no user found in map")
-}
-
-func tryUserArray(data []byte, verify GetUser) (string, error) {
-	var object []userMap
-	if err := json.Unmarshal(data, &object); err != nil {
-		return "", err
-	}
-	if len(object) != 1 {
-		return "", fmt.Errorf("invalid object returned: not 1")
-	}
-
-	return tryUserMap(object[0], verify)
-}
-
-func trySingletonObject(data []byte, verify GetUser) (string, error) {
-	object := make(userMap)
-	if err := json.Unmarshal(data, &object); err != nil {
-		return "", err
-	}
-	return tryUserMap(object, verify)
-}
-
 // TryGetUser will try and find a user in json output and validate it
-func TryGetUser(data []byte, verify GetUser) (string, error) {
-	sUser, sErr := trySingletonObject(data, verify)
-	if sErr != nil {
-		mUser, mErr := tryUserArray(data, verify)
-		if mErr != nil {
-			return "", fmt.Errorf("unable to detect user (%v,%v)", sErr, mErr)
+func TryGetUser(layout []string, data []byte, verify GetUser) (string, error) {
+	var errors []error
+	for idx, l := range layout {
+		next := layout[idx+1:]
+		if l == "inarray" {
+			var obj []interface{}
+			if err := json.Unmarshal(data, &obj); err != nil {
+				return "", err
+			}
+			if len(obj) == 0 {
+				return "", fmt.Errorf("zero array found")
+			}
+			for _, sub := range obj {
+				b, err := json.Marshal(sub)
+				if err != nil {
+					return "", err
+				}
+				found, err := TryGetUser(next, b, verify)
+				if found != "" {
+					return found, nil
+				}
+				errors = append(errors, err)
+			}
+		} else {
+			m := make(map[string]interface{})
+			if err := json.Unmarshal(data, &m); err != nil {
+				return "", err
+			}
+			sub, ok := m[l]
+			if !ok {
+				return "", fmt.Errorf("subkey not found")
+			}
+			user, ok := sub.(string)
+			if ok {
+				if user == "" {
+					return "", fmt.Errorf("empty string found")
+				}
+				return user, nil
+			}
+			b, err := json.Marshal(sub)
+			if err != nil {
+				return "", err
+			}
+			found, err := TryGetUser(next, b, verify)
+			if found != "" {
+				return found, nil
+			}
+			errors = append(errors, err)
 		}
-		return mUser, nil
 	}
-	return sUser, nil
+	if len(errors) > 0 {
+		var multi []string
+		for _, e := range errors {
+			multi = append(multi, e.Error())
+		}
+		return "", fmt.Errorf(strings.Join(multi, "\n"))
+	}
+	return "", fmt.Errorf("unable to find a user")
 }

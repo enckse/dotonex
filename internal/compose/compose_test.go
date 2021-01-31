@@ -115,74 +115,44 @@ func TestTryGetUserArray(t *testing.T) {
 	valid := func(u string) bool {
 		return u == "test"
 	}
-	user, err := TryGetUser([]byte("[{}]"), valid)
+	user, err := TryGetUser([]string{}, []byte(""), valid)
 	if err == nil {
-		t.Error("json is valid but no user")
+		t.Error("json is invalid and no layout")
 	}
-	user, err = TryGetUser([]byte("[{}, {}]"), valid)
+	user, err = TryGetUser([]string{"inarray"}, []byte("[{}]"), valid)
 	if err == nil {
-		t.Error("json is valid but no user")
+		t.Error("no user")
 	}
-	user, err = TryGetUser([]byte("[]"), valid)
+	user, err = TryGetUser([]string{"inarray"}, []byte("['garbage']"), valid)
 	if err == nil {
-		t.Error("json is valid but no user")
+		t.Error("no user")
 	}
-	user, err = TryGetUser([]byte("[{\"usernazme\": \"test\"}]"), valid)
+	user, err = TryGetUser([]string{"inarray"}, []byte("[]"), valid)
 	if err == nil {
-		t.Error("json is valid and has invalid key")
+		t.Error("no user")
 	}
-	user, err = TryGetUser([]byte("[{\"username\": \"test2\"}]"), valid)
+	user, err = TryGetUser([]string{"inarray"}, []byte("[{}, {}]"), valid)
 	if err == nil {
-		t.Error("json is valid and has invalid user")
+		t.Error("no user")
 	}
-	user, err = TryGetUser([]byte("[{\"userID\": \"test\"}]"), valid)
-	if err != nil {
-		t.Error("json is valid and has user")
-	}
-	if user != "test" {
-		t.Error("wrong user return")
-	}
-	user, err = TryGetUser([]byte("[{\"username\": \"test\"}]"), valid)
-	if err != nil {
-		t.Error("json is valid and has user")
-	}
-	if user != "test" {
-		t.Error("wrong user return")
-	}
-}
-
-func TestTryGetUserSingleton(t *testing.T) {
-	valid := func(u string) bool {
-		return u == "test"
-	}
-	user, err := TryGetUser([]byte(""), valid)
+	user, err = TryGetUser([]string{"inarray"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err == nil {
-		t.Error("json is invalid")
+		t.Error("no user")
 	}
-	user, err = TryGetUser([]byte("{}"), valid)
+	user, err = TryGetUser([]string{"inarray", "user"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	if err != nil || user != "test" {
+		t.Error("user")
+	}
+	user, err = TryGetUser([]string{"inarray", "inarray"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err == nil {
-		t.Error("json is valid but no user")
+		t.Error("no user")
 	}
-	user, err = TryGetUser([]byte("{\"usernazme\": \"test\"}"), valid)
-	if err == nil {
-		t.Error("json is valid and has invalid key")
+	user, err = TryGetUser([]string{"inarray", "sub", "inarray", "user"}, []byte("[{\"sub\": [{\"user\": \"test\"}]}]"), valid)
+	if err != nil || user != "test" {
+		t.Error("user")
 	}
-	user, err = TryGetUser([]byte("{\"username\": \"test2\"}"), valid)
-	if err == nil {
-		t.Error("json is valid and has invalid user")
-	}
-	user, err = TryGetUser([]byte("{\"userID\": \"test\"}"), valid)
-	if err != nil {
-		t.Error("json is valid and has user")
-	}
-	if user != "test" {
-		t.Error("wrong user return")
-	}
-	user, err = TryGetUser([]byte("{\"username\": \"test\"}"), valid)
-	if err != nil {
-		t.Error("json is valid and has user")
-	}
-	if user != "test" {
-		t.Error("wrong user return")
+	user, err = TryGetUser([]string{"sub", "inarray", "inarray", "user"}, []byte("{\"sub\": [[{\"user\": \"test\"}]]}"), valid)
+	if err != nil || user != "test" {
+		t.Error("user")
 	}
 }

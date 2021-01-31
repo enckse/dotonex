@@ -82,7 +82,7 @@ func validate(wrapper compose.Store) error {
 		if err != nil {
 			return err
 		}
-		user, err = compose.TryGetUser([]byte(output), func(possibleUser string) bool {
+		user, err = compose.TryGetUser(wrapper.Search, []byte(output), func(possibleUser string) bool {
 			return core.PathExists(filepath.Join(wrapper.Repo, possibleUser))
 		})
 		if err != nil {

@@ -34,6 +34,29 @@ func TestToEnv(t *testing.T) {
 	if envContains(env, "DOTONEX_DEBUG") != "true" {
 		t.Error("debugging")
 	}
+	c.Search = []string{"TEST", "XYZ"}
+	env = c.ToEnv([]string{"TEST"})
+	if len(env) != 3 {
+		t.Error("invalid env")
+	}
+	if envContains(env, "DOTONEX_DEBUG") != "true" {
+		t.Error("debugging")
+	}
+	if envContains(env, "DOTONEX_SEARCH") != "TEST XYZ" {
+		t.Error("searching")
+	}
+	c.Debug = false
+	c.Search = []string{"TEST", "XYZ"}
+	env = c.ToEnv([]string{"TEST"})
+	if len(env) != 2 {
+		t.Error("invalid env")
+	}
+	if envContains(env, "DOTONEX_DEBUG") != "" {
+		t.Error("debugging")
+	}
+	if envContains(env, "DOTONEX_SEARCH") != "TEST XYZ" {
+		t.Error("searching")
+	}
 }
 
 func TestDefaults(t *testing.T) {

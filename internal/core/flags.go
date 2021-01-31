@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type (
@@ -21,6 +22,7 @@ type (
 		Hash    string
 		MAC     string
 		Token   string
+		Search  []string
 		Debug   bool
 		Command []string
 	}
@@ -52,6 +54,8 @@ const (
 	DebugEnvOn = "true"
 	// DebugEnvVariable is the environment variable to indicate debug state
 	DebugEnvVariable = "DOTONEX_DEBUG"
+	// SearchEnvVariable is an underlying method to set how the configurator search for keys
+	SearchEnvVariable = "DOTONEX_SEARCH"
 )
 
 // Debugging writes potential information from composition if debugging is one
@@ -93,11 +97,17 @@ func GetComposeFlags() ComposeFlags {
 	flag.Parse()
 	args := flag.Args()
 	debug := os.Getenv(DebugEnvVariable) == DebugEnvOn
+	search := []string{"inarray", "username"}
+	searchEnv := strings.TrimSpace(os.Getenv(SearchEnvVariable))
+	if searchEnv != "" {
+		search = strings.Split(searchEnv, " ")
+	}
 	return ComposeFlags{Mode: *mode,
 		Repo:    *repo,
 		MAC:     *mac,
 		Token:   *token,
 		Hash:    *hash,
+		Search:  search,
 		Debug:   debug,
 		Command: args}
 }
