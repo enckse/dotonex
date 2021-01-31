@@ -97,7 +97,7 @@ func GetComposeFlags() ComposeFlags {
 	flag.Parse()
 	args := flag.Args()
 	debug := os.Getenv(DebugEnvVariable) == DebugEnvOn
-	search := []string{"inarray", "username"}
+	search := []string{"username"}
 	searchEnv := strings.TrimSpace(os.Getenv(SearchEnvVariable))
 	if searchEnv != "" {
 		search = strings.Split(searchEnv, " ")
