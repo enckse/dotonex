@@ -119,39 +119,39 @@ func TestTryGetUserArray(t *testing.T) {
 	if err == nil {
 		t.Error("json is invalid and no layout")
 	}
-	user, err = TryGetUser([]string{"inarray"}, []byte("[{}]"), valid)
+	user, err = TryGetUser([]string{"inarray[]"}, []byte("[{}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray"}, []byte("['garbage']"), valid)
+	user, err = TryGetUser([]string{"inarray[]"}, []byte("['garbage']"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray"}, []byte("[]"), valid)
+	user, err = TryGetUser([]string{"inarray[]"}, []byte("[]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray"}, []byte("[{}, {}]"), valid)
+	user, err = TryGetUser([]string{"inarray[]"}, []byte("[{}, {}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	user, err = TryGetUser([]string{"inarray[]"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray", "user"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	user, err = TryGetUser([]string{"inarray[]", "user"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err != nil || user != "test" {
 		t.Error("user")
 	}
-	user, err = TryGetUser([]string{"inarray", "inarray"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	user, err = TryGetUser([]string{"inarray[]", "inarray[]"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray", "sub", "inarray", "user"}, []byte("[{\"sub\": [{\"user\": \"test\"}]}]"), valid)
+	user, err = TryGetUser([]string{"inarray[]", "sub", "inarray[]", "user"}, []byte("[{\"sub\": [{\"user\": \"test\"}]}]"), valid)
 	if err != nil || user != "test" {
 		t.Error("user")
 	}
-	user, err = TryGetUser([]string{"sub", "inarray", "inarray", "user"}, []byte("{\"sub\": [[{\"user\": \"test\"}]]}"), valid)
+	user, err = TryGetUser([]string{"sub", "inarray[]", "inarray[]", "user"}, []byte("{\"sub\": [[{\"user\": \"test\"}]]}"), valid)
 	if err != nil || user != "test" {
 		t.Error("user")
 	}

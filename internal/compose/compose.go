@@ -115,7 +115,7 @@ func TryGetUser(layout []string, data []byte, verify GetUser) (string, error) {
 	var errors []error
 	for idx, l := range layout {
 		next := layout[idx+1:]
-		if l == "inarray" {
+		if l == "inarray[]" {
 			var obj []interface{}
 			if err := json.Unmarshal(data, &obj); err != nil {
 				return "", err
