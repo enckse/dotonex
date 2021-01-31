@@ -155,4 +155,12 @@ func TestTryGetUserArray(t *testing.T) {
 	if err != nil || user != "test" {
 		t.Error("user")
 	}
+	user, err = TryGetUser([]string{"inarray[0]", "user"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	if err == nil {
+		t.Error("no user")
+	}
+	user, err = TryGetUser([]string{"inarray[]", "sub", "inarray[1]", "user"}, []byte("[{\"sub\": [{}, {\"user\": \"test\"}]}]"), valid)
+	if err != nil || user != "test" {
+		t.Error("user")
+	}
 }

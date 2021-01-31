@@ -3,10 +3,16 @@ package compose
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/tidwall/buntdb"
 	"voidedtech.com/dotonex/internal/core"
+)
+
+const (
+	inArrayPre  = "inarray["
+	inArrayPost = "]"
 )
 
 type (
@@ -115,7 +121,18 @@ func TryGetUser(layout []string, data []byte, verify GetUser) (string, error) {
 	var errors []error
 	for idx, l := range layout {
 		next := layout[idx+1:]
-		if l == "inarray[]" {
+		isArray := strings.HasPrefix(l, inArrayPre) && strings.HasSuffix(l, inArrayPost)
+		if isArray {
+			indexer := strings.Replace(l, inArrayPre, "", 1)
+			indexer = strings.TrimSpace(indexer[0 : len(indexer)-1])
+			useIndex := -1
+			if indexer != "" {
+				i, err := strconv.Atoi(indexer)
+				if err != nil {
+					return "", err
+				}
+				useIndex = i
+			}
 			var obj []interface{}
 			if err := json.Unmarshal(data, &obj); err != nil {
 				return "", err
@@ -123,7 +140,12 @@ func TryGetUser(layout []string, data []byte, verify GetUser) (string, error) {
 			if len(obj) == 0 {
 				return "", fmt.Errorf("zero array found")
 			}
-			for _, sub := range obj {
+			for subIdx, sub := range obj {
+				if useIndex >= 0 {
+					if subIdx != useIndex {
+						continue
+					}
+				}
 				b, err := json.Marshal(sub)
 				if err != nil {
 					return "", err
