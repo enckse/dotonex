@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -26,13 +27,14 @@ type (
 		GitlabFQDN       string
 		ServerRepository string
 		errored          bool
-		To               bool
+		To               bool `json:"-"`
 		file             string
-		Configuration    *Config
+		Configuration    *Config `json:"-"`
 		Static           string
 		CFlags           string
 		LDFlags          string
 		CertKey          string
+		Arguments        []string `json:"-"`
 	}
 
 	// Config generation
@@ -127,6 +129,16 @@ func main() {
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
 	m := Make{CertKey: *certKey, CFlags: *cFlags, LDFlags: *ldFlags, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	b, err := json.Marshal(m)
+	if err != nil {
+		m.fail(err, true)
+	}
+	var j bytes.Buffer
+	err = json.Indent(&j, b, "", "\t")
+	if err != nil {
+		m.fail(err, true)
+	}
+	m.Arguments = strings.Split(j.String(), "\n")
 	cleanup := generated
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
