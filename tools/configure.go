@@ -43,7 +43,7 @@ type (
 )
 
 var (
-	generated     = []string{"Makefile", "clients", "env", "secrets"}
+	generated     = []string{"Makefile", "clients", "env"}
 	randomLetters = []rune("abcdefghijklmnopqrstuvwxyz1234567890")
 )
 
@@ -179,7 +179,7 @@ func main() {
 	if m.errored {
 		os.Exit(1)
 	}
-	for _, file := range []string{"Makefile", "clients", "env"} {
+	for _, file := range generated {
 		show("generating", file)
 		tmpl, err := getTemplate(file)
 		if err != nil {
