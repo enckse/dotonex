@@ -18,7 +18,7 @@ _command() {
 }
 
 _read() {
-    go run ../../tools/db.go -database $DB | sort > $DBLOG
+    go run db.go -database $DB | sort > $DBLOG
 }
 
 _diff() {

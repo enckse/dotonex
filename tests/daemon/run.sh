@@ -8,7 +8,7 @@ DISCOVER=${BIN}discover/
 PLUGINS=plugins/
 OFFSET="../../"
 EXE=${OFFSET}dotonex
-HARNESS="${OFFSET}tools/harness.go"
+HARNESS="harness.go"
 for d in $LOGS $PLUGINS $DISCOVER; do
     rm -rf $d
     mkdir -p $d
