@@ -1,0 +1,39 @@
+"aabbccddeeff" MD5 "aabbccddeeff"
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:2
+
+"person.name:xxxxxx" PEAP
+
+"person.name:xxxxxx" MSCHAPV2 hash:HASH [2]
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:2
+
+"person.name:xxxxxx@vlan.xyz" PEAP
+
+"person.name:xxxxxx@vlan.xyz" MSCHAPV2 hash:HASH [2]
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:2
+
+"user.name:token" PEAP
+
+"user.name:token" MSCHAPV2 hash:HASH [2]
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:1
+
+"user.name:token@vlan.abc" PEAP
+
+"user.name:token@vlan.abc" MSCHAPV2 hash:HASH [2]
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:1
+
+"user.name:token@vlan.xyz" PEAP
+
+"user.name:token@vlan.xyz" MSCHAPV2 hash:HASH [2]
+radius_accept_attr=64:d:13
+radius_accept_attr=65:d:6
+radius_accept_attr=81:s:2

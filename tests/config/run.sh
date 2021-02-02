@@ -14,7 +14,7 @@ rm -rf $REPOBIN $DBLOG
 export DOTONEX_DEBUG="true"
 
 _command() {
-    ../../dotonex-compose --mode $1 --repository $REPO ${@:2} echo '{"username":"user.name"}' >> $RESULTS 2>&1
+    ../../dotonex-compose --mode $1 --repository $REPO ${@:2} echo "{\"username\":\"$SET_USER\"}" >> $RESULTS 2>&1
 }
 
 _read() {
@@ -51,6 +51,7 @@ _command server --hash "HASH"
 _command rebuild
 _diff_eap mabonly
 _diff_db serverhash
+SET_USER=user.name
 _command validate --token abcdef --mac 1122334455aa
 _diff_db token1
 _command validate --token token --mac aabbccddeeff
@@ -58,6 +59,15 @@ _diff_db token2
 _command validate --token abcdef --mac 1122334455aa
 _diff_db token2
 _diff_eap user
+
+SET_USER=person.name
+_command validate --token xxxxxx --mac aabbccdd1111
+_diff_db token3
+_diff_eap users
+SET_USER=user.name
+_command validate --token zzzzzz --mac 1122334455aa
+_diff_db token4
+_diff_eap users2
 
 diff -u $RESULTS ${EXPECT}log
 if [ $? -ne 0 ]; then
