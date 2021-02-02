@@ -382,5 +382,4 @@ func run() error {
 	default:
 		return fmt.Errorf("unknown mode")
 	}
-	return nil
 }
