@@ -30,7 +30,7 @@ type (
 		To               bool `json:"-"`
 		file             string
 		Configuration    *Config `json:"-"`
-		Static           string
+		Static           string `json:"-"`
 		CFlags           string
 		LDFlags          string
 		CertKey          string
