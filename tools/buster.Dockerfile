@@ -5,7 +5,7 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y build-essential golang-1.13-go git libnl-3-dev libnl-genl-3-dev libnl-route-3-dev libssl-dev
 RUN update-alternatives --install /usr/bin/go go /usr/lib/go-1.13/bin/go 100
 RUN mkdir /workdir
-RUN mkdir /workdir/exported
+RUN mkdir /workdir/expordted
 WORKDIR /workdir
 RUN git clone git://cgit.voidedtech.com/dotonex
 

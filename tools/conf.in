@@ -74,13 +74,13 @@ internals:
     lifecheck: 1
     # hour range in which a recycle is allowed based on lifespan (day hour 0-23, default: 22, 23, 0, 1, 2, 3, 4, 5)
     lifehours: [22, 23, 0, 1, 2, 3, 4, 5]
-    # maxconnections indicates the max connections to accept before reset
+    # maxconnections indicates the max connections to accept before reset (check <= 0 is disabled)
     maxconnections: 
         # amount to cause a reset
         count: 100000
         # time to wait between checks (minutes)
         check: 15
-    # consecutive amount of client setups that must fail to perform a reset
+    # consecutive amount of client setups that must fail to perform a reset (check <= 0 is disabled)
     clientfailures:
         # amount to cause a reset
         count: 100
