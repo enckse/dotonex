@@ -77,7 +77,7 @@ internals:
     # maxconnections indicates the max connections to accept before reset
     maxconnections: 100000
     # maxcheck is the amount of time (minutes) to wait between connection checks (<= 0 is disabled)
-    maxlife: 15
+    maxcheck: 15
 
 # what to do when shutting down
 quit:
