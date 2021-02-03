@@ -16,7 +16,7 @@ type (
 		Payload    []string
 		ServerKey  string
 		Refresh    int
-		NoGit      bool
+		Polling    bool
 		Timeout    int
 		Binary     string
 		UserRegex  string
