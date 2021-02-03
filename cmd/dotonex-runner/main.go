@@ -233,9 +233,15 @@ func main() {
 		go func() {
 			for {
 				time.Sleep(check)
+				if ctx.Debug {
+					core.WriteDebug("max connection check")
+				}
 				clientLock.Lock()
 				total := len(clients)
 				clientLock.Unlock()
+				if ctx.Debug {
+					core.WriteDebug(fmt.Sprintf("connections: %d", total))
+				}
 				if total > conf.Internals.MaxConnections {
 					max <- true
 				}
