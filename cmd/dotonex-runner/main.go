@@ -273,13 +273,25 @@ func main() {
 	runner.WritePluginMessages(conf.Log, p.Instance)
 	if conf.Quit.Wait {
 		core.WriteInfo("shutting down")
+		cleanup := make(chan bool)
+		timedOut := make(chan bool)
 		go func() {
 			clientLock.Lock()
 			runner.ShutdownModules()
 			runner.ShutdownValidator()
+			cleanup <- true
 		}()
 		if conf.Quit.Timeout > 0 {
-			time.Sleep(time.Duration(conf.Quit.Timeout) * time.Second)
+			go func() {
+				time.Sleep(time.Duration(conf.Quit.Timeout) * time.Second)
+				timedOut <- true
+			}()
+		}
+		select {
+		case <-cleanup:
+			core.WriteInfo("cleanup completed")
+		case <-timedOut:
+			core.WriteInfo("cleanup timed out")
 		}
 	}
 	os.Exit(0)
