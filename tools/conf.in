@@ -79,7 +79,6 @@ internals:
     # maxcheck is the amount of time (minutes) to wait between connection checks (<= 0 is disabled)
     maxlife: 15
 
-
 # what to do when shutting down
 quit:
     # wait indicates that shutdown should wait for certain cleanup to happen (clean shutdown)
