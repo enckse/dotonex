@@ -138,7 +138,10 @@ func Manage(cfg *core.Configuration) error {
 	if !result {
 		return fmt.Errorf("server command failed")
 	}
-	go run(time.Duration(cfg.Compose.Refresh) * time.Minute)
+	if !cfg.Compose.NoGit {
+		core.WriteInfo("starting git runner")
+		go run(time.Duration(cfg.Compose.Refresh) * time.Minute)
+	}
 	return nil
 }
 
