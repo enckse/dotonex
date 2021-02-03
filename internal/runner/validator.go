@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	lock    = &sync.Mutex{}
+	callLock = &sync.Mutex{}
 	backend *script
 )
 
@@ -114,8 +114,8 @@ func SetAllowed(payload []string) {
 			objects = append(objects, str)
 		}
 	}
-	lock.Lock()
-	defer lock.Unlock()
+	callLock.Lock()
+	defer callLock.Unlock()
 	backend = &script{payload: objects, static: true}
 }
 
@@ -132,9 +132,9 @@ func Manage(cfg *core.Configuration) error {
 		regex = regexp.MustCompile(cfg.Compose.UserRegex)
 	}
 	backend = &script{regex: regex, env: cfg.Compose.ToEnv(os.Environ()), cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
-	lock.Lock()
+	callLock.Lock()
 	result := backend.Server()
-	lock.Unlock()
+	callLock.Unlock()
 	if !result {
 		return fmt.Errorf("server command failed")
 	}
@@ -147,22 +147,27 @@ func Manage(cfg *core.Configuration) error {
 
 // CheckTokenMAC validates a token+mac combination as valid
 func CheckTokenMAC(user, token, mac string) bool {
-	lock.Lock()
-	defer lock.Unlock()
+	callLock.Lock()
+	defer callLock.Unlock()
 	return backend.Validate(user, token, mac)
+}
+
+func fetchBuild() bool {
+	callLock.Lock()
+	defer callLock.Unlock()
+	if !backend.Fetch() {
+		core.WriteWarn("fetch failed")
+		return false
+	}
+	result := backend.Build()
+	return result
 }
 
 func run(sleep time.Duration) {
 	for {
 		time.Sleep(sleep)
 		core.WriteInfo("running fetch and update")
-		if !backend.Fetch() {
-			core.WriteWarn("fetch failed")
-			continue
-		}
-		lock.Lock()
-		result := backend.Build()
-		lock.Unlock()
+		result := fetchBuild()
 		if !result {
 			core.WriteWarn("config backend update failed")
 		}
