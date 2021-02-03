@@ -84,5 +84,5 @@ quit:
     # wait indicates that shutdown should wait for certain cleanup to happen (clean shutdown)
     wait: true
     # timeout period to wait for cleanup to complete (seconds, <= 0 to disable)
-    timeout: 15
+    timeout: 30
 {{ end }}
