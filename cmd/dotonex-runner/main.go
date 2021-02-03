@@ -203,8 +203,9 @@ func main() {
 		}()
 	}
 	lifecycle := make(chan bool)
-	check := time.Duration(conf.Internals.SpanCheck) * time.Hour
-	if len(conf.Internals.LifeHours) > 0 {
+	if conf.Internals.LifeCheck > 0 {
+		core.WriteInfo("performing lifespan management")
+		check := time.Duration(conf.Internals.LifeCheck) * time.Hour
 		end := time.Now().Add(time.Duration(conf.Internals.Lifespan) * time.Hour)
 		go func() {
 			for {
@@ -226,7 +227,9 @@ func main() {
 		}()
 	}
 	max := make(chan bool)
-	if conf.Internals.MaxConnections > 0 {
+	if conf.Internals.MaxCheck > 0 {
+		core.WriteInfo("performing max connection management")
+		check := time.Duration(conf.Internals.MaxCheck) * time.Minute
 		go func() {
 			for {
 				time.Sleep(check)

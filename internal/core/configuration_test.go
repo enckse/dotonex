@@ -83,8 +83,8 @@ func TestDefaults(t *testing.T) {
 	if c.Internals.Logs != 10 {
 		t.Error("invalid log buffer")
 	}
-	if c.Internals.SpanCheck != 1 {
-		t.Error("invalid span check")
+	if c.Internals.MaxConnections != 100000 {
+		t.Error("invalid max connect check")
 	}
 	if c.Internals.Lifespan != 12 {
 		t.Error("invalid lifespan")

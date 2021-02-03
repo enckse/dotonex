@@ -41,8 +41,9 @@ type (
 			NoLogs         bool
 			Logs           int
 			Lifespan       int
-			SpanCheck      int
+			LifeCheck      int
 			LifeHours      []int
+			MaxCheck       int
 			MaxConnections int
 		}
 		Quit struct {
@@ -93,8 +94,8 @@ func (c *Configuration) Defaults(backing []byte) {
 	if c.Internals.Lifespan <= 0 {
 		c.Internals.Lifespan = 12
 	}
-	if c.Internals.SpanCheck <= 0 {
-		c.Internals.SpanCheck = 1
+	if c.Internals.MaxConnections <= 0 {
+		c.Internals.MaxConnections = 100000
 	}
 	if len(c.Internals.LifeHours) == 0 {
 		c.Internals.LifeHours = []int{22, 23, 0, 1, 2, 3, 4, 5}
