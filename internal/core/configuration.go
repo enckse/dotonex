@@ -23,6 +23,12 @@ type (
 		Search     []string
 	}
 
+	// MonitorState is for configuration of state monitoring of internals
+	MonitorState struct {
+		Check int
+		Count int
+	}
+
 	// Configuration is the configuration definition
 	Configuration struct {
 		Cache      bool
@@ -43,10 +49,8 @@ type (
 			Lifespan       int
 			LifeCheck      int
 			LifeHours      []int
-			MaxCheck       int
-			MaxConnections int
-			ClientCheck    int
-			ClientFailures int
+			MaxConnections MonitorState
+			ClientFailures MonitorState
 		}
 		Quit struct {
 			Wait    bool
@@ -96,14 +100,14 @@ func (c *Configuration) Defaults(backing []byte) {
 	if c.Internals.Lifespan <= 0 {
 		c.Internals.Lifespan = 12
 	}
-	if c.Internals.MaxConnections <= 0 {
-		c.Internals.MaxConnections = 100000
+	if c.Internals.MaxConnections.Count <= 0 {
+		c.Internals.MaxConnections.Count = 100000
 	}
 	if len(c.Internals.LifeHours) == 0 {
 		c.Internals.LifeHours = []int{22, 23, 0, 1, 2, 3, 4, 5}
 	}
-	if c.Internals.ClientFailures <= 0 {
-		c.Internals.ClientFailures = 100
+	if c.Internals.ClientFailures.Count <= 0 {
+		c.Internals.ClientFailures.Count = 100
 	}
 }
 

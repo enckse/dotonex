@@ -134,10 +134,10 @@ func account(ctx *runner.Context) {
 	}
 }
 
-func monitorCount(debug bool, title string, c chan bool, check, max int, callback func() int) {
-	if check > 0 {
+func monitorCount(debug bool, title string, c chan bool, state core.MonitorState, callback func() int) {
+	if state.Check > 0 {
 		core.WriteInfo(fmt.Sprintf("performing %s management", title))
-		check := time.Duration(check) * time.Minute
+		check := time.Duration(state.Check) * time.Minute
 		go func() {
 			for {
 				time.Sleep(check)
@@ -150,7 +150,7 @@ func monitorCount(debug bool, title string, c chan bool, check, max int, callbac
 				if debug {
 					core.WriteDebug(fmt.Sprintf("%s: %d", title, total))
 				}
-				if total > max {
+				if total > state.Count {
 					c <- true
 				}
 			}
@@ -267,10 +267,10 @@ func main() {
 				core.Fatal("unable to setup management of configs", err)
 			}
 		}
-		monitorCount(ctx.Debug, "max connection", maxConns, conf.Internals.MaxCheck, conf.Internals.MaxConnections, func() int {
+		monitorCount(ctx.Debug, "max connection", maxConns, conf.Internals.MaxConnections, func() int {
 			return len(clients)
 		})
-		monitorCount(ctx.Debug, "client errors", clientFailures, conf.Internals.ClientCheck, conf.Internals.ClientFailures, func() int {
+		monitorCount(ctx.Debug, "client errors", clientFailures, conf.Internals.ClientFailures, func() int {
 			return erroredCount
 		})
 		go runProxy(ctx)
