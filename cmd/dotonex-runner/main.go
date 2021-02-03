@@ -204,25 +204,41 @@ func main() {
 	}
 	lifecycle := make(chan bool)
 	check := time.Duration(conf.Internals.SpanCheck) * time.Hour
-	end := time.Now().Add(time.Duration(conf.Internals.Lifespan) * time.Hour)
-	go func() {
-		for {
-			time.Sleep(check)
-			if ctx.Debug {
-				core.WriteDebug("lifespan wakeup")
-			}
-			now := time.Now()
-			if !core.IntegerIn(now.Hour(), conf.Internals.LifeHours) {
+	if len(conf.Internals.LifeHours) > 0 {
+		end := time.Now().Add(time.Duration(conf.Internals.Lifespan) * time.Hour)
+		go func() {
+			for {
+				time.Sleep(check)
 				if ctx.Debug {
-					core.WriteDebug("lifespan in quiet hours")
+					core.WriteDebug("lifespan wakeup")
 				}
-				continue
+				now := time.Now()
+				if !core.IntegerIn(now.Hour(), conf.Internals.LifeHours) {
+					if ctx.Debug {
+						core.WriteDebug("lifespan in quiet hours")
+					}
+					continue
+				}
+				if now.After(end) {
+					lifecycle <- true
+				}
 			}
-			if now.After(end) {
-				lifecycle <- true
+		}()
+	}
+	max := make(chan bool)
+	if conf.Internals.MaxConnections > 0 {
+		go func() {
+			for {
+				time.Sleep(check)
+				clientLock.Lock()
+				total := len(clients)
+				clientLock.Unlock()
+				if total > conf.Internals.MaxConnections {
+					max <- true
+				}
 			}
-		}
-	}()
+		}()
+	}
 	if conf.Accounting {
 		core.WriteInfo("accounting mode")
 		go account(ctx)
@@ -238,6 +254,8 @@ func main() {
 		go runProxy(ctx)
 	}
 	select {
+	case <-max:
+		core.WriteInfo("connections...")
 	case <-interrupt:
 		core.WriteInfo("interrupt...")
 	case <-lifecycle:

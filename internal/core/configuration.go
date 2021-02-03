@@ -37,15 +37,16 @@ type (
 		PacketKey  string
 		Compose    Composition
 		Internals  struct {
-			NoInterrupt bool
-			NoLogs      bool
-			Logs        int
-			Lifespan    int
-			SpanCheck   int
-			LifeHours   []int
+			NoInterrupt    bool
+			NoLogs         bool
+			Logs           int
+			Lifespan       int
+			SpanCheck      int
+			LifeHours      []int
+			MaxConnections int
 		}
 		Quit struct {
-			Wait bool
+			Wait    bool
 			Timeout int
 		}
 	}
