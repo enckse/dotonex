@@ -173,3 +173,8 @@ func run(sleep time.Duration) {
 		}
 	}
 }
+
+// ShutdownValidator should be called when we're exiting
+func ShutdownValidator() {
+	callLock.Lock()
+}

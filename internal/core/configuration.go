@@ -44,6 +44,10 @@ type (
 			SpanCheck   int
 			LifeHours   []int
 		}
+		Quit struct {
+			Wait bool
+			Timeout int
+		}
 	}
 )
 

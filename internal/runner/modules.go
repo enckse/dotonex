@@ -238,3 +238,8 @@ func (kv keyValueStore) strings() []string {
 func TracePacket(t TraceType, packet *ClientPacket) {
 	moduleWrite("trace", t, packet)
 }
+
+// ShutdownModules should be called when we're exiting
+func ShutdownModules() {
+	pluginLock.Lock()
+}

@@ -74,4 +74,11 @@ internals:
     spancheck: 1
     # hour range in which a recycle is allowed based on lifespan (day hour 0-23, default: 22, 23, 0, 1, 2, 3, 4, 5)
     lifehours: [22, 23, 0, 1, 2, 3, 4, 5]
+
+# what to do when shutting down
+quit:
+    # wait indicates that shutdown should wait for certain cleanup to happen (clean shutdown)
+    wait: true
+    # timeout period to wait for cleanup to complete (seconds)
+    timeout: 15
 {{ end }}

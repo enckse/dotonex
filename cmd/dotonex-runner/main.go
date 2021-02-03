@@ -244,5 +244,16 @@ func main() {
 		core.WriteInfo("lifecyle...")
 	}
 	runner.WritePluginMessages(conf.Log, p.Instance)
+	if conf.Quit.Wait {
+		core.WriteInfo("shutting down")
+		go func() {
+			clientLock.Lock()
+			runner.ShutdownModules()
+			runner.ShutdownValidator()
+		}()
+		if conf.Quit.Timeout > 0 {
+			time.Sleep(time.Duration(conf.Quit.Timeout) * time.Second)
+		}
+	}
 	os.Exit(0)
 }
