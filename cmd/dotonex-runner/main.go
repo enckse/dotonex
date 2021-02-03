@@ -255,12 +255,6 @@ func main() {
 	}
 	maxConns := make(chan bool)
 	clientFailures := make(chan bool)
-	monitorCount(ctx.Debug, "max connection", maxConns, conf.Internals.MaxCheck, conf.Internals.MaxConnections, func() int {
-		return len(clients)
-	})
-	monitorCount(ctx.Debug, "client errors", clientFailures, conf.Internals.ClientCheck, conf.Internals.ClientFailures, func() int {
-		return erroredCount
-	})
 	if conf.Accounting {
 		core.WriteInfo("accounting mode")
 		go account(ctx)
@@ -273,6 +267,12 @@ func main() {
 				core.Fatal("unable to setup management of configs", err)
 			}
 		}
+		monitorCount(ctx.Debug, "max connection", maxConns, conf.Internals.MaxCheck, conf.Internals.MaxConnections, func() int {
+			return len(clients)
+		})
+		monitorCount(ctx.Debug, "client errors", clientFailures, conf.Internals.ClientCheck, conf.Internals.ClientFailures, func() int {
+			return erroredCount
+		})
 		go runProxy(ctx)
 	}
 	select {
