@@ -45,6 +45,8 @@ type (
 			LifeHours      []int
 			MaxCheck       int
 			MaxConnections int
+			ClientCheck    int
+			ClientFailures int
 		}
 		Quit struct {
 			Wait    bool
@@ -99,6 +101,9 @@ func (c *Configuration) Defaults(backing []byte) {
 	}
 	if len(c.Internals.LifeHours) == 0 {
 		c.Internals.LifeHours = []int{22, 23, 0, 1, 2, 3, 4, 5}
+	}
+	if c.Internals.ClientFailures <= 0 {
+		c.Internals.ClientFailures = 100
 	}
 }
 

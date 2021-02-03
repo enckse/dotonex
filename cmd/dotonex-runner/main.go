@@ -21,6 +21,7 @@ var (
 	serverAddress *net.UDPAddr
 	clients                   = make(map[string]*connection)
 	clientLock    *sync.Mutex = new(sync.Mutex)
+	erroredCount              = 0
 )
 
 type (
@@ -96,9 +97,11 @@ func runProxy(ctx *runner.Context) {
 		if !found {
 			conn = newConnection(serverAddress, cliaddr)
 			if conn == nil {
+				erroredCount++
 				clientLock.Unlock()
 				continue
 			}
+			erroredCount = 0
 			clients[addr] = conn
 			clientLock.Unlock()
 			go runConnection(ctx, conn)
@@ -128,6 +131,30 @@ func account(ctx *runner.Context) {
 			continue
 		}
 		ctx.Account(runner.NewClientPacket(buffer[0:n], cliaddr))
+	}
+}
+
+func monitorCount(debug bool, title string, c chan bool, check, max int, callback func() int) {
+	if check > 0 {
+		core.WriteInfo(fmt.Sprintf("performing %s management", title))
+		check := time.Duration(check) * time.Minute
+		go func() {
+			for {
+				time.Sleep(check)
+				if debug {
+					core.WriteDebug(fmt.Sprintf("%s check", title))
+				}
+				clientLock.Lock()
+				total := callback()
+				clientLock.Unlock()
+				if debug {
+					core.WriteDebug(fmt.Sprintf("%s: %d", title, total))
+				}
+				if total > max {
+					c <- true
+				}
+			}
+		}()
 	}
 }
 
@@ -226,28 +253,14 @@ func main() {
 			}
 		}()
 	}
-	max := make(chan bool)
-	if conf.Internals.MaxCheck > 0 {
-		core.WriteInfo("performing max connection management")
-		check := time.Duration(conf.Internals.MaxCheck) * time.Minute
-		go func() {
-			for {
-				time.Sleep(check)
-				if ctx.Debug {
-					core.WriteDebug("max connection check")
-				}
-				clientLock.Lock()
-				total := len(clients)
-				clientLock.Unlock()
-				if ctx.Debug {
-					core.WriteDebug(fmt.Sprintf("connections: %d", total))
-				}
-				if total > conf.Internals.MaxConnections {
-					max <- true
-				}
-			}
-		}()
-	}
+	maxConns := make(chan bool)
+	clientFailures := make(chan bool)
+	monitorCount(ctx.Debug, "max connection", maxConns, conf.Internals.MaxCheck, conf.Internals.MaxConnections, func() int {
+		return len(clients)
+	})
+	monitorCount(ctx.Debug, "client errors", clientFailures, conf.Internals.ClientCheck, conf.Internals.ClientFailures, func() int {
+		return erroredCount
+	})
 	if conf.Accounting {
 		core.WriteInfo("accounting mode")
 		go account(ctx)
@@ -263,7 +276,9 @@ func main() {
 		go runProxy(ctx)
 	}
 	select {
-	case <-max:
+	case <-clientFailures:
+		core.WriteInfo("client failures...")
+	case <-maxConns:
 		core.WriteInfo("connections...")
 	case <-interrupt:
 		core.WriteInfo("interrupt...")

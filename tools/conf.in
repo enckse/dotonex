@@ -76,8 +76,12 @@ internals:
     lifehours: [22, 23, 0, 1, 2, 3, 4, 5]
     # maxconnections indicates the max connections to accept before reset
     maxconnections: 100000
-    # maxcheck is the amount of time (minutes) to wait between connection checks (<= 0 is disabled)
+    # the amount of time (minutes) to wait between connection checks (<= 0 is disabled)
     maxcheck: 15
+    # the amount of time (minutes) to wait between client error checks (<= 0 is disabled)
+    clientcheck: 15
+    # consecutive amount of client setups that must fail to perform a reset
+    clientfailures: 100
 
 # what to do when shutting down
 quit:

@@ -86,6 +86,9 @@ func TestDefaults(t *testing.T) {
 	if c.Internals.MaxConnections != 100000 {
 		t.Error("invalid max connect check")
 	}
+	if c.Internals.ClientFailures != 100 {
+		t.Error("invalid client failure count")
+	}
 	if c.Internals.Lifespan != 12 {
 		t.Error("invalid lifespan")
 	}
