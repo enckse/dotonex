@@ -1,0 +1,195 @@
+dotonex-compose
+===
+
+The `dotonex-compose` application is responsible for maintaining a dynamic configuration
+of user and MAC addresses for pre-auth by dotonex instances and for generally managing
+the `hostapd` configuration for users or MAC addresses that are allowed.
+
+Additionally the application is responsible for receiving a user's token and MAC
+address that are being checked as valid, during a dotonex instance pre-auth, to
+confirm that the user's token is valid and that the MAC is valid for the given
+user.
+
+# cli
+
+The following command line arguments are used to communicate to `dotonex-compose`
+from a dotonex instance.
+
+### hash
+
+This is the hash (MD4) of a shared key, see modes: "server" for more information.
+
+### mac
+
+This is the MAC address that is being requested with a user token for validation.
+See modes: "validate" for more information
+
+### mode
+
+Modes as described in "modes" below.
+
+### repository
+
+The repository in which dynamic configurations live, see the "repository layout"
+below.
+
+### token
+
+This is a user token that is expected be used with a "command" to get a user
+name (validating the given user is valid) and then matching the MAC to those
+allowed by the user (see the "repository" layout below).
+
+### commands
+
+When a validation is being performed this command is run (all remaining
+args after the other arguments are given). It is expected that a "%s" format
+specifier will be in at least one command segment to be formatted with the "user token"
+and when the command is run it will result in a JSON output that contains the user's
+name (see information about the search criteria below).
+
+# modes
+
+### server
+
+In server mode MD4 hash of the shared password (password all user's provide) is confirmed
+to be unchanged or changed. If the server hash changes than this will trigger an update
+to the underlying `hostapd` configuration for user's to update all passwords.
+
+### validate
+
+In validation mode the user's token and MAC are taken. The user's token will be validated
+by calling the previously described "command" above. In this mode if the exit code is 0 than
+validation is considered successful. A non-zero code is consider invalid or a failure.
+
+### fetch
+
+While cause `dotonex-compose` to update the underlying repository.
+
+### build
+
+Will check if any recent "fetch" commands have caused the underlying repository to update.
+If a change is detected then this will cause a rebuild of the underlying hostapd configuration.
+
+### rebuild
+
+Rebuild is similar to build except it will _always_ cause an update to the hostapd configuration.
+
+# repository layout
+
+The following discusses the repository layout and structure.
+
+## structure
+
+A `dotonex-compose` repository should be laid out in the format:
+
+```
+f vlans.cfg
+d user.name/
+f user.name/112233445566
+f user.name/vlans.cfg
+d myvlan/
+f myvlan/112211221122
+d user.name2/
+f user.name2/112233444455
+f user.name2/vlans.cfg
+```
+
+### users
+
+When a user token is validated and the MAC is being processed the MAC _must_ be
+within the user's subfolder. The root level `vlans.cfg` should be formatted as:
+
+```
+vlans:
+    # where multiple vlans may be specified
+    - name: myvlan
+      id: 1
+```
+
+Each user's vlans.cfg should be of format:
+
+```
+membership:
+    # multiple vlans may be described here
+    - vlan: myvlan
+```
+
+In order for the above user to login they would provide the following
+network credentials (assuming the server password was "sharedserverkey"):
+
+```
+user: user.name:<valid-token>
+pass: sharedserverkey
+```
+
+If the "<valid-token> validated then they would be able to access the network
+via a machine with MAC "11:22:33:44:55:66".
+
+_If a user provides an updated token in the future that is different but still
+valid, it will replace their token with the new, passed in token_.
+
+When a user is in more than one VLAN than they will default to login to the _first_
+VLAN in their "vlans.cfg" file. In order to login to an explicit vlan they can
+
+```
+user: user.name:<valid-token>@vlan.myvlan
+pass: sharedserverkey
+```
+
+### MAB
+
+In order to MAB a MAC address the MAC should be placed in a subdirectory where
+the directory name is the name of the vlan in which to MAB into.
+
+### examples
+
+An example of the repository layout is available within the testing areas of the
+dotonex as well.
+
+# env
+
+The following environment variables can be used to communicate internal
+expectations of the `dotonex-compose` iteration.
+
+## DOTONEX_DEBUG
+
+When this variable is set to "true" than the underlying `dotonex-compose` will
+provide verbose outputs for debugging purposes.
+
+## DOTONEX_SEARCH
+
+The value of this variable is used to determine how an instance `dotonex-compose`
+should search JSON fields for within a response from making a request to validate a token.
+
+This is generally configured as indicated in `dotonex.compose.conf`
+
+_This field is provided to override the default expectations that the token
+validation request will be of form `{"username": "full.name"}`._
+
+### examples
+
+In the default case the "command" passed will be expected to result in the format of
+`{"username": "full.username"}` where the "username" field contains the expected value.
+
+If the search was specified as "inarray[], user, inarray[0], name" then the generally
+expected JSON result from the token validation request could be of the format:
+
+```
+[
+    {
+        "metadata": 1
+    },
+    {
+        "more metadata": 2
+    },
+    {
+        "user": [
+            {
+                "name": "full.username"
+            },
+            ...
+        ]
+    }
+    ...
+]
+```

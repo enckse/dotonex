@@ -1,0 +1,10 @@
+dotonex
+===
+
+The `dotonex` executable itself has few responsiblities. The sole purpose of this
+application is to find and detect configurations files within `/etc/dotonex` at the
+root level that are valid and start instances for each configuration that is found.
+
+When one of the instances recycles (or fails) the `dotonex` application will
+attempt to restart the instance (with some cooldowns to allow for debugging
+and recovery attempts).
