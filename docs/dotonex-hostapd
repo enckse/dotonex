@@ -1,0 +1,22 @@
+dotonex (hostapd interaction)
+===
+
+A dotonex instance generally interacts with hostapd through two formats. See
+also `hostapd`.
+
+# proxy
+
+A proxy instance of dotonex will be used to pass user authentications that pass
+pre-auth checks to hostapd
+
+# composition
+
+The composition element of dotonex manages the underying hostapd "eap_user" file
+which defines MAB and user logins that are allowed. This element is also responsible
+for indicating to hostapd that it needs to reload the file.
+
+## daemon
+
+The `dotonex-daemon` will perform auto setup and configuration of the underlying
+certificates for hostapd. It also maintains responsibility for making sure a hostapd
+instance if up and running.
