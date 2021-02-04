@@ -8,9 +8,6 @@ preload:
     - /etc/dotonex/proxy.conf
 
 {{ else }}
-# to support caching operations
-cache: true
-
 # host (to bind to)
 host: localhost
 
