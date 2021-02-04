@@ -1,0 +1,27 @@
+dotonex-runner
+===
+
+The dotonex-runner is generally invoked by `dotonex` from a detected configuration
+file as a single instance (e.g. accounting or proxy). The runner itself is responsible
+for performing accounting or pre-auth checking and then proxying to `hostapd` for final
+user validation.
+
+# proxy
+
+When operating as a proxy the `dotonex-runner` will attempt to perform pre-auth validation
+and then pass the packet on for further processing as required. The packet will be read and the "User-Name" attribute will be interrogate. If the "User-Name"
+is available it will be passed to a pre-auth step which will validate the user name and MAC
+address are valid (see `dotonex-compose` and `dotonex.compose.conf` for more information).
+If the user name and MAC are valid (or a MAB situation is detected) than the proxy will pass
+the packet to `hostapd` to validate the credentials for the request (performing any EAP
+transactions).
+
+# accounting
+
+An accounting instance provides a simplistic writing of accounting information to disk.
+
+# composition
+
+Any proxy instance of a `dotonex-runner` will utilize the `dotonex.compose.conf` section
+of the configuration to assist in maintaining a background dynamic composition of user
+configurations.
