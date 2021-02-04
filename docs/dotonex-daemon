@@ -1,0 +1,24 @@
+dotonex-daemon
+===
+
+The `dotonex-daemon` is a shell script wrapper that invokes `dotonex` itself. It,
+additionally, invokes an instance of `hostapd` for dotonex to connect to.
+
+# env
+
+The daemon itself will source the `env` file found within `/etc/dotonex/` which contains
+the source repository to clone (for dynamic configuration setups via `dotonex-compose`),
+the build version information, and the certificate key to use when generating certificates
+for hostapd during first-run.
+
+# setup
+
+During first-run the daemon will necessarily attempt to clone (if a clone does not exist)
+the server repository (if the server repository is non-empty). It will also attempt to
+generate certificates and set the certificate key dynamically for all `hostapd` configuration
+files
+
+# running
+
+Once setup is completed then the daemon will simply loop and attempt to restart `hostapd`
+or `dotonex` if either process fails.
