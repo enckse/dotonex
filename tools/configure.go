@@ -58,6 +58,7 @@ const (
 	radiusFlag     = "radius-key"
 	toolDir        = "tools"
 	certKeyFlag    = "hostapd-certkey"
+	staticTrue     = "true"
 )
 
 func show(cat, message string) {
@@ -161,15 +162,13 @@ func main() {
 	m.errored = false
 	m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
 	defaults := true
-	defaultGitlab := true
-	m.Static = "true"
+	m.Static = staticTrue
 	defaults = false
 	m.RADIUSKey = useOrRandom(radiusFlag, m.RADIUSKey)
 	m.SharedKey = useOrRandom(sharedFlag, m.SharedKey)
 	m.CertKey = useOrRandom(certKeyFlag, m.CertKey)
 	if m.Gitlab {
 		m.Static = "false"
-		defaultGitlab = false
 		m.nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
 		for _, c := range m.GitlabFQDN {
 			if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' {
@@ -184,9 +183,9 @@ func main() {
 		m.RADIUSKey = "radiuskey"
 		m.SharedKey = "sharedkey"
 	}
-	if defaultGitlab {
+	if m.Static == staticTrue {
 		m.GitlabFQDN = "gitlab.example.com"
-		m.ServerRepository = "."
+		m.ServerRepository = ""
 	}
 	if m.errored {
 		os.Exit(1)
