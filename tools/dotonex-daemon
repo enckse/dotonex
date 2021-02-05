@@ -1,18 +1,17 @@
 #!/bin/bash
-SETUP=/var/lib/dotonex/setup.log
 ENV=/etc/dotonex/env
-REPO=/var/lib/dotonex/config
 
 if [ ! -e $ENV ]; then
     echo "required environment file missing: $ENV"
     exit 1
 fi
+
 source $ENV
 echo "version: $VERSION"
 
 if [ ! -z "$SERVER_REPO" ]; then
-    if [ ! -d $REPO ]; then
-        git clone $SERVER_REPO /var/lib/dotonex/config
+    if [ ! -d $LOCAL_REPO ]; then
+        git clone $SERVER_REPO $LOCAL_REPO
     fi
 fi
 
@@ -30,9 +29,9 @@ _init() {
 }
 
 sed -i "s/{PASSWORD}/$CERTKEY/g" /etc/dotonex/hostapd/certs/*.cnf /etc/dotonex/hostapd/hostapd.conf
-if [ ! -e $SETUP ]; then
+if [ ! -e $SETUP_LOG ]; then
     echo "performing first-time dotonex setup"
-    _init >> $SETUP 2>&1
+    _init >> $SETUP_LOG 2>&1
 fi
 
 _hostapd() {
