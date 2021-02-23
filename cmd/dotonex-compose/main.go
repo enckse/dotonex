@@ -113,8 +113,10 @@ func validate(wrapper compose.Store) error {
 		return fmt.Errorf("user vlan config not found")
 	}
 
+	// the mac has been checked for passing clean by being generically check earlier
+	mac, _ := core.CleanMAC(wrapper.MAC)
 	userDir := filepath.Join(wrapper.Repo, user)
-	for _, file := range []string{wrapper.MAC, vlanConfig} {
+	for _, file := range []string{mac, vlanConfig} {
 		if !core.PathExists(filepath.Join(userDir, file)) {
 			return fmt.Errorf("%s file not found", file)
 		}
