@@ -55,7 +55,7 @@ func piped(wrapper compose.Store, args []string) (string, error) {
 
 func validate(wrapper compose.Store) error {
 	wrapper.Debugging("validating inputs")
-	if err := mac(wrapper); err != nil {
+	if err := mac(wrapper, false); err != nil {
 		return err
 	}
 	hash := core.MD4(wrapper.Token)
@@ -152,7 +152,7 @@ func server(wrapper compose.Store) error {
 	return build(wrapper, true)
 }
 
-func mac(wrapper compose.Store) error {
+func mac(wrapper compose.Store, mab bool) error {
 	mac, ok := core.CleanMAC(wrapper.MAC)
 	if !ok {
 		return fmt.Errorf("invalid MAC")
@@ -165,12 +165,21 @@ func mac(wrapper compose.Store) error {
 		if !dir.IsDir() {
 			continue
 		}
-		p := filepath.Join(wrapper.Repo, dir.Name(), mac)
-		if core.PathExists(p) {
-			return nil
+		sub := filepath.Join(wrapper.Repo, dir.Name())
+		if core.PathExists(filepath.Join(sub, mac)) {
+			if !mab {
+				return nil
+			}
+			if !core.PathExists(filepath.Join(sub, vlanConfig)) {
+				return nil
+			}
 		}
 	}
-	return fmt.Errorf("unable to find mac: %s", wrapper.MAC)
+	mode := "user"
+	if mab {
+		mode = "mab"
+	}
+	return fmt.Errorf("unable to find mac: %s (%s)", wrapper.MAC, mode)
 }
 
 func getHostapd(wrapper compose.Store, def compose.Definition) ([]compose.Hostapd, error) {
@@ -401,7 +410,7 @@ func run() error {
 		if len(wrapper.MAC) == 0 {
 			return fmt.Errorf("missing flags for mac")
 		}
-		return mac(wrapper)
+		return mac(wrapper, true)
 	case core.ModeFetch:
 		return fetch(wrapper)
 	case core.ModeBuild:

@@ -50,7 +50,7 @@
 [INFO] user found: user.name
 [INFO] validated
 [INFO] validating inputs
-[ERROR] config failure ([unable to find mac: aabbccddee11])
+[ERROR] config failure ([unable to find mac: aabbccddee11 (user)])
 [INFO] validating inputs
 [ERROR] config failure ([invalid MAC])
 [INFO] validating inputs
@@ -87,4 +87,5 @@
 [INFO] token is known
 [INFO] user found: user.name
 [ERROR] config failure ([aabbccdd1111 file not found])
-[ERROR] config failure ([unable to find mac: 1234567890ab])
+[ERROR] config failure ([unable to find mac: aabbccdd1111 (mab)])
+[ERROR] config failure ([unable to find mac: 1234567890ab (mab)])
