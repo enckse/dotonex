@@ -50,6 +50,8 @@ const (
 	ModeBuild = "build"
 	// ModeRebuild will force rebuild
 	ModeRebuild = "rebuild"
+	// ModeMAC will check for MAC validity
+	ModeMAC = "mac"
 	// DebugEnvOn indicates environment variable debugging is on for processes
 	DebugEnvOn = "true"
 	// DebugEnvVariable is the environment variable to indicate debug state

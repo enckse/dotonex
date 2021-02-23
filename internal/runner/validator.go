@@ -73,6 +73,20 @@ func (s script) execute(flags core.ComposeFlags) bool {
 	return true
 }
 
+func (s script) MAC(mac string) bool {
+	if s.static {
+		obj := fmt.Sprintf("/%s", mac)
+		for _, p := range s.payload {
+			if strings.HasSuffix(p, obj) {
+				return true
+			}
+		}
+		return false
+	}
+	c := core.ComposeFlags{Mode: core.ModeMAC, MAC: mac}
+	return s.execute(c)
+}
+
 func (s script) Validate(user, token, mac string) bool {
 	if s.static {
 		key := fmt.Sprintf("%s/%s", token, mac)
@@ -143,6 +157,13 @@ func Manage(cfg *core.Configuration) error {
 		go run(time.Duration(cfg.Compose.Refresh) * time.Minute)
 	}
 	return nil
+}
+
+// CheckMAC validates a MAC
+func CheckMAC(mac string) bool {
+	callLock.Lock()
+	defer callLock.Unlock()
+	return backend.MAC(mac)
 }
 
 // CheckTokenMAC validates a token+mac combination as valid

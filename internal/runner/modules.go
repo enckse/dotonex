@@ -161,8 +161,13 @@ func checkUserMac(p *ClientPacket) error {
 	reason := ""
 	cleaned, isMAC := core.CleanMAC(calling)
 	if isMAC {
-		// MAB case is if the calling != clean the token
-		if calling != clean(userName) {
+		if calling == clean(userName) {
+			// MAC is valid within overall configuration
+			if !CheckMAC(cleaned) {
+				reason = "NOMACFOUND"
+			}
+		} else {
+			// MAB case is if the calling != clean the token
 			tokenUser, token := core.GetTokenFromLogin(userName)
 			if token == "" || tokenUser == "" {
 				reason = "INVALIDTOKEN"

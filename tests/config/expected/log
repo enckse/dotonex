@@ -79,3 +79,4 @@
 [INFO] hostapd reset
 [WARN] unable to get hostapd pids: exit status 1
 [ERROR] config failure ([1122334455aa file not found])
+[ERROR] config failure ([unable to find mac: 1234567890ab])

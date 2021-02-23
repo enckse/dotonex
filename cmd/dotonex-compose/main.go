@@ -149,6 +149,23 @@ func server(wrapper compose.Store) error {
 	return build(wrapper, true)
 }
 
+func mac(wrapper compose.Store) error {
+	dirs, err := ioutil.ReadDir(wrapper.Repo)
+	if err != nil {
+		return err
+	}
+	for _, dir := range dirs {
+		if !dir.IsDir() {
+			continue
+		}
+		p := filepath.Join(wrapper.Repo, dir.Name(), wrapper.MAC)
+		if core.PathExists(p) {
+			return nil
+		}
+	}
+	return fmt.Errorf("unable to find mac: %s", wrapper.MAC)
+}
+
 func getHostapd(wrapper compose.Store, def compose.Definition) ([]compose.Hostapd, error) {
 	hashKey := wrapper.NewKey(serverHash)
 	hash, ok, err := wrapper.Get(hashKey)
@@ -373,6 +390,11 @@ func run() error {
 			return fmt.Errorf("missing flags for server")
 		}
 		return server(wrapper)
+	case core.ModeMAC:
+		if len(wrapper.MAC) == 0 {
+			return fmt.Errorf("missing flags for mac")
+		}
+		return mac(wrapper)
 	case core.ModeFetch:
 		return fetch(wrapper)
 	case core.ModeBuild:

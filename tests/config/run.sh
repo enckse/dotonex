@@ -69,6 +69,9 @@ _command validate --token zzzzzz --mac 1122334455aa
 _diff_db token4
 _diff_eap users2
 
+_command mac --mac aabbccddeeff
+_command mac --mac 1234567890ab
+
 diff -u $RESULTS ${EXPECT}log
 if [ $? -ne 0 ]; then
     echo "incorrect execution"
