@@ -109,10 +109,6 @@ func validate(wrapper compose.Store) error {
 		}
 	}
 
-	if !core.PathExists(filepath.Join(wrapper.Repo, user, vlanConfig)) {
-		return fmt.Errorf("user vlan config not found")
-	}
-
 	// the mac has been checked for passing clean by being generically check earlier
 	mac, _ := core.CleanMAC(wrapper.MAC)
 	userDir := filepath.Join(wrapper.Repo, user)
