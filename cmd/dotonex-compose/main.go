@@ -55,9 +55,8 @@ func piped(wrapper compose.Store, args []string) (string, error) {
 
 func validate(wrapper compose.Store) error {
 	wrapper.Debugging("validating inputs")
-	mac, ok := core.CleanMAC(wrapper.MAC)
-	if !ok {
-		return fmt.Errorf("invalid MAC")
+	if err := mac(wrapper); err != nil {
+		return err
 	}
 	hash := core.MD4(wrapper.Token)
 	tokenKey := wrapper.NewKey(hash)
@@ -109,12 +108,11 @@ func validate(wrapper compose.Store) error {
 			return err
 		}
 	}
-	userDir := filepath.Join(wrapper.Repo, user)
-	for _, file := range []string{mac, vlanConfig} {
-		if !core.PathExists(filepath.Join(userDir, file)) {
-			return fmt.Errorf("%s file not found", file)
-		}
+
+	if !core.PathExists(filepath.Join(wrapper.Repo, user, vlanConfig)) {
+		return fmt.Errorf("user vlan config not found")
 	}
+
 	wrapper.Debugging("validated")
 	return nil
 }
@@ -150,6 +148,10 @@ func server(wrapper compose.Store) error {
 }
 
 func mac(wrapper compose.Store) error {
+	mac, ok := core.CleanMAC(wrapper.MAC)
+	if !ok {
+		return fmt.Errorf("invalid MAC")
+	}
 	dirs, err := ioutil.ReadDir(wrapper.Repo)
 	if err != nil {
 		return err
@@ -158,7 +160,7 @@ func mac(wrapper compose.Store) error {
 		if !dir.IsDir() {
 			continue
 		}
-		p := filepath.Join(wrapper.Repo, dir.Name(), wrapper.MAC)
+		p := filepath.Join(wrapper.Repo, dir.Name(), mac)
 		if core.PathExists(p) {
 			return nil
 		}

@@ -52,11 +52,17 @@ _command rebuild
 _diff_eap mabonly
 _diff_db serverhash
 SET_USER=user.name
-_command validate --token abcdef --mac 1122334455aa
+_command validate --token abcdef --mac aabbccddeeff
 _diff_db token1
 _command validate --token token --mac aabbccddeeff
 _diff_db token2
-_command validate --token abcdef --mac 1122334455aa
+_command validate --token abcdef --mac aabbccddeeff
+_diff_db token2
+_diff_eap user
+_command validate --token abcdef --mac aabbccddee11
+_diff_db token2
+_diff_eap user
+_command validate --token abcdef --mac aabbccddee1g
 _diff_db token2
 _diff_eap user
 
@@ -65,7 +71,7 @@ _command validate --token xxxxxx --mac aabbccdd1111
 _diff_db token3
 _diff_eap users
 SET_USER=user.name
-_command validate --token zzzzzz --mac 1122334455aa
+_command validate --token zzzzzz --mac aabbccddeeff
 _diff_db token4
 _diff_eap users2
 

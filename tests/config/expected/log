@@ -30,7 +30,7 @@
 [INFO]  -> aabbccddeeff
 [INFO] hostapd reset
 [WARN] unable to get hostapd pids: exit status 1
-[ERROR] config failure ([1122334455aa file not found])
+[INFO] validated
 [INFO] validating inputs
 [INFO] stdout
 [INFO] {"username":"user.name"}
@@ -48,7 +48,11 @@
 [INFO] validating inputs
 [INFO] token is known
 [INFO] user found: user.name
-[ERROR] config failure ([1122334455aa file not found])
+[INFO] validated
+[INFO] validating inputs
+[ERROR] config failure ([unable to find mac: aabbccddee11])
+[INFO] validating inputs
+[ERROR] config failure ([invalid MAC])
 [INFO] validating inputs
 [INFO] stdout
 [INFO] {"username":"person.name"}
@@ -78,5 +82,5 @@
 [INFO]  -> aabbccddeeff
 [INFO] hostapd reset
 [WARN] unable to get hostapd pids: exit status 1
-[ERROR] config failure ([1122334455aa file not found])
+[INFO] validated
 [ERROR] config failure ([unable to find mac: 1234567890ab])
