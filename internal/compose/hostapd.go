@@ -21,8 +21,8 @@ radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:%s`
 
-	mabLogin   = `"%s" MD5 "%s"` + attributes
-	userLogin  = `"%s" PEAP
+	mabLogin  = `"%s" MD5 "%s"` + attributes
+	userLogin = `"%s" PEAP
 
 "%s" MSCHAPV2 hash:%s [2]` + attributes
 )
