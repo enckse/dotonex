@@ -2,6 +2,7 @@ package compose
 
 import (
 	"fmt"
+	"strings"
 )
 
 type (
@@ -20,8 +21,8 @@ radius_accept_attr=64:d:13
 radius_accept_attr=65:d:6
 radius_accept_attr=81:s:%s`
 
-	mab   = `"%s" MD5 "%s"` + attributes
-	login = `"%s" PEAP
+	mabLogin   = `"%s" MD5 "%s"` + attributes
+	userLogin  = `"%s" PEAP
 
 "%s" MSCHAPV2 hash:%s [2]` + attributes
 )
@@ -29,9 +30,10 @@ radius_accept_attr=81:s:%s`
 // String
 func (h Hostapd) String() string {
 	if h.mab {
-		return fmt.Sprintf(mab, h.name, h.name, h.vlan)
+		upper := strings.ToUpper(h.name)
+		return fmt.Sprintf(mabLogin, upper, upper, h.vlan)
 	}
-	return fmt.Sprintf(login, h.name, h.name, h.password, h.vlan)
+	return fmt.Sprintf(userLogin, h.name, h.name, h.password, h.vlan)
 }
 
 // NewHostapd generates a new hostapd configuration setup
