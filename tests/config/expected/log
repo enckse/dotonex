@@ -87,5 +87,6 @@
 [INFO] token is known
 [INFO] user found: user.name
 [ERROR] config failure ([aabbccdd1111 file not found])
-[ERROR] config failure ([unable to find mac: aabbccdd1111 (mab)])
 [ERROR] config failure ([unable to find mac: 1234567890ab (mab)])
+[INFO] aabbccdd1111 MAC is user, not mab
+[ERROR] config failure ([unable to find mac: aabbccdd1111 (mab)])

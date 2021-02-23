@@ -79,8 +79,8 @@ _diff_db token4
 _diff_eap users2
 
 _command mac --mac aabbccddeeff
-_command mac --mac aabbccdd1111
 _command mac --mac 1234567890ab
+_command mac --mac aabbccdd1111
 
 diff -u $RESULTS ${EXPECT}log
 if [ $? -ne 0 ]; then

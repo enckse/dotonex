@@ -167,12 +167,13 @@ func mac(wrapper compose.Store, mab bool) error {
 		}
 		sub := filepath.Join(wrapper.Repo, dir.Name())
 		if core.PathExists(filepath.Join(sub, mac)) {
-			if !mab {
-				return nil
+			if mab {
+				if core.PathExists(filepath.Join(sub, vlanConfig)) {
+					wrapper.Debugging(fmt.Sprintf("%s MAC is user, not mab", mac))
+					continue
+				}
 			}
-			if !core.PathExists(filepath.Join(sub, vlanConfig)) {
-				return nil
-			}
+			return nil
 		}
 	}
 	mode := "user"
