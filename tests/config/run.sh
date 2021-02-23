@@ -74,6 +74,9 @@ SET_USER=user.name
 _command validate --token zzzzzz --mac aabbccddeeff
 _diff_db token4
 _diff_eap users2
+_command validate --token zzzzzz --mac aabbccdd1111
+_diff_db token4
+_diff_eap users2
 
 _command mac --mac aabbccddeeff
 _command mac --mac 1234567890ab

@@ -113,6 +113,13 @@ func validate(wrapper compose.Store) error {
 		return fmt.Errorf("user vlan config not found")
 	}
 
+	userDir := filepath.Join(wrapper.Repo, user)
+	for _, file := range []string{wrapper.MAC, vlanConfig} {
+		if !core.PathExists(filepath.Join(userDir, file)) {
+			return fmt.Errorf("%s file not found", file)
+		}
+	}
+
 	wrapper.Debugging("validated")
 	return nil
 }

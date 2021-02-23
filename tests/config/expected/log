@@ -83,4 +83,8 @@
 [INFO] hostapd reset
 [WARN] unable to get hostapd pids: exit status 1
 [INFO] validated
+[INFO] validating inputs
+[INFO] token is known
+[INFO] user found: user.name
+[ERROR] config failure ([aabbccdd1111 file not found])
 [ERROR] config failure ([unable to find mac: 1234567890ab])
