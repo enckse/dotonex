@@ -40,6 +40,7 @@ func TestUserMacBasics(t *testing.T) {
 	newTestSet(t, "user:test@vlan.test", "11-22-33-44-55-66", true, "")
 	newTestSet(t, "test", "11-22-33-44-55-66", false, "INVALIDTOKEN")
 	newTestSet(t, "user:test", "12-22-33-44-55-66", false, "TOKENMACFAIL")
+	newTestSet(t, "11-22-33-11-22-33", "11-22-33-11-22-33", false, "NOMACFOUND")
 }
 
 func ErrorIfNotPre(t *testing.T, p *ClientPacket, message string) {
