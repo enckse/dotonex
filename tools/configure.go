@@ -34,6 +34,7 @@ type (
 		CFlags           string
 		LDFlags          string
 		CertKey          string
+		BuildMode        string
 		Arguments        []string `json:"-"`
 	}
 
@@ -139,7 +140,7 @@ func main() {
 			validMode = false
 		}
 	}
-	m := Make{CertKey: *certKey, CFlags: *cFlags, LDFlags: *ldFlags, Gitlab: doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	m := Make{BuildMode: useMode, CertKey: *certKey, CFlags: *cFlags, LDFlags: *ldFlags, Gitlab: doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
 	if !validMode {
 		m.fail(fmt.Errorf("invalid mode: %s", useMode), true)
 	}
