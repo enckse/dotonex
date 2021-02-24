@@ -90,20 +90,6 @@ Also make sure to enable the necessary services
 sudo systemctl enable dotonex.service
 ```
 
-### Dockerfile
-
-It may also be preferred to build for other distributions via podman docker (e.g. debian stable/buster)
-
-```
-podman build --tag dotonex -f tools/buster.Dockerfile \
-    --build-arg=COMMIT=somecommithash \
-    --build-arg=RADIUSKEY=supersecretradiuskey \
-    --build-arg=SHAREDKEY=shareduserkey \
-    --build-arg=GITLABFQDN=gitlab.example.com \
-    --build-arg=SERVERREPO=/path/to/some/repository \
-    --build-arg=CERTKEY=mycertkeytouse
-```
-
 ### remotely
 
 this requires that:
