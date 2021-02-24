@@ -109,7 +109,7 @@ func validate(wrapper compose.Store) error {
 		}
 	}
 
-	// the mac has been checked for passing clean by being generically check earlier
+	// the mac has been checked as "clean" by being generically checked earlier
 	mac, _ := core.CleanMAC(wrapper.MAC)
 	userDir := filepath.Join(wrapper.Repo, user)
 	for _, file := range []string{mac, vlanConfig} {
