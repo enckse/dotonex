@@ -51,7 +51,7 @@ var (
 
 const (
 	hostapdFlag    = "hostap-version"
-	gitlabFlag     = "enable-gitlab"
+	modeFlag       = "build-mode"
 	gitlabFQDNFlag = "gitlab-fqdn"
 	repoFlag       = "server-repository"
 	sharedFlag     = "shared-key"
@@ -122,14 +122,27 @@ func main() {
 	cFlags := flag.String("cflags", "-march=x86-64 -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for hostapd build")
 	ldFlags := flag.String("ldflags", "-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now", "LDFLAGS for hostapd build")
 	certKey := flag.String(certKeyFlag, "", "hostapd certificate password key")
-	doGitlab := flag.Bool(gitlabFlag, false, "enable gitlab configuration")
+	mode := flag.String(modeFlag, "", "enable specific build mode")
 	gitlabFQDN := flag.String(gitlabFQDNFlag, "", "gitlab fully-qualified-domain-name")
 	repo := flag.String(repoFlag, "", "server repository for backend management")
 	radiusKey := flag.String(radiusFlag, "", "radius key between server and networking components")
 	sharedKey := flag.String(sharedFlag, "", "shared radius key for all users given unique tokens")
 	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
-	m := Make{CertKey: *certKey, CFlags: *cFlags, LDFlags: *ldFlags, Gitlab: *doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	doGitlab := false
+	useMode := *mode
+	validMode := true
+	if useMode != "" {
+		if useMode == "gitlab" {
+			doGitlab = true
+		} else {
+			validMode = false
+		}
+	}
+	m := Make{CertKey: *certKey, CFlags: *cFlags, LDFlags: *ldFlags, Gitlab: doGitlab, GoFlags: *goFlags, HostapdVersion: *hostapd, GitlabFQDN: *gitlabFQDN, RADIUSKey: *radiusKey, SharedKey: *sharedKey, ServerRepository: *repo}
+	if !validMode {
+		m.fail(fmt.Errorf("invalid mode: %s", useMode), true)
+	}
 	b, err := json.Marshal(m)
 	if err != nil {
 		m.fail(err, true)
@@ -169,14 +182,14 @@ func main() {
 	m.CertKey = useOrRandom(certKeyFlag, m.CertKey)
 	if m.Gitlab {
 		m.Static = "false"
-		m.nonEmptyFatal(gitlabFlag, gitlabFQDNFlag, m.GitlabFQDN)
+		m.nonEmptyFatal(modeFlag, gitlabFQDNFlag, m.GitlabFQDN)
 		for _, c := range m.GitlabFQDN {
 			if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' {
 				continue
 			}
 			m.fail(fmt.Errorf("invalid character in FQDN"), false)
 		}
-		m.nonEmptyFatal(gitlabFlag, repoFlag, m.ServerRepository)
+		m.nonEmptyFatal(modeFlag, repoFlag, m.ServerRepository)
 	}
 	if defaults {
 		m.CertKey = "certkey"

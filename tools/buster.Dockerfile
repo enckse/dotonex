@@ -18,6 +18,6 @@ ARG CERTKEY
 
 RUN git -C dotonex checkout ${COMMIT}
 WORKDIR /workdir/dotonex
-RUN ./configure --go-flags '-buildmode=pie' --enable-gitlab --hostapd-certkey=${CERTKEY}  --radius-key=${RADIUSKEY} --shared-key=${SHAREDKEY} --gitlab-fqdn ${GITLABFQDN} --server-repository=${SERVERREPO}
+RUN ./configure --go-flags '-buildmode=pie' --build-mode gitlab --hostapd-certkey=${CERTKEY}  --radius-key=${RADIUSKEY} --shared-key=${SHAREDKEY} --gitlab-fqdn ${GITLABFQDN} --server-repository=${SERVERREPO}
 RUN make
 RUN sed -i "s#/usr/lib/systemd/#/lib/systemd/#g" Makefile

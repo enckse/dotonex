@@ -62,7 +62,7 @@ to deploy and utilize the utilize a built-in gitlab backend:
 ./configure \
     -radius-key networkkey \
     -shared-key clientkey \
-    -enable-gitlab \
+    -build-mode gitlab \
     -gitlab-fqdn gitlab.example.com \
     -server-repository /path/to/repo
 ```
