@@ -74,6 +74,11 @@ If a change is detected then this will cause a rebuild of the underlying hostapd
 
 Rebuild is similar to build except it will _always_ cause an update to the hostapd configuration.
 
+### mac
+
+Will confirm a MAC is in the repository (valid for continued authentication) and generally
+appears to be a bypassed device (not a user device)
+
 # repository layout
 
 The following discusses the repository layout and structure.
