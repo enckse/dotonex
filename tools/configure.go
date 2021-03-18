@@ -28,7 +28,6 @@ type (
 		ServerRepository string
 		errored          bool
 		To               bool `json:"-"`
-		file             string
 		Configuration    *Config `json:"-"`
 		Static           string  `json:"-"`
 		CFlags           string
@@ -63,17 +62,7 @@ const (
 )
 
 func show(cat, message string) {
-	fmt.Println(fmt.Sprintf("[%s] %s", cat, message))
-}
-
-func (m *Make) nonEmptyFatalKey(key, value string) {
-	m.nonEmptyFatal("", key, value)
-	for _, c := range strings.ToLower(value) {
-		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
-			continue
-		}
-		m.deferFatal("", key, "invalid character ([a-zA-Z0-9])")
-	}
+	fmt.Printf("[%s] %s\n", cat, message)
 }
 
 func (m *Make) nonEmptyFatal(cat, key, value string) {
@@ -175,9 +164,7 @@ func main() {
 	}
 	m.errored = false
 	m.nonEmptyFatal("", hostapdFlag, m.HostapdVersion)
-	defaults := true
 	m.Static = staticTrue
-	defaults = false
 	m.RADIUSKey = useOrRandom(radiusFlag, m.RADIUSKey)
 	m.SharedKey = useOrRandom(sharedFlag, m.SharedKey)
 	m.CertKey = useOrRandom(certKeyFlag, m.CertKey)
@@ -191,11 +178,6 @@ func main() {
 			m.fail(fmt.Errorf("invalid character in FQDN"), false)
 		}
 		m.nonEmptyFatal(modeFlag, repoFlag, m.ServerRepository)
-	}
-	if defaults {
-		m.CertKey = "certkey"
-		m.RADIUSKey = "radiuskey"
-		m.SharedKey = "sharedkey"
 	}
 	if m.Static == staticTrue {
 		m.GitlabFQDN = "gitlab.example.com"
