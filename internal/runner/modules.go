@@ -45,11 +45,19 @@ func newRequestDump(packet *ClientPacket, mode string) *requestDump {
 	return &requestDump{data: packet, mode: mode}
 }
 
+func internalError(op string, err error) {
+	fmt.Printf("INTERNAL: %s %v\n", op, err)
+}
+
 func (packet *requestDump) dumpPacket(kv keyValue) []string {
 	var w bytes.Buffer
-	io.WriteString(&w, fmt.Sprintf(fmt.Sprintf("Mode = %s\n", packet.mode)))
+	if _, err := io.WriteString(&w, fmt.Sprintf("Mode = %s\n", packet.mode)); err != nil {
+		internalError("dump mode", err)
+	}
 	if packet.data.ClientAddr != nil {
-		io.WriteString(&w, fmt.Sprintf("UDPAddr = %s\n", packet.data.ClientAddr.String()))
+		if _, err := io.WriteString(&w, fmt.Sprintf("UDPAddr = %s\n", packet.data.ClientAddr.String())); err != nil {
+			internalError("dump addr", err)
+		}
 	}
 	conf := &debug.Config{}
 	conf.Dictionary = debug.IncludedDictionary
@@ -64,11 +72,7 @@ func (packet *requestDump) dumpPacket(kv keyValue) []string {
 	return results
 }
 
-func newFile(path, instance string, appending bool) *os.File {
-	flags := os.O_RDWR | os.O_CREATE
-	if appending {
-		flags = flags | os.O_APPEND
-	}
+func newFile(path, instance string) *os.File {
 	t := time.Now()
 	inst := instance
 	if len(inst) == 0 {
@@ -91,13 +95,15 @@ func WritePluginMessages(path, instance string) {
 	if len(pluginLogs) == 0 {
 		return
 	}
-	f = newFile(path, instance, true)
+	f = newFile(path, instance)
 	if f == nil {
 		return
 	}
 	defer f.Close()
 	for _, m := range pluginLogs {
-		f.Write([]byte(m))
+		if _, err := f.Write([]byte(m)); err != nil {
+			internalError("write plugin messages", err)
+		}
 	}
 	pluginLogs = pluginLogs[:0]
 	pluginLID = 0

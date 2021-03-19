@@ -7,17 +7,11 @@ import (
 	"layeh.com/radius/rfc2865"
 )
 
-const (
-	testDir = "../../tests/unittests/"
-)
-
 type MockModule struct {
 	acct   int
 	trace  int
 	pre    int
 	fail   bool
-	reload int
-	unload int
 	// TraceType
 	preAuth int
 }
@@ -36,7 +30,6 @@ func (m *MockModule) Trace(t TraceType, p *ClientPacket) {
 	switch t {
 	case TraceRequest:
 		m.preAuth++
-		break
 	}
 }
 
@@ -83,7 +76,7 @@ func checkAuthMode(t *testing.T) {
 	if m.trace != 2 {
 		t.Error("didn't auth again")
 	}
-	cnt, sum := getCounts()
+	cnt, _ := getCounts()
 	if cnt != 1 {
 		t.Error("didn't mod auth")
 	}
@@ -94,7 +87,7 @@ func checkAuthMode(t *testing.T) {
 	if m.trace != 3 {
 		t.Error("didn't auth again")
 	}
-	cnt, sum = getCounts()
+	cnt, _ = getCounts()
 	if cnt != 2 {
 		t.Error("didn't mod auth")
 	}
@@ -105,7 +98,7 @@ func checkAuthMode(t *testing.T) {
 	if m.trace != 3 {
 		t.Error("didn't auth again")
 	}
-	cnt, sum = getCounts()
+	cnt, sum := getCounts()
 	if cnt != 3 {
 		t.Error("didn't mod auth")
 	}

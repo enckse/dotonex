@@ -21,4 +21,7 @@ func main() {
 		})
 		return err
 	})
+	if err != nil {
+		panic("db view failed")
+	}
 }

@@ -46,9 +46,13 @@ func runEndpoint() {
 		var buffer []byte
 		_, c, _ := srv.ReadFromUDP(buffer)
 		count++
-		ioutil.WriteFile("./bin/count", []byte(fmt.Sprintf("count:%d", count)), 0644)
+		if err := ioutil.WriteFile("./bin/count", []byte(fmt.Sprintf("count:%d", count)), 0644); err != nil {
+			panic("write failed")
+		}
 		b := newPacket("", "", nil)
-		srv.WriteToUDP(b, c)
+		if _, err := srv.WriteToUDP(b, c); err != nil {
+			panic("udp write failed")
+		}
 	}
 }
 

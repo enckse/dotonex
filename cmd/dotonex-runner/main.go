@@ -110,7 +110,9 @@ func runProxy(ctx *runner.Context) {
 		}
 		buffered := []byte(buffer[0:n])
 		auth := runner.HandlePreAuth(ctx, buffered, cliaddr, func(buffer []byte) {
-			proxy.WriteToUDP(buffer, conn.client)
+			if _, err := proxy.WriteToUDP(buffer, conn.client); err != nil {
+				core.WriteError("unable to proxy", err)
+			}
 		})
 		if !auth {
 			core.WriteDebug("client failed preauth check")

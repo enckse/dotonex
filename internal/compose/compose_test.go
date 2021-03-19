@@ -115,35 +115,35 @@ func TestTryGetUserArray(t *testing.T) {
 	valid := func(u string) bool {
 		return u == "test"
 	}
-	user, err := TryGetUser([]string{}, []byte(""), valid)
+	_, err := TryGetUser([]string{}, []byte(""), valid)
 	if err == nil {
 		t.Error("json is invalid and no layout")
 	}
-	user, err = TryGetUser([]string{"inarray[]"}, []byte("[{}]"), valid)
+	_, err = TryGetUser([]string{"inarray[]"}, []byte("[{}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray[]"}, []byte("['garbage']"), valid)
+	_, err = TryGetUser([]string{"inarray[]"}, []byte("['garbage']"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray[]"}, []byte("[]"), valid)
+	_, err = TryGetUser([]string{"inarray[]"}, []byte("[]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray[]"}, []byte("[{}, {}]"), valid)
+	_, err = TryGetUser([]string{"inarray[]"}, []byte("[{}, {}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray[]"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	_, err = TryGetUser([]string{"inarray[]"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
-	user, err = TryGetUser([]string{"inarray[]", "user"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	user, err := TryGetUser([]string{"inarray[]", "user"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err != nil || user != "test" {
 		t.Error("user")
 	}
-	user, err = TryGetUser([]string{"inarray[]", "inarray[]"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	_, err = TryGetUser([]string{"inarray[]", "inarray[]"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
@@ -155,7 +155,7 @@ func TestTryGetUserArray(t *testing.T) {
 	if err != nil || user != "test" {
 		t.Error("user")
 	}
-	user, err = TryGetUser([]string{"inarray[0]", "user"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
+	_, err = TryGetUser([]string{"inarray[0]", "user"}, []byte("[{}, {\"user\": \"test\"}]"), valid)
 	if err == nil {
 		t.Error("no user")
 	}
