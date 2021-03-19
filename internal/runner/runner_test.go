@@ -8,10 +8,10 @@ import (
 )
 
 type MockModule struct {
-	acct   int
-	trace  int
-	pre    int
-	fail   bool
+	acct  int
+	trace int
+	pre   int
+	fail  bool
 	// TraceType
 	preAuth int
 }

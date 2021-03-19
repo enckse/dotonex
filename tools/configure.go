@@ -27,7 +27,7 @@ type (
 		GitlabFQDN       string
 		ServerRepository string
 		errored          bool
-		To               bool `json:"-"`
+		To               bool    `json:"-"`
 		Configuration    *Config `json:"-"`
 		Static           string  `json:"-"`
 		CFlags           string
