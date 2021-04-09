@@ -117,7 +117,7 @@ func main() {
 	repo := flag.String(repoFlag, "", "server repository for backend management")
 	radiusKey := flag.String(radiusFlag, "", "radius key between server and networking components")
 	sharedKey := flag.String(sharedFlag, "", "shared radius key for all users given unique tokens")
-	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -s -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
+	goFlags := flag.String("go-flags", "-ldflags '-linkmode external -extldflags $(LDFLAGS) -w' -trimpath -buildmode=pie -mod=readonly -modcacherw", "flags for go building")
 	flag.Parse()
 	doGitlab := false
 	useMode := *mode
