@@ -19,9 +19,9 @@ import (
 var (
 	proxy         *net.UDPConn
 	serverAddress *net.UDPAddr
-	clients                   = make(map[string]*connection)
-	clientLock    *sync.Mutex = new(sync.Mutex)
-	erroredCount              = 0
+	clients       = make(map[string]*connection)
+	clientLock    = new(sync.Mutex)
+	erroredCount  = 0
 )
 
 type (

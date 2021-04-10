@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	pluginLock *sync.Mutex = new(sync.Mutex)
-	pluginLogs             = []string{}
+	pluginLock = new(sync.Mutex)
+	pluginLogs = []string{}
 	pluginLID  int
 )
 
