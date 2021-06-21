@@ -18,8 +18,10 @@ func utf16le(s string) []byte {
 }
 
 // MD4 computes an md4 hash
-func MD4(item string) string {
+func MD4(item string) (string, error) {
 	h := md4.New()
-	h.Write(utf16le(item))
-	return fmt.Sprintf("%x", string(h.Sum(nil)))
+	if _, err := h.Write(utf16le(item)); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", string(h.Sum(nil))), nil
 }

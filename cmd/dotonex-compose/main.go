@@ -58,7 +58,10 @@ func validate(wrapper compose.Store) error {
 	if err := mac(wrapper, false); err != nil {
 		return err
 	}
-	hash := core.MD4(wrapper.Token)
+	hash, err := core.MD4(wrapper.Token)
+	if err != nil {
+		return err
+	}
 	tokenKey := wrapper.NewKey(hash)
 	user, ok, err := wrapper.Get(tokenKey)
 	if err != nil {

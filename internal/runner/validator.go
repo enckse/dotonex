@@ -145,7 +145,11 @@ func Manage(cfg *core.Configuration) error {
 	if len(cfg.Compose.UserRegex) > 0 {
 		regex = regexp.MustCompile(cfg.Compose.UserRegex)
 	}
-	backend = &script{regex: regex, env: cfg.Compose.ToEnv(os.Environ()), cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: core.MD4(cfg.Compose.ServerKey)}
+	hashed, err := core.MD4(cfg.Compose.ServerKey)
+	if err != nil {
+		return err
+	}
+	backend = &script{regex: regex, env: cfg.Compose.ToEnv(os.Environ()), cfg: cfg.Compose, timeout: time.Duration(cfg.Compose.Timeout) * time.Second, hash: hashed}
 	callLock.Lock()
 	result := backend.Server()
 	callLock.Unlock()
