@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -144,7 +143,7 @@ func main() {
 	}
 	m.Arguments = strings.Split(j.String(), "\n")
 	cleanup := generated
-	files, err := ioutil.ReadDir(".")
+	files, err := os.ReadDir(".")
 	if err != nil {
 		m.fail(err, true)
 	}
@@ -224,14 +223,14 @@ func writeTemplate(tmpl *template.Template, file string, m Make, mode os.FileMod
 	if err := tmpl.Execute(&buffer, &m); err != nil {
 		m.fail(err, true)
 	}
-	if err := ioutil.WriteFile(file, buffer.Bytes(), mode); err != nil {
+	if err := os.WriteFile(file, buffer.Bytes(), mode); err != nil {
 		m.fail(err, true)
 	}
 	return nil
 }
 
 func getTemplate(file string) (*template.Template, error) {
-	b, err := ioutil.ReadFile(filepath.Join(toolDir, file+".in"))
+	b, err := os.ReadFile(filepath.Join(toolDir, file+".in"))
 	if err != nil {
 		return nil, err
 	}
