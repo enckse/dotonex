@@ -51,7 +51,7 @@ the proxy:
 
 ## build
 
-Requires base development tools and go to build, it will build the whole stack and a local instance
+Requires base development tools (e.g. `build-essential`) and go (1.16 or newer) to build, it will build the whole stack and a local instance
 of hostapd as certain flags are not always set for each distribution.
 
 to deploy and utilize the utilize a built-in gitlab backend:
