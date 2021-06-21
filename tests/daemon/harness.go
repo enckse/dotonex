@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 	"time"
 
 	"layeh.com/radius"
@@ -46,7 +46,7 @@ func runEndpoint() {
 		var buffer []byte
 		_, c, _ := srv.ReadFromUDP(buffer)
 		count++
-		if err := ioutil.WriteFile("./bin/count", []byte(fmt.Sprintf("count:%d", count)), 0644); err != nil {
+		if err := os.WriteFile("./bin/count", []byte(fmt.Sprintf("count:%d", count)), 0644); err != nil {
 			panic("write failed")
 		}
 		b := newPacket("", "", nil)

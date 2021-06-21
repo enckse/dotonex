@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -14,7 +13,7 @@ import (
 func main() {
 	flags := core.Flags()
 	instances := []string{}
-	options, err := ioutil.ReadDir(flags.Directory)
+	options, err := os.ReadDir(flags.Directory)
 	if err != nil {
 		core.Fatal("unable to read possible instances", err)
 	}

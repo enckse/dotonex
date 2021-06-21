@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/signal"
@@ -163,7 +162,7 @@ func monitorCount(debug bool, title string, c chan bool, state core.MonitorState
 func main() {
 	p := core.Flags()
 	core.ConfigureLogging(p.Debug, p.Instance)
-	b, err := ioutil.ReadFile(filepath.Join(p.Directory, p.Instance+core.InstanceConfig))
+	b, err := os.ReadFile(filepath.Join(p.Directory, p.Instance+core.InstanceConfig))
 	if err != nil {
 		core.Fatal("unable to load config", err)
 	}
@@ -175,7 +174,7 @@ func main() {
 		combined := &core.Configuration{}
 		for _, preload := range conf.Preload {
 			core.WriteInfo(fmt.Sprintf("preloading: %s", preload))
-			loaded, err := ioutil.ReadFile(preload)
+			loaded, err := os.ReadFile(preload)
 			if err != nil {
 				core.Fatal(fmt.Sprintf("unable to preload: %s", preload), err)
 			}
