@@ -1,0 +1,2 @@
+issues:
+    exclude: "golang.org/x/crypto/md4 is deprecated"
