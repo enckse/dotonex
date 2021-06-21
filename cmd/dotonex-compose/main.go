@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -160,7 +159,7 @@ func mac(wrapper compose.Store, mab bool) error {
 	if !ok {
 		return fmt.Errorf("invalid MAC")
 	}
-	dirs, err := ioutil.ReadDir(wrapper.Repo)
+	dirs, err := os.ReadDir(wrapper.Repo)
 	if err != nil {
 		return err
 	}
@@ -195,7 +194,7 @@ func getHostapd(wrapper compose.Store, def compose.Definition) ([]compose.Hostap
 	if !ok {
 		return nil, fmt.Errorf("no server hash found")
 	}
-	dirs, err := ioutil.ReadDir(wrapper.Repo)
+	dirs, err := os.ReadDir(wrapper.Repo)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +210,7 @@ func getHostapd(wrapper compose.Store, def compose.Definition) ([]compose.Hostap
 		path := filepath.Join(wrapper.Repo, name)
 		if id, ok := def.IsVLAN(name); ok {
 			wrapper.Debugging(fmt.Sprintf("%s (MAB)", name))
-			sub, err := ioutil.ReadDir(path)
+			sub, err := os.ReadDir(path)
 			if err != nil {
 				return nil, err
 			}
@@ -243,7 +242,7 @@ func getHostapd(wrapper compose.Store, def compose.Definition) ([]compose.Hostap
 			continue
 		}
 		loginName = core.NewUserLogin(name, loginName)
-		b, err := ioutil.ReadFile(possible)
+		b, err := os.ReadFile(possible)
 		if err != nil {
 			return nil, err
 		}
@@ -279,7 +278,7 @@ func getVLANs(wrapper compose.Store) (compose.Definition, error) {
 	if !core.PathExists(cfg) {
 		return d, fmt.Errorf("no root vlan config found")
 	}
-	b, err := ioutil.ReadFile(cfg)
+	b, err := os.ReadFile(cfg)
 	if err != nil {
 		return d, err
 	}
@@ -314,7 +313,7 @@ func configure(wrapper compose.Store) error {
 	hostapdFile := filepath.Join(wrapper.Repo, bin, "eap_users")
 	hostapdText := strings.Join(eapUsers, "\n\n") + "\n"
 	if core.PathExists(hostapdFile) {
-		b, err := ioutil.ReadFile(hostapdFile)
+		b, err := os.ReadFile(hostapdFile)
 		if err != nil {
 			return err
 		}
@@ -323,7 +322,7 @@ func configure(wrapper compose.Store) error {
 			return nil
 		}
 	}
-	if err := ioutil.WriteFile(hostapdFile, []byte(hostapdText), perms); err != nil {
+	if err := os.WriteFile(hostapdFile, []byte(hostapdText), perms); err != nil {
 		return err
 	}
 	return resetHostapd(wrapper)
