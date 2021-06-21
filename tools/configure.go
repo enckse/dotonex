@@ -109,7 +109,7 @@ func useOrRandom(name, input string) string {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	hostapd := flag.String(hostapdFlag, "hostap_2_9", "hostapd version to build")
-	cFlags := flag.String("cflags", "-march=x86-64 -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for hostapd build")
+	cFlags := flag.String("cflags", "-march=native -mtune=generic -O2 -pipe -fno-plt", "CFLAGS for hostapd build")
 	ldFlags := flag.String("ldflags", "-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now", "LDFLAGS for hostapd build")
 	certKey := flag.String(certKeyFlag, "", "hostapd certificate password key")
 	mode := flag.String(modeFlag, "", "enable specific build mode")
